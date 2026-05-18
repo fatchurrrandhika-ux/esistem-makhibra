@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test LPJ PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <h1>Test LPJ PDF Generation</h1>
+    <button onclick="testGenerateLPJ()">Generate LPJ PDF</button>
+
+    <script>
+        window.testGenerateLPJ = async () => {
+            try {
+                // Import jsPDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Local formatRp function
+                const formatRp = (num) => {
+                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(num);
+                };
+
+                // PDF Header
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text('LAPORAN PERTANGGUNGJAWABAN', 105, 20, { align: 'center' });
+                doc.text('PENGGUNAAN DANA KAMPUS', 105, 30, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'normal');
+                doc.text('LPM MAKHIBRA', 105, 45, { align: 'center' });
+                doc.text(`Tahun Akademik ${new Date().getFullYear()} - ${new Date().getFullYear() + 1}`, 105, 55, { align: 'center' });
+                
+                // Summary Section
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('RINGKASAN PENGGUNAAN DANA', 20, 75);
+                
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Total Dana Kampus Masuk: Rp 10.000.000', 20, 90);
+                doc.text('Total Penggunaan Dana Kampus: Rp 7.500.000', 20, 100);
+                doc.text('Total Dana Campuran untuk Event: Rp 2.500.000', 20, 110);
+                doc.text('Sisa Dana Kampus: Rp 2.500.000', 20, 120);
+                
+                // Transaction Details
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('DETAIL PENGGUNAAN DANA KAMPUS & CAMPURAN', 20, 140);
+                
+                // Table Header
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Tanggal', 20, 155);
+                doc.text('Kategori', 50, 155);
+                doc.text('Keterangan', 100, 155);
+                doc.text('Pengeluaran', 170, 155);
+                
+                // Table line
+                doc.line(20, 158, 190, 158);
+                
+                // Sample Transaction rows
+                doc.setFont('helvetica', 'normal');
+                let yPos = 165;
+                const transactions = [
+                    { tanggal: '15/05/2026', kategori: 'Penggunaan Dana Kampus', keterangan: 'Pembelian alat tulis dan kertas', pengeluaran: 'Rp 500.000' },
+                    { tanggal: '20/05/2026', kategori: 'Event - Dana Campuran', keterangan: 'Sewa tempat seminar nasional', pengeluaran: 'Rp 2.000.000' },
+                    { tanggal: '25/05/2026', kategori: 'Penggunaan Dana Kampus', keterangan: 'Transportasi kegiatan', pengeluaran: 'Rp 300.000' }
+                ];
+                
+                let totalPengeluaran = 0;
+                
+                transactions.forEach((transaction, index) => {
+                    if (yPos > 270) { // New page if needed
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    // Wrap text for long descriptions
+                    const kategoriLines = doc.splitTextToSize(transaction.kategori, 45);
+                    const keteranganLines = doc.splitTextToSize(transaction.keterangan, 65);
+                    
+                    doc.text(transaction.tanggal, 20, yPos);
+                    
+                    // Kategori (with line breaks)
+                    let currentY = yPos;
+                    kategoriLines.forEach(line => {
+                        doc.text(line, 50, currentY);
+                        currentY += 5;
+                    });
+                    
+                    // Keterangan (with line breaks)
+                    currentY = yPos;
+                    keteranganLines.forEach(line => {
+                        doc.text(line, 100, currentY);
+                        currentY += 5;
+                    });
+                    
+                    // Pengeluaran
+                    const pengeluaranValue = parseFloat(transaction.pengeluaran.replace(/[^\d]/g, ''));
+                    totalPengeluaran += pengeluaranValue;
+                    doc.text(transaction.pengeluaran, 170, yPos);
+                    
+                    yPos += Math.max(kategoriLines.length, keteranganLines.length) * 5 + 2;
+                });
+                
+                // Total line
+                doc.line(20, yPos + 2, 190, yPos + 2);
+                doc.setFont('helvetica', 'bold');
+                doc.text('TOTAL PENGELUARAN', 100, yPos + 10);
+                doc.text(formatRp(totalPengeluaran), 170, yPos + 10);
+                
+                // Footer
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Dokumen ini dibuat secara otomatis oleh Sistem e-Sistem LPM MAKHIBRA', 105, pageHeight - 20, { align: 'center' });
+                doc.text(`Tanggal cetak: ${new Date().toLocaleDateString('id-ID')}`, 105, pageHeight - 10, { align: 'center' });
+                
+                // Save PDF
+                const fileName = `LPJ_Dana_Kampus_${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+                
+                alert('LPJ PDF berhasil di-generate dan di-download!');
+                
+            } catch (error) {
+                console.error('Error generating LPJ PDF:', error);
+                alert('Terjadi kesalahan saat generate LPJ PDF');
+            }
+        };
+    </script>
+</body>
+</html>

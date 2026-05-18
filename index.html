@@ -42,7 +42,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- UPDATE: Mesin Pembuat Barcode (Untuk Absensi Garis-Garis) -->
@@ -1273,7 +1272,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-    <script src="app.js"></script></body>
-</html>
-    <script src="app.js"></script></body>
+    <script>
+        // Trik Cache Busting Otomatis
+        const version = new Date().getTime();
+        const cssLink = document.createElement('link');
+        cssLink.rel = 'stylesheet';
+        cssLink.href = `styles.css?v=${version}`;
+        document.head.appendChild(cssLink);
+
+        const appScript = document.createElement('script');
+        appScript.src = `app.js?v=${version}`;
+        document.body.appendChild(appScript);
+    </script>
+</body>
 </html>

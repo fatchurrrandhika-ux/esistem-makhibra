@@ -182,14 +182,21 @@ window.closeConfirmModal = () => {
 window.toggleSidebar = () => {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
+
+    if (!sidebar) return;
+
+    // MOBILE
     if (window.innerWidth < 768) {
         sidebar.classList.toggle('-translate-x-full');
-        overlay.classList.toggle('hidden');
-    } else {
-        // PERBAIKAN: Pastikan ini sesuai dengan setup sidebar Anda di CSS/Tailwind
-        sidebar.classList.toggle('md:-translate-x-full'); 
-        sidebar.classList.toggle('md:w-0');
-        sidebar.classList.toggle('md:overflow-hidden');
+
+        if (overlay) {
+            overlay.classList.toggle('hidden');
+        }
+    }
+
+    // DESKTOP
+    else {
+        sidebar.classList.toggle('sidebar-close');
     }
 };
 

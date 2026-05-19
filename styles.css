@@ -15,3 +15,9 @@ body { background-color: #f1f5f9; }
 .sidebar, #sidebar, [id*="sidebar"], [class*="sidebar"] {
     background-color: #000000 !important;
 }
+
+.sidebar-close {
+    transform: translateX(-100%);
+    width: 0 !important;
+    overflow: hidden;
+}

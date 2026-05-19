@@ -290,54 +290,72 @@
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-100 relative">
         
         <!-- HEADER ATAS -->
-        <header class="min-h-[60px] bg-white border-b border-slate-200 flex flex-wrap items-center justify-between px-2 sm:px-4 z-[60] shrink-0 shadow-sm gap-2">
-            <div class="flex items-center gap-4">
-                
-                <!-- Tombol Toggle Sidebar dengan Ikon Hamburger -->
-                <button onclick="window.toggleSidebar()" 
-                class="text-slate-700 hover:text-emerald-600 transition-colors bg-slate-200 hover:bg-emerald-100 p-2 rounded-lg shadow-sm flex items-center justify-center border border-slate-300 text-2xl">
-                     ☰
-                </button>
+        <header class="bg-white border-b border-slate-200 px-3 sm:px-6 py-2 shadow-sm">
 
-                <div class="text-right">
-                    <h2 class="text-xl tracking-wider pt-1" style="font-family: 'Permanent Marker', cursive;"><span id="ui-navbar-title" class="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">LPM MAKHIBRA</span></h2>
-                    <p class="text-[10px] text-slate-500 font-medium -mt-0.5">Sistem Informasi Manajemen Terpadu</p>
-                </div>
+            <div class="flex items-center justify-between flex-wrap gap-2">
+
+                <!-- KIRI -->
+                <div class="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+
+            <!-- Hamburger -->
+            <button onclick="window.toggleSidebar()" 
+                class="text-slate-700 hover:text-emerald-600 transition-colors bg-slate-200 hover:bg-emerald-100 p-2 rounded-lg shadow-sm border border-slate-300 shrink-0 text-xl">
+                ☰
+            </button>
+
+            <!-- Judul -->
+            <div class="min-w-0">
+                <h2 class="text-sm sm:text-xl tracking-wide truncate"
+                    style="font-family: 'Permanent Marker', cursive;">
+                    <span class="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+                        LPM MAKHIBRA
+                    </span>
+                </h2>
+
+                <p class="text-[9px] sm:text-[10px] text-slate-500 font-medium truncate">
+                    Sistem Informasi Manajemen Terpadu
+                </p>
             </div>
-            <div class="flex items-center gap-4">
-    <div class="text-right">
-        <p id="currentDate" class="text-[9px] sm:text-xs text-slate-500 font-bold">
-            Senin, 01 Jan 2026
-        </p>
+        </div>
 
-        <p id="currentTime" class="text-[11px] sm:text-sm font-black text-emerald-600 tracking-wider">
-            00:00:00 WIB
-        </p>
+        <!-- KANAN -->
+        <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+
+            <!-- Waktu -->
+            <div class="text-right leading-tight">
+                <p id="currentDate"
+                    class="text-[9px] sm:text-xs text-slate-500 font-bold">
+                    Senin, 01 Jan 2026
+                </p>
+
+                <p id="currentTime"
+                    class="text-[10px] sm:text-sm font-black text-emerald-600 tracking-wide">
+                    00:00:00 WIB
+                </p>
+            </div>
+
+            <!-- Divider -->
+            <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+
+            <!-- Avatar -->
+            <div class="relative" id="admin-menu-container">
+
+                <div onclick="window.toggleAdminMenu()"
+                    class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-2 sm:px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors">
+
+                    <img src="https://ui-avatars.com/api/?name=AD&background=047857&color=fff"
+                        class="w-7 h-7 rounded-full shadow-sm object-cover">
+
+                    <span class="text-[10px] sm:text-xs font-bold text-slate-700 hidden sm:block">
+                        Administrator
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
     </div>
-
-    <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
-                
-                <div class="relative" id="admin-menu-container">
-                    <div onclick="window.toggleAdminMenu()" class="flex items-center gap-2.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-slate-100 transition-colors relative z-20">
-                        <img src="https://ui-avatars.com/api/?name=AD&background=047857&color=fff" id="header-avatar" class="w-7 h-7 rounded-full shadow-sm object-cover">
-                        <span id="ui-admin-name-top" class="text-xs font-bold text-slate-700 hidden sm:block pr-1">Administrator</span>
-                    </div>
-
-                    <div id="admin-dropdown" class="hidden absolute top-full right-0 mt-3 w-[280px] bg-white shadow-xl rounded-sm overflow-hidden z-[100] border border-slate-200 origin-top-right transition-all">
-                        <div class="bg-[#2a8b66] p-6 text-center text-white relative">
-                            <img src="https://ui-avatars.com/api/?name=AD&background=047857&color=fff&size=128" id="dropdown-avatar" class="w-[90px] h-[90px] rounded-full mx-auto border-[4px] border-[#3eb086] shadow-sm mb-3 object-cover">
-                            <h4 id="ui-admin-name-dropdown" class="text-[15px] font-medium mb-1">Administrator - Pengurus</h4>
-                            <p class="text-[11px] text-emerald-100">Aktif sejak : 2025</p>
-                        </div>
-                        <div class="bg-slate-50 p-3 flex justify-between items-center border-t border-slate-200">
-                            <button onclick="window.switchView('view-webmaster'); window.toggleAdminMenu();" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-[13px] hover:bg-slate-100 transition-colors rounded-sm shadow-sm">Lihat Profil</button>
-                            <button onclick="window.handleLogout(); window.toggleAdminMenu();" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-[13px] hover:bg-slate-100 hover:text-rose-600 transition-colors rounded-sm shadow-sm">Keluar</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </header>
+</header>
 
         <main class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 lg:p-8 bg-slate-100">
             <div class="max-w-[1400px] mx-auto space-y-6">

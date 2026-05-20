@@ -1032,7 +1032,8 @@ function sinkronKasRealtime() {
             chartInstance.data.datasets[0].data = [tMasuk];
             chartInstance.data.datasets[1].data = [tKeluar];
             chartInstance.update();
-            window.updateDashboardChartState();
+            // window.updateDashboardChartState(); // Function belum ada di app.js; disable agar refresh tidak error
+            
         }
         window.renderTabelKas();
     }, (error) => {

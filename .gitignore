@@ -52,3 +52,5 @@ firestore-debug.log
 
 # Screenshots (if any)
 screenshots/
+# OS artifacts
+desktop.ini

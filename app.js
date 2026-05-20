@@ -23,6 +23,29 @@ let unsubscribeArsip = null;
 let chartInstance = null;
 let pieChartInstance = null;
 let currentEditAnggotaId = null;
+let clockTimer = null;
+
+const APP_TIME_ZONE = 'Asia/Jakarta';
+const appDateFormatter = new Intl.DateTimeFormat('id-ID', {
+    timeZone: APP_TIME_ZONE,
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+});
+const appTimeFormatter = new Intl.DateTimeFormat('id-ID', {
+    timeZone: APP_TIME_ZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+});
+const appInputDateFormatter = new Intl.DateTimeFormat('id-ID', {
+    timeZone: APP_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+});
 
 window.cachedArsipData = {};
 window.cachedKasData = [];
@@ -122,15 +145,52 @@ const safeUrl = (value) => {
     return '';
 };
 
+function getFormattedJakartaTime(now) {
+    const parts = appTimeFormatter.formatToParts(now).reduce((result, part) => {
+        result[part.type] = part.value;
+        return result;
+    }, {});
+    return `${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
+function getFormattedJakartaYear(now) {
+    const yearPart = appDateFormatter.formatToParts(now).find((part) => part.type === 'year');
+    return yearPart ? yearPart.value : now.getFullYear();
+}
+
+function getJakartaDateInputValue(now = new Date()) {
+    const parts = appInputDateFormatter.formatToParts(now).reduce((result, part) => {
+        result[part.type] = part.value;
+        return result;
+    }, {});
+    return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function setInputToJakartaToday(id) {
+    const input = document.getElementById(id);
+    if(input) input.value = getJakartaDateInputValue();
+}
+
 function updateClock() {
     const now = new Date();
-    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
     const dateEl = document.getElementById('currentDate');
     const timeEl = document.getElementById('currentTime');
-    if(dateEl) dateEl.innerText = `${days[now.getDay()]}, ${now.getDate().toString().padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()}`;
-    if(timeEl) timeEl.innerText = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} WIB`;
-    if(document.getElementById('footer-year')) document.getElementById('footer-year').innerText = now.getFullYear();
+    const yearEl = document.getElementById('footer-year');
+
+    if(dateEl) dateEl.innerText = appDateFormatter.format(now);
+    if(timeEl) timeEl.innerText = `${getFormattedJakartaTime(now)} WIB`;
+    if(yearEl) yearEl.innerText = getFormattedJakartaYear(now);
+}
+
+function startClock() {
+    if(clockTimer) clearTimeout(clockTimer);
+
+    const tick = () => {
+        updateClock();
+        clockTimer = setTimeout(tick, 1000 - new Date().getMilliseconds());
+    };
+
+    tick();
 }
 
 // ==========================================
@@ -937,7 +997,7 @@ window.simpanPembayaran = async (e) => {
             timestamp: firebase.firestore.FieldValue.serverTimestamp() 
         }); 
         document.getElementById('formInputPembayaran').reset(); 
-        document.getElementById('tglPembayaran').valueAsDate = new Date(); 
+        setInputToJakartaToday('tglPembayaran');
         window.showToast('Sukses', 'Arus kas masuk dicatat.', 'success'); 
     } 
     catch (err) { window.showToast('Gagal', 'Sistem gagal menyimpan.', 'error'); } 
@@ -970,7 +1030,7 @@ window.simpanPengeluaran = async (e) => {
         });
 
         document.getElementById('formInputPengeluaran').reset();
-        document.getElementById('tglPengeluaran').valueAsDate = new Date();
+        setInputToJakartaToday('tglPengeluaran');
         const campuranSplit = document.getElementById('campuranSplitFields');
         if(campuranSplit) campuranSplit.classList.add('hidden');
         window.showToast('Sukses', 'Arus kas keluar dicatat.', 'success');
@@ -1241,7 +1301,7 @@ function initCharts() {
 
 window.addEventListener('DOMContentLoaded', () => {
     const footerYear = document.getElementById('login-year');
-    if(footerYear) footerYear.innerText = new Date().getFullYear();
+    if(footerYear) footerYear.innerText = getFormattedJakartaYear(new Date());
     
     const urlParamsInitial = new URLSearchParams(window.location.search);
     
@@ -1255,12 +1315,15 @@ window.addEventListener('DOMContentLoaded', () => {
         if(loadingOverlay) { loadingOverlay.classList.add('hidden'); loadingOverlay.classList.remove('flex'); }
     }
 
-    const elTglPembayaran = document.getElementById('tglPembayaran'); if(elTglPembayaran) elTglPembayaran.valueAsDate = new Date();
-    const elTglPengeluaran = document.getElementById('tglPengeluaran'); if(elTglPengeluaran) elTglPengeluaran.valueAsDate = new Date();
+    setInputToJakartaToday('tglPembayaran');
+    setInputToJakartaToday('tglPengeluaran');
     
-    updateClock(); 
-    setInterval(updateClock, 1000); 
+    startClock();
     initCharts();
+});
+
+document.addEventListener('visibilitychange', () => {
+    if(!document.hidden) startClock();
 });
 
 document.addEventListener('click', (event) => {

@@ -293,11 +293,6 @@ window.toggleSidebar = () => {
     }
 };
 
-window.toggleAdminMenu = () => {
-    const dropdown = document.getElementById('admin-dropdown');
-    if (dropdown) dropdown.classList.toggle('hidden');
-};
-
 window.toggleSubmenu = (id, iconId) => {
     const sub = document.getElementById(id);
     const icon = document.getElementById(iconId);
@@ -556,13 +551,6 @@ function syncUIWithDB() {
                     viewLogin.style.backgroundImage = `url('https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=2000')`;
                 }
             }
-            
-            const elAdminTop = document.getElementById('ui-admin-name-top'); if(elAdminTop) elAdminTop.innerText = nAdmin;
-            const elAdminDrop = document.getElementById('ui-admin-name-dropdown'); if(elAdminDrop) elAdminDrop.innerText = nAdmin + " - Pengurus";
-            
-            const initialAdmin = encodeURIComponent(nAdmin.substring(0, 2).toUpperCase());
-            const headAvatar = document.getElementById('header-avatar'); if(headAvatar) headAvatar.src = `https://ui-avatars.com/api/?name=${initialAdmin}&background=047857&color=fff&bold=true`;
-            const dropAvatar = document.getElementById('dropdown-avatar'); if(dropAvatar) dropAvatar.src = `https://ui-avatars.com/api/?name=${initialAdmin}&background=047857&color=fff&size=128&bold=true`;
             
             const dashInstansi = document.getElementById('dash-instansi-name'); if(dashInstansi) dashInstansi.innerText = nInstansi;
             const footerInstansi = document.getElementById('footer-instansi'); if(footerInstansi) footerInstansi.innerText = nInstansi;
@@ -1726,14 +1714,4 @@ onReady(() => {
 
 document.addEventListener('visibilitychange', () => {
     if(!document.hidden) startClock();
-});
-
-document.addEventListener('click', (event) => {
-    const dropdown = document.getElementById('admin-dropdown');
-    const container = document.getElementById('admin-menu-container');
-    if (dropdown && !dropdown.classList.contains('hidden')) {
-        if (container && !container.contains(event.target)) {
-            dropdown.classList.add('hidden');
-        }
-    }
 });

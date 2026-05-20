@@ -2,10 +2,7 @@ window.tailwind = window.tailwind || {};
 window.tailwind.config = { 
     theme: { 
         extend: { 
-            fontFamily: { sans: ['"Source Sans Pro"', 'sans-serif'] }, 
-            colors: { 
-                admin: { dark: '#1e293b', sidebar: '#0f172a', hover: '#334155', brand: '#047857', bg: '#f1f5f9' } 
-            } 
+            fontFamily: { sans: ['"Source Sans Pro"', 'sans-serif'] }
         } 
     } 
 };

@@ -320,24 +320,6 @@
 
         <!-- KANAN -->
         <div class="flex items-center gap-2 shrink-0">
-            <div id="admin-menu-container" class="relative hidden sm:block">
-                <button onclick="window.toggleAdminMenu()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg px-2.5 py-1.5 transition-colors">
-                    <img id="header-avatar" src="https://ui-avatars.com/api/?name=AD&background=047857&color=fff&bold=true" class="w-7 h-7 rounded-full object-cover" alt="Admin">
-                    <span id="ui-admin-name-top" class="text-xs font-bold text-slate-700 max-w-[110px] truncate">Administrator</span>
-                    <i class="ph-bold ph-caret-down text-[10px] text-slate-500"></i>
-                </button>
-                <div id="admin-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden z-50">
-                    <div class="p-3 flex items-center gap-3 border-b border-slate-100">
-                        <img id="dropdown-avatar" src="https://ui-avatars.com/api/?name=AD&background=047857&color=fff&size=128&bold=true" class="w-10 h-10 rounded-full object-cover" alt="Admin">
-                        <div class="min-w-0">
-                            <p id="ui-admin-name-dropdown" class="text-sm font-black text-slate-800 truncate">Administrator - Pengurus</p>
-                            <p class="text-[11px] text-slate-500">Sesi aktif</p>
-                        </div>
-                    </div>
-                    <button onclick="window.handleLogout()" class="w-full text-left px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors">Keluar</button>
-                </div>
-            </div>
-
             <!-- Waktu -->
             <div class="text-right leading-tight min-w-[118px] sm:min-w-[170px]" aria-live="polite">
                 <p id="currentDate"
@@ -368,27 +350,27 @@
                     <div class="space-y-5 no-print">
                         <div class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
                             <button onclick="window.bukaFormTambah()" class="bg-slate-50 border border-slate-200 hover:bg-emerald-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <i class="ph-bold ph-user-plus text-3xl text-emerald-500 group-hover:text-emerald-600 mb-2 transition-colors"></i>
+                                <i class="ph-fill ph-user-circle-plus text-3xl text-emerald-500 group-hover:text-emerald-600 mb-2 transition-colors"></i>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-emerald-700">Tambah<br>Anggota</span>
                             </button>
                             <button onclick="window.switchView('view-kelola-anggota')" class="bg-slate-50 border border-slate-200 hover:bg-blue-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <i class="ph-bold ph-users-three text-3xl text-blue-500 group-hover:text-blue-600 mb-2 transition-colors"></i>
+                                <i class="ph-fill ph-address-book text-3xl text-blue-500 group-hover:text-blue-600 mb-2 transition-colors"></i>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-blue-700">Data<br>Anggota</span>
                             </button>
                             <button onclick="window.switchView('view-catat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-teal-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <i class="ph-bold ph-arrow-circle-down text-3xl text-teal-500 group-hover:text-teal-600 mb-2 transition-colors"></i>
+                                <i class="ph-fill ph-money-wavy text-3xl text-teal-500 group-hover:text-teal-600 mb-2 transition-colors"></i>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-teal-700">Kas<br>Masuk</span>
                             </button>
                             <button onclick="window.switchView('view-catat-pengeluaran')" class="bg-slate-50 border border-slate-200 hover:bg-rose-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <i class="ph-bold ph-arrow-circle-up text-3xl text-rose-500 group-hover:text-rose-600 mb-2 transition-colors"></i>
+                                <i class="ph-fill ph-receipt text-3xl text-rose-500 group-hover:text-rose-600 mb-2 transition-colors"></i>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-rose-700">Kas<br>Keluar</span>
                             </button>
                             <button onclick="window.switchView('view-riwayat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-amber-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <i class="ph-bold ph-chart-line-up text-3xl text-amber-500 group-hover:text-amber-600 mb-2 transition-colors"></i>
+                                <i class="ph-fill ph-chart-line-up text-3xl text-amber-500 group-hover:text-amber-600 mb-2 transition-colors"></i>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-amber-700">Laporan<br>Keuangan</span>
                             </button>
                             <button onclick="window.switchView('view-lpj-kampus')" class="bg-slate-50 border border-slate-200 hover:bg-indigo-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <i class="ph-bold ph-files text-3xl text-indigo-500 group-hover:text-indigo-600 mb-2 transition-colors"></i>
+                                <i class="ph-fill ph-file-text text-3xl text-indigo-500 group-hover:text-indigo-600 mb-2 transition-colors"></i>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-indigo-700">LPJ<br>Kampus</span>
                             </button>
                         </div>

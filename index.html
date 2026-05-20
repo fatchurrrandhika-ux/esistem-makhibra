@@ -94,7 +94,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Jenis Transaksi</label>
-                        <select id="edit-jenis" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-slate-500">
+                        <select id="edit-jenis" required onchange="window.updateEditKategori()" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-slate-500">
                             <option value="Pemasukan">Kas Masuk</option>
                             <option value="Pengeluaran">Kas Keluar</option>
                         </select>
@@ -307,12 +307,12 @@
             <div class="min-w-0">
                 <h2 class="text-sm sm:text-xl tracking-wide truncate"
                     style="font-family: 'Permanent Marker', cursive;">
-                    <span class="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+                    <span id="ui-navbar-title" class="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
                         LPM MAKHIBRA
                     </span>
                 </h2>
 
-                <p class="text-[9px] sm:text-[10px] text-slate-500 font-medium truncate">
+                <p id="dash-instansi-name" class="text-[9px] sm:text-[10px] text-slate-500 font-medium truncate">
                     Sistem Informasi Manajemen Terpadu
                 </p>
             </div>
@@ -320,6 +320,23 @@
 
         <!-- KANAN -->
         <div class="flex items-center gap-2 shrink-0">
+            <div id="admin-menu-container" class="relative hidden sm:block">
+                <button onclick="window.toggleAdminMenu()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg px-2.5 py-1.5 transition-colors">
+                    <img id="header-avatar" src="https://ui-avatars.com/api/?name=AD&background=047857&color=fff&bold=true" class="w-7 h-7 rounded-full object-cover" alt="Admin">
+                    <span id="ui-admin-name-top" class="text-xs font-bold text-slate-700 max-w-[110px] truncate">Administrator</span>
+                    <i class="ph-bold ph-caret-down text-[10px] text-slate-500"></i>
+                </button>
+                <div id="admin-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden z-50">
+                    <div class="p-3 flex items-center gap-3 border-b border-slate-100">
+                        <img id="dropdown-avatar" src="https://ui-avatars.com/api/?name=AD&background=047857&color=fff&size=128&bold=true" class="w-10 h-10 rounded-full object-cover" alt="Admin">
+                        <div class="min-w-0">
+                            <p id="ui-admin-name-dropdown" class="text-sm font-black text-slate-800 truncate">Administrator - Pengurus</p>
+                            <p class="text-[11px] text-slate-500">Sesi aktif</p>
+                        </div>
+                    </div>
+                    <button onclick="window.handleLogout()" class="w-full text-left px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors">Keluar</button>
+                </div>
+            </div>
 
             <!-- Waktu -->
             <div class="text-right leading-tight min-w-[118px] sm:min-w-[170px]" aria-live="polite">
@@ -337,7 +354,7 @@
     </div>
 
     <script>
-        if (window.paintJakartaClock) window.paintJakartaClock();
+        if (window.startJakartaClock) window.startJakartaClock();
     </script>
 
 </header>

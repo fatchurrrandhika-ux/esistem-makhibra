@@ -12,6 +12,7 @@ window.tailwind.config = {
 
 (() => {
     const timeZone = 'Asia/Jakarta';
+    let jakartaClockTimer = null;
     const dateFormatter = new Intl.DateTimeFormat('id-ID', {
         timeZone,
         weekday: 'long',
@@ -52,6 +53,17 @@ window.tailwind.config = {
         if(timeEl) timeEl.innerText = snapshot.time;
         if(loginYearEl) loginYearEl.innerText = snapshot.year;
         if(footerYearEl) footerYearEl.innerText = snapshot.year;
+    };
+
+    window.startJakartaClock = () => {
+        if(jakartaClockTimer) clearTimeout(jakartaClockTimer);
+
+        const tick = () => {
+            window.paintJakartaClock();
+            jakartaClockTimer = setTimeout(tick, 1000 - new Date().getMilliseconds());
+        };
+
+        tick();
     };
 })();
 

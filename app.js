@@ -145,6 +145,21 @@ const safeUrl = (value) => {
     return '';
 };
 
+const getInputValue = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+};
+
+const setInputValue = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.value = value ?? '';
+};
+
+const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.innerText = value;
+};
+
 function getFormattedJakartaTime(now) {
     const parts = appTimeFormatter.formatToParts(now).reduce((result, part) => {
         result[part.type] = part.value;
@@ -188,6 +203,11 @@ function updateClock() {
 }
 
 function startClock() {
+    if(window.startJakartaClock) {
+        window.startJakartaClock();
+        return;
+    }
+
     if(clockTimer) clearTimeout(clockTimer);
 
     const tick = () => {
@@ -196,6 +216,14 @@ function startClock() {
     };
 
     tick();
+}
+
+function onReady(callback) {
+    if(document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', callback, { once: true });
+    } else {
+        callback();
+    }
 }
 
 // ==========================================
@@ -988,7 +1016,56 @@ window.renderTabelAnggota = () => {
     if(tabelJumlah) tabelJumlah.innerText = displayedCount;
 };
 
+window.updatePilihanFilter = () => {
+    const filterKategori = document.getElementById('filterKategori');
+    const filterNilai = document.getElementById('filterNilai');
+    if(!filterKategori || !filterNilai) return;
+
+    const kategori = filterKategori.value;
+    const labels = { divisi: 'Divisi', jk: 'Jenis Kelamin', angkatan: 'Angkatan' };
+    const values = new Set();
+
+    Object.values(window.cachedAnggotaData || {}).forEach((row) => {
+        if(kategori && row[kategori]) values.add(String(row[kategori]));
+    });
+
+    filterNilai.innerHTML = `<option value="">- Semua ${labels[kategori] || 'Kategori'} -</option>` +
+        Array.from(values).sort((a, b) => a.localeCompare(b)).map((value) => {
+            const safeValue = escapeHtml(value);
+            return `<option value="${safeValue}">${safeValue}</option>`;
+        }).join('');
+
+    window.renderTabelAnggota();
+};
+
+window.resetFilterTabel = () => {
+    setInputValue('filterKategori', '');
+    const filterNilai = document.getElementById('filterNilai');
+    if(filterNilai) filterNilai.innerHTML = '<option value="">- Pilih Kategori Terlebih Dahulu -</option>';
+    setInputValue('pencarianTabel', '');
+    window.renderTabelAnggota();
+};
+
 // ... (KODE MANAJEMEN KAS & KEUANGAN)
+window.updateKategoriPembayaran = () => {
+    const sumber = getInputValue('sumberDanaPembayaran');
+    setInputValue('kategoriPembayaran', sumber === 'kampus' ? 'Dana Kampus' : 'Kas Anggota');
+};
+
+window.updateKategoriPengeluaran = () => {
+    const sumber = getInputValue('sumberDanaPengeluaran');
+    const splitFields = document.getElementById('campuranSplitFields');
+    if(splitFields) splitFields.classList.toggle('hidden', sumber !== 'campuran');
+    setInputValue('kategoriPengeluaranForm', sumber === 'kampus' ? 'Program Kampus' : sumber === 'campuran' ? 'Event Dana Campuran' : 'Operasional');
+    window.updateCampuranTotal();
+};
+
+window.updateCampuranTotal = () => {
+    if(getInputValue('sumberDanaPengeluaran') !== 'campuran') return;
+    const total = Number(getInputValue('nomCampuranKampus')) + Number(getInputValue('nomCampuranOrganisasi'));
+    setInputValue('nomPengeluaran', total || '');
+};
+
 window.simpanPembayaran = async (e) => {
     e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const ori = btn.innerText; btn.innerText = 'Merekam...'; btn.disabled = true;
     try { 
@@ -1076,31 +1153,54 @@ function sinkronKasRealtime() {
         });
 
         let saldoCounter = 0; let tMasuk = 0; let tKeluar = 0;
+        let danaKampusMasuk = 0; let danaKampusKeluar = 0; let danaOrganisasiMasuk = 0; let danaOrganisasiKeluar = 0; let eventCampuran = 0;
         window.cachedKasData = [];
 
         tempData.forEach((r) => {
             const nom = Number(r.nominal);
             const isMasuk = r.jenis === 'Pemasukan';
             
-            if (isMasuk) { saldoCounter += nom; tMasuk += nom; }
-            else { saldoCounter -= nom; tKeluar -= nom; }
+            if (isMasuk) {
+                saldoCounter += nom;
+                tMasuk += nom;
+                if(r.sumberDana === 'kampus') danaKampusMasuk += nom;
+                else danaOrganisasiMasuk += nom;
+            } else {
+                saldoCounter -= nom;
+                tKeluar += nom;
+                if(r.sumberDana === 'kampus') danaKampusKeluar += nom;
+                else if(r.sumberDana === 'campuran') {
+                    danaKampusKeluar += Number(r.nominalKampus || 0);
+                    danaOrganisasiKeluar += Number(r.nominalOrganisasi || 0);
+                    eventCampuran += nom;
+                } else {
+                    danaOrganisasiKeluar += nom;
+                }
+            }
             
             r.saldoCalc = saldoCounter;
             window.cachedKasData.push(r);
         });
 
-        if(document.getElementById('card-pemasukan')) document.getElementById('card-pemasukan').innerText = formatRp(tMasuk);
-        if(document.getElementById('card-pengeluaran')) document.getElementById('card-pengeluaran').innerText = formatRp(tKeluar);
-        if(document.getElementById('card-saldo')) document.getElementById('card-saldo').innerText = formatRp(saldoCounter);
+        setText('card-pemasukan', formatRp(tMasuk));
+        setText('card-pengeluaran', formatRp(tKeluar));
+        setText('card-saldo', formatRp(saldoCounter));
+        setText('card-dana-kampus', formatRp(danaKampusMasuk - danaKampusKeluar));
+        setText('card-dana-organisasi', formatRp(danaOrganisasiMasuk - danaOrganisasiKeluar));
+        setText('card-event-campuran', formatRp(eventCampuran));
+        setText('totalDanaKampusMasuk', formatRp(danaKampusMasuk));
+        setText('totalDanaKampusKeluar', formatRp(danaKampusKeluar));
+        setText('sisaDanaKampus', formatRp(danaKampusMasuk - danaKampusKeluar));
 
         if(chartInstance) {
             chartInstance.data.datasets[0].data = [tMasuk];
             chartInstance.data.datasets[1].data = [tKeluar];
             chartInstance.update();
-            // window.updateDashboardChartState(); // Function belum ada di app.js; disable agar refresh tidak error
+            window.updateDashboardChartState();
             
         }
         window.renderTabelKas();
+        window.renderLPJKampus();
     }, (error) => {
         console.error("Error fetching kas data:", error);
     });
@@ -1144,6 +1244,7 @@ window.renderTabelKas = () => {
             <td class="px-4 py-3 text-right font-black text-slate-800 bg-slate-50/50 text-xs">${formatRp(r.saldoCalc)}</td>
             <td class="px-4 py-3 text-center">
                 <div class="flex justify-center gap-1">
+                    <button onclick="window.bukaEditTransaksi(${safeRId})" class="bg-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white p-1.5 rounded transition-colors" title="Edit Transaksi"><i class="ph-bold ph-pencil-simple"></i></button>
                     <button onclick="window.hapusKas(${safeRId}, ${JSON.stringify(r.keterangan || '')})" class="bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white p-1.5 rounded transition-colors" title="Hapus Transaksi"><i class="ph-bold ph-trash"></i></button>
                 </div>
             </td>
@@ -1152,6 +1253,302 @@ window.renderTabelKas = () => {
 
     if(tbody) tbody.innerHTML = count === 0 ? '<tr><td colspan="6" class="text-center py-12 text-slate-400 font-medium">Data transaksi tidak ditemukan / kosong.</td></tr>' : htmlTable;
     if(document.getElementById('infoTabelKas')) document.getElementById('infoTabelKas').innerText = `Menampilkan ${count} Transaksi`;
+};
+
+window.renderLPJKampus = () => {
+    const tbody = document.getElementById('tableBodyLPJ');
+    if(!tbody) return;
+
+    const rows = (window.cachedKasData || []).filter((r) => r.sumberDana === 'kampus' || r.sumberDana === 'campuran');
+    let count = 0;
+    const html = rows.slice().reverse().map((r) => {
+        count++;
+        const keluar = r.jenis === 'Pengeluaran' ? Number(r.nominal || 0) : 0;
+        return `<tr class="hover:bg-slate-50">
+            <td class="px-4 py-3 text-slate-500">${escapeHtml(r.tanggal || '-')}</td>
+            <td class="px-4 py-3 font-bold text-slate-700">${escapeHtml(r.kategori || '-')}</td>
+            <td class="px-4 py-3 text-slate-600">${escapeHtml(r.keterangan || '-')}</td>
+            <td class="px-4 py-3 text-right font-bold text-rose-600">${keluar ? formatRp(keluar) : '-'}</td>
+        </tr>`;
+    }).join('');
+
+    tbody.innerHTML = count ? html : '<tr><td colspan="4" class="text-center py-10 text-slate-400 font-medium">Belum ada transaksi dana kampus atau campuran.</td></tr>';
+};
+
+window.updateDashboardChartState = () => {
+    const empty = document.getElementById('dashboard-chart-empty');
+    if(!empty || !chartInstance) return;
+    const total = chartInstance.data.datasets.reduce((sum, ds) => sum + Number(ds.data[0] || 0), 0);
+    empty.classList.toggle('hidden', total > 0);
+};
+
+window.bukaEditTransaksi = (id) => {
+    const data = (window.cachedKasData || []).find((row) => row.id === id);
+    if(!data) {
+        window.showToast('Gagal', 'Data transaksi tidak ditemukan.', 'error');
+        return;
+    }
+
+    setInputValue('edit-transaksi-id', id);
+    setInputValue('edit-jenis', data.jenis || 'Pemasukan');
+    setInputValue('edit-sumber-dana', data.sumberDana || 'organisasi');
+    setInputValue('edit-tanggal', data.tanggal || '');
+    setInputValue('edit-kategori', data.kategori || '');
+    setInputValue('edit-keterangan', data.keterangan || '');
+    setInputValue('edit-nominal', Number(data.nominal || 0));
+    setInputValue('edit-nominal-kampus', Number(data.nominalKampus || 0) || '');
+    setInputValue('edit-nominal-organisasi', Number(data.nominalOrganisasi || 0) || '');
+    window.updateEditKategori(false);
+
+    const modal = document.getElementById('edit-transaksi-modal');
+    if(modal) {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            if(modal.children[0]) modal.children[0].classList.remove('scale-95');
+        }, 10);
+    }
+};
+
+window.closeEditModal = () => {
+    const modal = document.getElementById('edit-transaksi-modal');
+    if(!modal) return;
+    modal.classList.add('opacity-0');
+    if(modal.children[0]) modal.children[0].classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 250);
+};
+
+window.updateEditKategori = (overwrite = true) => {
+    const jenis = getInputValue('edit-jenis');
+    const sumber = getInputValue('edit-sumber-dana');
+    const split = document.getElementById('editCampuranSplitFields');
+    if(split) split.classList.toggle('hidden', !(jenis === 'Pengeluaran' && sumber === 'campuran'));
+
+    if(overwrite) {
+        setInputValue('edit-kategori', jenis === 'Pemasukan' ? (sumber === 'kampus' ? 'Dana Kampus' : 'Kas Anggota') : (sumber === 'campuran' ? 'Event Dana Campuran' : sumber === 'kampus' ? 'Program Kampus' : 'Operasional'));
+    }
+};
+
+window.updateEditCampuranTotal = () => {
+    if(getInputValue('edit-sumber-dana') !== 'campuran') return;
+    const total = Number(getInputValue('edit-nominal-kampus')) + Number(getInputValue('edit-nominal-organisasi'));
+    setInputValue('edit-nominal', total || '');
+};
+
+window.simpanEditTransaksi = async (e) => {
+    e.preventDefault();
+    const id = getInputValue('edit-transaksi-id');
+    if(!id) return;
+
+    const jenis = getInputValue('edit-jenis');
+    const sumberDana = getInputValue('edit-sumber-dana');
+    const nominal = Number(getInputValue('edit-nominal'));
+    const nominalKampus = sumberDana === 'campuran' ? Number(getInputValue('edit-nominal-kampus')) : 0;
+    const nominalOrganisasi = sumberDana === 'campuran' ? Number(getInputValue('edit-nominal-organisasi')) : 0;
+
+    if(jenis === 'Pengeluaran' && sumberDana === 'campuran' && nominalKampus + nominalOrganisasi !== nominal) {
+        window.showToast('Gagal', 'Total dana campuran harus sama dengan nominal transaksi.', 'error');
+        return;
+    }
+
+    try {
+        await db.collection('kas_organisasi').doc(id).update({
+            jenis,
+            sumberDana,
+            tanggal: getInputValue('edit-tanggal'),
+            kategori: getInputValue('edit-kategori'),
+            keterangan: getInputValue('edit-keterangan'),
+            nominal,
+            nominalKampus,
+            nominalOrganisasi,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        window.closeEditModal();
+        window.showToast('Sukses', 'Transaksi berhasil diperbarui.', 'success');
+    } catch(err) {
+        window.showToast('Gagal', 'Transaksi gagal diperbarui.', 'error');
+    }
+};
+
+const downloadTextFile = (filename, content, mime = 'text/csv;charset=utf-8;') => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+};
+
+const csvCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+const makeCsv = (headers, rows) => {
+    const lines = [headers.map(csvCell).join(';')];
+    rows.forEach((row) => lines.push(row.map(csvCell).join(';')));
+    return `\ufeff${lines.join('\n')}`;
+};
+
+window.downloadCSVData = (type) => {
+    let filename = `${type || 'export'}-${getJakartaDateInputValue()}.csv`;
+    let headers = [];
+    let rows = [];
+
+    if(type === 'Buku_Kas') {
+        headers = ['Tanggal', 'Jenis', 'Sumber Dana', 'Kategori', 'Keterangan', 'Masuk', 'Keluar', 'Saldo'];
+        rows = (window.cachedKasData || []).map((r) => {
+            const isMasuk = r.jenis === 'Pemasukan';
+            return [r.tanggal, r.jenis, r.sumberDana, r.kategori, r.keterangan, isMasuk ? r.nominal : '', isMasuk ? '' : r.nominal, r.saldoCalc];
+        });
+    } else {
+        headers = ['NIM', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Alamat', 'Prodi', 'Email', 'WA', 'Divisi', 'Angkatan'];
+        let data = Object.values(window.cachedAnggotaData || {});
+        if(type === 'Data_Laki') data = data.filter((r) => r.jk === 'Laki-laki');
+        if(type === 'Data_Perempuan') data = data.filter((r) => r.jk === 'Perempuan');
+        if(type === 'Tabel_Anggota') {
+            const search = getInputValue('pencarianTabel').toLowerCase();
+            const kategori = getInputValue('filterKategori');
+            const nilai = getInputValue('filterNilai');
+            data = data.filter((r) => {
+                if(kategori && nilai && String(r[kategori] || '') !== nilai) return false;
+                return !search || `${r.nim || ''} ${r.nama || ''} ${r.divisi || ''} ${r.angkatan || ''} ${r.alamat || ''}`.toLowerCase().includes(search);
+            });
+        }
+        rows = data.map((r) => [r.nim, r.nama, r.jk, r.tempat_lahir, r.tgl_lahir, r.alamat, r.prodi, r.email, r.wa, r.divisi, r.angkatan]);
+    }
+
+    downloadTextFile(filename, makeCsv(headers, rows));
+    window.showToast('Export Berhasil', `${rows.length} baris data diunduh.`, 'success');
+};
+
+window.handleSimulatedDownload = (name, format) => {
+    window.showToast('Siap Cetak', `${name} akan dibuka melalui dialog cetak ${format}.`, 'success');
+    setTimeout(() => window.print(), 250);
+};
+
+const openPrintableDocument = (title, bodyHtml) => {
+    const win = window.open('', '_blank');
+    if(!win) {
+        window.showToast('Gagal', 'Popup diblokir browser. Izinkan popup untuk mencetak dokumen.', 'error');
+        return;
+    }
+
+    win.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+        <style>
+            body{font-family:Arial,sans-serif;color:#0f172a;margin:32px;line-height:1.55}
+            .kop{text-align:center;border-bottom:3px double #0f172a;padding-bottom:12px;margin-bottom:24px}
+            .kop img{max-width:100%;max-height:120px;object-fit:contain}
+            table{width:100%;border-collapse:collapse;margin-top:16px;font-size:12px}
+            th,td{border:1px solid #cbd5e1;padding:8px;text-align:left;vertical-align:top}
+            th{background:#f1f5f9}
+            .right{text-align:right}.center{text-align:center}.ttd{margin-top:48px;display:flex;justify-content:space-between;gap:32px}.ttd>div{width:32%;text-align:center}.name{font-weight:bold;text-decoration:underline;margin-top:56px}
+            @media print{body{margin:18mm}.no-print{display:none}}
+        </style></head><body>${bodyHtml}<script>setTimeout(() => window.print(), 300);<\/script></body></html>`);
+    win.document.close();
+};
+
+window.generateLPJ = () => {
+    const rows = (window.cachedKasData || []).filter((r) => r.sumberDana === 'kampus' || r.sumberDana === 'campuran');
+    const tableRows = rows.map((r, index) => `<tr>
+        <td>${index + 1}</td><td>${escapeHtml(r.tanggal || '-')}</td><td>${escapeHtml(r.jenis || '-')}</td>
+        <td>${escapeHtml(r.kategori || '-')}</td><td>${escapeHtml(r.keterangan || '-')}</td>
+        <td class="right">${r.jenis === 'Pengeluaran' ? formatRp(Number(r.nominal || 0)) : '-'}</td>
+    </tr>`).join('');
+
+    const body = `<div class="kop">${window.appConfig.kopImg ? `<img src="${safeUrl(window.appConfig.kopImg)}">` : '<h2>LPM MAKHIBRA</h2><p>Laporan Pertanggungjawaban Dana Kampus</p>'}</div>
+        <h3 class="center">LAPORAN PERTANGGUNGJAWABAN DANA KAMPUS</h3>
+        <table><thead><tr><th>No</th><th>Tanggal</th><th>Jenis</th><th>Kategori</th><th>Keterangan</th><th>Pengeluaran</th></tr></thead><tbody>${tableRows || '<tr><td colspan="6" class="center">Belum ada data.</td></tr>'}</tbody></table>
+        <p class="right"><strong>Sisa Dana Kampus:</strong> ${escapeHtml(document.getElementById('sisaDanaKampus')?.innerText || 'Rp 0')}</p>`;
+    openPrintableDocument('LPJ Dana Kampus', body);
+};
+
+window.generateSuratOtomatis = async (e) => {
+    e.preventDefault();
+    const readFile = async (id) => {
+        const input = document.getElementById(id);
+        return input && input.files && input.files[0] ? compressWideImage(input.files[0]) : '';
+    };
+
+    const [ttd1, ttd2, ttd3, stempel] = await Promise.all(['gs-ttd-1', 'gs-ttd-2', 'gs-ttd-3', 'gs-stempel'].map(readFile));
+    const paragraphs = escapeHtml(getInputValue('gs-isi')).split('\n').filter(Boolean).map((p) => `<p>${p}</p>`).join('');
+    const sign = (jabatan, nama, img) => `<div><p>${escapeHtml(jabatan || '')}</p>${img ? `<img src="${img}" style="height:64px;object-fit:contain">` : '<div style="height:64px"></div>'}<p class="name">${escapeHtml(nama || '')}</p></div>`;
+
+    const body = `<div class="kop">${window.appConfig.kopImg ? `<img src="${safeUrl(window.appConfig.kopImg)}">` : '<h2>LPM MAKHIBRA</h2>'}</div>
+        <p>Nomor: ${escapeHtml(getInputValue('gs-nomor'))}<br>Lampiran: ${escapeHtml(getInputValue('gs-lampiran') || '-')}<br>Perihal: <strong>${escapeHtml(getInputValue('gs-perihal'))}</strong></p>
+        <p>Kepada Yth.<br>${escapeHtml(getInputValue('gs-tujuan'))}<br>di ${escapeHtml(getInputValue('gs-alamat'))}</p>
+        ${paragraphs}
+        <p class="right">${escapeHtml(getInputValue('gs-tempat'))}, ${escapeHtml(getInputValue('gs-tanggal'))}</p>
+        <div class="ttd">${sign(getInputValue('gs-jabatan-1'), getInputValue('gs-nama-1'), ttd1)}${sign(getInputValue('gs-jabatan-2'), getInputValue('gs-nama-2'), ttd2)}${sign(getInputValue('gs-jabatan-3'), getInputValue('gs-nama-3'), ttd3 || stempel)}</div>`;
+    openPrintableDocument('Surat Otomatis', body);
+};
+
+window.cetakDokumen = (type, id) => {
+    window.open(`${window.location.pathname}?print=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`, '_blank');
+};
+
+window.bukaEProfil = (id) => {
+    window.open(`${window.location.pathname}?verify=${encodeURIComponent(id)}`, '_blank');
+};
+
+window.renderPublicVerification = async (id) => {
+    const view = document.getElementById('view-public-verify');
+    const content = document.getElementById('public-verify-content');
+    if(view) {
+        view.classList.remove('hidden');
+        view.classList.add('flex');
+    }
+    if(!content) return;
+
+    try {
+        const doc = await db.collection('anggota_organisasi').doc(id).get();
+        if(!doc.exists) throw new Error('not-found');
+        const data = doc.data();
+        content.innerHTML = `<div class="text-center">
+            <img src="${safeUrl(data.foto) || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nama || 'Anggota')}&size=160&background=10b981&color=fff`}" class="w-28 h-28 rounded-full object-cover mx-auto mb-4 border-4 border-emerald-100">
+            <h3 class="text-xl font-black text-slate-800">${escapeHtml(data.nama || '-')}</h3>
+            <p class="text-sm text-slate-500 font-bold">${escapeHtml(data.nim || '-')}</p>
+            <div class="mt-5 text-left text-sm space-y-2">
+                <p><strong>Divisi:</strong> ${escapeHtml(data.divisi || '-')}</p>
+                <p><strong>Angkatan:</strong> ${escapeHtml(data.angkatan || '-')}</p>
+                <p><strong>Program Studi:</strong> ${escapeHtml(data.prodi || '-')}</p>
+            </div>
+        </div>`;
+    } catch(err) {
+        content.innerHTML = '<p class="text-center text-rose-600 font-bold">Data anggota tidak ditemukan.</p>';
+    }
+};
+
+window.renderPrintView = async (type, id) => {
+    try {
+        const doc = await db.collection('anggota_organisasi').doc(id).get();
+        if(!doc.exists) throw new Error('not-found');
+        const data = doc.data();
+        const body = `<div class="kop">${window.appConfig.kopImg ? `<img src="${safeUrl(window.appConfig.kopImg)}">` : '<h2>LPM MAKHIBRA</h2>'}</div>
+            <h3 class="center">${type === 'surat' ? 'SURAT KETERANGAN ANGGOTA' : 'PROFIL ANGGOTA'}</h3>
+            <table><tbody>
+                <tr><th>NIM</th><td>${escapeHtml(data.nim || '-')}</td></tr>
+                <tr><th>Nama</th><td>${escapeHtml(data.nama || '-')}</td></tr>
+                <tr><th>Jenis Kelamin</th><td>${escapeHtml(data.jk || '-')}</td></tr>
+                <tr><th>Divisi</th><td>${escapeHtml(data.divisi || '-')}</td></tr>
+                <tr><th>Angkatan</th><td>${escapeHtml(data.angkatan || '-')}</td></tr>
+                <tr><th>Alamat</th><td>${escapeHtml(data.alamat || '-')}</td></tr>
+            </tbody></table>`;
+        document.open();
+        document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>${type === 'surat' ? 'Surat Anggota' : 'Profil Anggota'}</title>
+            <style>
+                body{font-family:Arial,sans-serif;color:#0f172a;margin:32px;line-height:1.55}
+                .kop{text-align:center;border-bottom:3px double #0f172a;padding-bottom:12px;margin-bottom:24px}
+                .kop img{max-width:100%;max-height:120px;object-fit:contain}
+                table{width:100%;border-collapse:collapse;margin-top:16px;font-size:12px}
+                th,td{border:1px solid #cbd5e1;padding:8px;text-align:left;vertical-align:top}
+                th{background:#f1f5f9;width:180px}.center{text-align:center}
+                @media print{body{margin:18mm}}
+            </style></head><body>${body}<script>setTimeout(() => window.print(), 300);<\/script></body></html>`);
+        document.close();
+    } catch(err) {
+        window.showToast('Gagal', 'Data cetak tidak ditemukan.', 'error');
+    }
 };
 
 
@@ -1304,7 +1701,7 @@ function initCharts() {
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+onReady(() => {
     const footerYear = document.getElementById('login-year');
     if(footerYear) footerYear.innerText = getFormattedJakartaYear(new Date());
     

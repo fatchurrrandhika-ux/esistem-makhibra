@@ -25,14 +25,14 @@ Aplikasi Manajemen Terpadu untuk Lembaga Pers Mahasiswa MAKHIBRA.
 
 1. Clone repository ini.
 2. Upload semua file ke hosting/server.
-3. Konfigurasi Firebase di file `index.html`.
+3. Konfigurasi Firebase di file `app.js`.
 4. Akses via browser.
 
 ## Konfigurasi
 
 ### Firebase Setup
 
-Edit bagian konfigurasi Firebase di `index.html`:
+Edit bagian konfigurasi Firebase di `app.js`:
 
 ```javascript
 const firebaseConfig = {
@@ -52,11 +52,11 @@ const firebaseConfig = {
 
 ## Progressive Web App (PWA)
 
-Aplikasi ini mendukung PWA dengan fitur:
+Aplikasi ini mendukung metadata PWA melalui `manifest.json` dengan fitur:
 
 - Install sebagai aplikasi native.
-- Offline capability.
-- Push notifications (opsional).
+- Ikon aplikasi dan identitas aplikasi.
+- Offline capability dan push notifications bisa ditambahkan kemudian melalui service worker.
 
 ## Keamanan
 

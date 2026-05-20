@@ -1,9 +1,53 @@
 html, body {
-    height: 100%;
-    overflow: hidden; /* cegah scroll browser utama yang kadang memicu reload/gesture restore */
+    min-height: 100%;
+    margin: 0;
+    overscroll-behavior-y: auto; /* biarkan pull-to-refresh & gesture back browser tetap aktif */
 }
 
-body { background-color: #f1f5f9; }
+body {
+    background-color: #f1f5f9;
+    overflow-x: hidden; /* jaga layout tetap rapi tanpa mematikan scroll vertikal browser */
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* shell aplikasi tetap full-height agar terasa native tanpa memblok fitur browser bawaan */
+#app,
+main {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+main {
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+}
+
+header {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+.custom-scrollbar,
+.sidebar-scrollbar {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
+}
+
+.custom-scrollbar {
+    overscroll-behavior-x: contain;
+}
+
+#sidebar {
+    max-height: 100vh;
+    max-height: 100dvh;
+}
+
+@media (min-width: 768px) {
+    #sidebar {
+        height: 100vh;
+        height: 100dvh;
+    }
+}
 .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }

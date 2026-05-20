@@ -172,6 +172,11 @@ function setInputToJakartaToday(id) {
 }
 
 function updateClock() {
+    if(window.paintJakartaClock) {
+        window.paintJakartaClock();
+        return;
+    }
+
     const now = new Date();
     const dateEl = document.getElementById('currentDate');
     const timeEl = document.getElementById('currentTime');

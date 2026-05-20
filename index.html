@@ -322,17 +322,23 @@
         <div class="flex items-center gap-2 shrink-0">
 
             <!-- Waktu -->
-            <div class="text-right leading-tight">
+            <div class="text-right leading-tight min-w-[118px] sm:min-w-[170px]" aria-live="polite">
                 <p id="currentDate"
                     class="text-[9px] sm:text-xs text-slate-500 font-bold">
-                    Memuat tanggal...
+                    &nbsp;
                 </p>
 
                 <p id="currentTime"
                     class="text-[10px] sm:text-sm font-black text-emerald-600 tracking-wide">
-                    00:00:00 WIB
+                    &nbsp;
                 </p>
             </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.paintJakartaClock) window.paintJakartaClock();
+    </script>
 
 </header>
 

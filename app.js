@@ -20,6 +20,7 @@ let unsubscribeKas = null;
 let unsubscribeAnggota = null;
 let unsubscribeWebmaster = null;
 let unsubscribeArsip = null;
+let unsubscribeAudit = null;
 let chartInstance = null;
 let pieChartInstance = null;
 let currentEditAnggotaId = null;
@@ -50,6 +51,7 @@ const appInputDateFormatter = new Intl.DateTimeFormat('id-ID', {
 window.cachedArsipData = {};
 window.cachedKasData = [];
 window.cachedAnggotaData = {};
+window.cachedAuditLogs = [];
 window.appConfig = { kopImg: "", footerImg: "", footerCetak: "", pimpinanNama: "", ttdImg: "", nomorSurat: "" };
 
 // ==========================================
@@ -194,6 +196,93 @@ const clearEarlyRouteStyle = () => {
     const earlyRouteStyle = document.getElementById('early-route-style');
     if(earlyRouteStyle) earlyRouteStyle.remove();
 };
+
+const getCurrentActor = () => {
+    const user = auth.currentUser;
+    if(!user) return { uid: 'anonymous', email: 'anonymous' };
+    return {
+        uid: user.uid || 'unknown',
+        email: user.email || (user.isAnonymous ? 'anonymous' : 'unknown')
+    };
+};
+
+const addAuditLog = async (action, entity, label, details = {}) => {
+    try {
+        const actor = getCurrentActor();
+        await db.collection('audit_logs').add({
+            action,
+            entity,
+            label: String(label || '-').slice(0, 180),
+            details,
+            actorUid: actor.uid,
+            actorEmail: actor.email,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(err) {
+        console.warn('Audit log gagal disimpan:', err);
+    }
+};
+
+const formatAuditTime = (value) => {
+    const date = value && typeof value.toDate === 'function' ? value.toDate() : new Date();
+    return `${appDateFormatter.format(date)} - ${getFormattedJakartaTime(date)} WIB`;
+};
+
+function renderAuditLog() {
+    const list = document.getElementById('auditLogList');
+    if(!list) return;
+
+    if(!window.cachedAuditLogs.length) {
+        list.innerHTML = '<div class="p-5 text-sm text-slate-400 text-center">Belum ada aktivitas tercatat.</div>';
+        return;
+    }
+
+    const colorMap = {
+        create: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+        update: 'bg-blue-50 text-blue-700 border-blue-100',
+        delete: 'bg-rose-50 text-rose-700 border-rose-100',
+        config: 'bg-slate-50 text-slate-700 border-slate-100'
+    };
+    const iconMap = {
+        anggota: 'ph-user',
+        kas: 'ph-wallet',
+        arsip: 'ph-folder',
+        settings: 'ph-gear-six'
+    };
+
+    list.innerHTML = window.cachedAuditLogs.map((item) => {
+        const badgeClass = colorMap[item.action] || 'bg-slate-50 text-slate-700 border-slate-100';
+        const icon = iconMap[item.entity] || 'ph-activity';
+        return `<div class="p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                <i class="ph-bold ${icon} text-lg"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-1">
+                    <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 border rounded ${badgeClass}">${escapeHtml(item.action || '-')}</span>
+                    <span class="text-xs text-slate-400">${escapeHtml(formatAuditTime(item.timestamp))}</span>
+                </div>
+                <p class="text-sm font-bold text-slate-800">${escapeHtml(item.label || '-')}</p>
+                <p class="text-xs text-slate-500 mt-0.5">${escapeHtml(item.actorEmail || 'unknown')}</p>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function sinkronAuditRealtime() {
+    if(unsubscribeAudit) unsubscribeAudit();
+    unsubscribeAudit = db.collection('audit_logs')
+        .orderBy('timestamp', 'desc')
+        .limit(8)
+        .onSnapshot((snapshot) => {
+            window.cachedAuditLogs = [];
+            snapshot.forEach((doc) => window.cachedAuditLogs.push({ id: doc.id, ...doc.data() }));
+            renderAuditLog();
+        }, (error) => {
+            console.warn('Audit log tidak dapat disinkronkan:', error);
+            renderAuditLog();
+        });
+}
 
 function getFormattedJakartaTime(now) {
     const parts = appTimeFormatter.formatToParts(now).reduce((result, part) => {
@@ -497,6 +586,7 @@ auth.onAuthStateChanged((user) => {
         sinkronKasRealtime(); 
         sinkronAnggotaRealtime(); 
         sinkronArsipRealtime();
+        sinkronAuditRealtime();
         
         const editId = urlParams.get('edit');
 
@@ -548,6 +638,7 @@ auth.onAuthStateChanged((user) => {
             if(unsubscribeAnggota) unsubscribeAnggota();
             if(unsubscribeWebmaster) unsubscribeWebmaster();
             if(unsubscribeArsip) unsubscribeArsip();
+            if(unsubscribeAudit) unsubscribeAudit();
             localStorage.removeItem('eSistem:lastView');
             
             // Sembunyikan konten lain
@@ -648,6 +739,7 @@ window.saveWebmasterConfig = async (e) => {
         };
 
         await db.collection("settings").doc("webmaster").set(payload, { merge: true });
+        await addAuditLog('config', 'settings', 'Memperbarui konfigurasi utama sistem', { namaInstansi: payload.namaInstansi, judulWebsite: payload.judulWebsite });
         window.showToast("SUKSES", "Konfigurasi sistem utama disimpan.", "success");
         syncUIWithDB();
     }
@@ -707,6 +799,7 @@ window.saveCetakConfig = async (e) => {
         }
 
         await db.collection("settings").doc("webmaster").set(payload, { merge: true });
+        await addAuditLog('config', 'settings', 'Memperbarui pengaturan cetak dokumen', { nomorSurat: payload.nomorSurat });
         window.showToast("SUKSES", "Pengaturan Cetak Dokumen disimpan.", "success");
         
         document.getElementById('wm-kop-img').value = '';
@@ -784,19 +877,30 @@ window.simpanAnggota = async (e) => {
     btn.disabled = true;
     try {
         let payload = {
-            nim: document.getElementById('anggota-nim').value,
-            nama: document.getElementById('anggota-nama').value,
+            nim: document.getElementById('anggota-nim').value.trim(),
+            nama: document.getElementById('anggota-nama').value.trim(),
             tempat_lahir: document.getElementById('anggota-tempat-lahir').value,
             tgl_lahir: document.getElementById('anggota-tgl-lahir').value,
             jk: document.getElementById('anggota-jk').value,
-            alamat: document.getElementById('anggota-alamat').value,
-            prodi: document.getElementById('anggota-prodi').value,
-            email: document.getElementById('anggota-email').value,
-            wa: document.getElementById('anggota-wa').value,
+            alamat: document.getElementById('anggota-alamat').value.trim(),
+            prodi: document.getElementById('anggota-prodi').value.trim(),
+            email: document.getElementById('anggota-email').value.trim(),
+            wa: document.getElementById('anggota-wa').value.trim(),
             divisi: document.getElementById('anggota-divisi').value,
-            angkatan: document.getElementById('anggota-angkatan').value,
+            angkatan: document.getElementById('anggota-angkatan').value.trim(),
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        const normalizedNim = payload.nim.toLowerCase();
+        const duplicateId = Object.keys(window.cachedAnggotaData || {}).find((id) => {
+            if(currentEditAnggotaId && id === currentEditAnggotaId) return false;
+            return String(window.cachedAnggotaData[id].nim || '').trim().toLowerCase() === normalizedNim;
+        });
+
+        if(duplicateId) {
+            window.showToast('NIM Duplikat', 'NIM tersebut sudah terdaftar di database anggota.', 'error');
+            return;
+        }
 
         const fileInput = document.getElementById('anggota-foto');
         if (fileInput.files && fileInput.files[0]) {
@@ -815,9 +919,11 @@ window.simpanAnggota = async (e) => {
 
         if (currentEditAnggotaId) {
             await db.collection("anggota_organisasi").doc(currentEditAnggotaId).update(payload);
+            await addAuditLog('update', 'anggota', `Memperbarui biodata ${payload.nama || payload.nim}`, { id: currentEditAnggotaId, nim: payload.nim });
             window.showToast('Biodata Diperbarui', 'Perubahan data anggota berhasil disimpan.', 'success');
         } else {
-            await db.collection("anggota_organisasi").add(payload);
+            const docRef = await db.collection("anggota_organisasi").add(payload);
+            await addAuditLog('create', 'anggota', `Menambahkan anggota ${payload.nama || payload.nim}`, { id: docRef.id, nim: payload.nim });
             window.showToast('Biodata Tersimpan', 'Data anggota baru berhasil direkam.', 'success');
         }
 
@@ -882,6 +988,7 @@ window.hapusAnggota = (id) => {
     window.customConfirm(`TINDAKAN PERMANEN:\nYakin ingin menghapus seluruh biodata ${nama}?`, async () => {
         try {
             await db.collection("anggota_organisasi").doc(id).delete();
+            await addAuditLog('delete', 'anggota', `Menghapus anggota ${nama}`, { id, nim: data ? data.nim : '' });
             window.showToast('Terhapus', 'Biodata berhasil dihapus dari sistem.', 'success');
         } catch(err) {
             window.showToast('Gagal', 'Terjadi kesalahan saat menghapus.', 'error');
@@ -916,6 +1023,7 @@ window.lihatDetailAnggota = (id) => {
             window.customConfirm(`TINDAKAN PERMANEN:\nYakin ingin menghapus seluruh biodata ${data.nama}?`, async () => {
                 try {
                     await db.collection("anggota_organisasi").doc(id).delete();
+                    await addAuditLog('delete', 'anggota', `Menghapus anggota ${data.nama || data.nim}`, { id, nim: data.nim || '' });
                     window.showToast('Terhapus', 'Biodata berhasil dihapus dari sistem.', 'success');
                     window.switchView('view-kelola-anggota');
                 } catch(err) {
@@ -1102,15 +1210,17 @@ window.updateCampuranTotal = () => {
 window.simpanPembayaran = async (e) => {
     e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const ori = btn.innerText; btn.innerText = 'Merekam...'; btn.disabled = true;
     try { 
-        await db.collection("kas_organisasi").add({ 
-            tanggal: document.getElementById('tglPembayaran').value, 
-            jenis: 'Pemasukan', 
-            sumberDana: document.getElementById('sumberDanaPembayaran').value, 
-            kategori: document.getElementById('kategoriPembayaran').value, 
-            keterangan: document.getElementById('ketPembayaran').value, 
-            nominal: Number(document.getElementById('nomPembayaran').value), 
+        const payload = {
+            tanggal: document.getElementById('tglPembayaran').value,
+            jenis: 'Pemasukan',
+            sumberDana: document.getElementById('sumberDanaPembayaran').value,
+            kategori: document.getElementById('kategoriPembayaran').value.trim(),
+            keterangan: document.getElementById('ketPembayaran').value.trim(),
+            nominal: Number(document.getElementById('nomPembayaran').value),
             timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-        }); 
+        };
+        const docRef = await db.collection("kas_organisasi").add(payload);
+        await addAuditLog('create', 'kas', `Mencatat kas masuk ${formatRp(payload.nominal)}`, { id: docRef.id, sumberDana: payload.sumberDana, kategori: payload.kategori });
         document.getElementById('formInputPembayaran').reset(); 
         setInputToJakartaToday('tglPembayaran');
         window.showToast('Sukses', 'Arus kas masuk dicatat.', 'success'); 
@@ -1132,17 +1242,19 @@ window.simpanPengeluaran = async (e) => {
             throw new Error('Total campuran tidak cocok');
         }
 
-        await db.collection("kas_organisasi").add({
+        const payload = {
             tanggal: document.getElementById('tglPengeluaran').value,
             jenis: 'Pengeluaran',
             sumberDana: sumber,
-            kategori: document.getElementById('kategoriPengeluaranForm').value,
-            keterangan: document.getElementById('ketPengeluaran').value,
+            kategori: document.getElementById('kategoriPengeluaranForm').value.trim(),
+            keterangan: document.getElementById('ketPengeluaran').value.trim(),
             nominal: totalNominal,
             nominalKampus,
             nominalOrganisasi,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+        const docRef = await db.collection("kas_organisasi").add(payload);
+        await addAuditLog('create', 'kas', `Mencatat kas keluar ${formatRp(payload.nominal)}`, { id: docRef.id, sumberDana: payload.sumberDana, kategori: payload.kategori });
 
         document.getElementById('formInputPengeluaran').reset();
         setInputToJakartaToday('tglPengeluaran');
@@ -1160,6 +1272,7 @@ window.hapusKas = (id, ket) => {
     window.customConfirm(`Tindakan Permanen:\nYakin hapus transaksi kas:\n"${ket}" ?`, async () => {
         try {
             await db.collection("kas_organisasi").doc(id).delete();
+            await addAuditLog('delete', 'kas', `Menghapus transaksi kas: ${ket || id}`, { id });
             window.showToast('Terhapus', 'Transaksi dihapus.', 'success');
         } catch(err) {
             window.showToast('Gagal', 'Terjadi kesalahan.', 'error');
@@ -1396,6 +1509,7 @@ window.simpanEditTransaksi = async (e) => {
             nominalOrganisasi,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        await addAuditLog('update', 'kas', `Memperbarui transaksi kas: ${getInputValue('edit-keterangan') || id}`, { id, jenis, sumberDana, nominal });
         window.closeEditModal();
         window.showToast('Sukses', 'Transaksi berhasil diperbarui.', 'success');
     } catch(err) {
@@ -1608,16 +1722,18 @@ window.simpanArsip = async (e) => {
             reader.onerror = error => reject(error);
         });
         
-        await db.collection("arsip_surat").add({ 
+        const payload = {
             jenis: document.getElementById('arsipJenis').value,
             tanggal: document.getElementById('arsipTanggal').value,
-            nomor: document.getElementById('arsipNomor').value,
-            pihak: document.getElementById('arsipPihak').value,
-            perihal: document.getElementById('arsipPerihal').value,
+            nomor: document.getElementById('arsipNomor').value.trim(),
+            pihak: document.getElementById('arsipPihak').value.trim(),
+            perihal: document.getElementById('arsipPerihal').value.trim(),
             fileData: fileData,
             fileType: file.type,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+        const docRef = await db.collection("arsip_surat").add(payload);
+        await addAuditLog('create', 'arsip', `Mengarsipkan ${payload.jenis}: ${payload.nomor || payload.perihal}`, { id: docRef.id, jenis: payload.jenis, nomor: payload.nomor });
         
         document.getElementById('formInputArsip').reset();
         window.showToast('Sukses', 'Dokumen Arsip berhasil di-upload ke Cloud.', 'success');
@@ -1630,6 +1746,7 @@ window.hapusArsip = (id) => {
     window.customConfirm(`Yakin ingin menghapus arsip dokumen ini selamanya?`, async () => {
         try {
             await db.collection("arsip_surat").doc(id).delete();
+            await addAuditLog('delete', 'arsip', `Menghapus arsip surat ${id}`, { id });
             window.showToast('Terhapus', 'Arsip surat dihapus.', 'success');
         } catch(err) {
             window.showToast('Gagal', 'Gagal menghapus arsip.', 'error');

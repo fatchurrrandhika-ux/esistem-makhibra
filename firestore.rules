@@ -1,0 +1,112 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function nonAnonymousUser() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function hasOnlyKeys(keys) {
+      return request.resource.data.keys().hasOnly(keys);
+    }
+
+    match /settings/{documentId} {
+      allow read: if signedIn();
+      allow create, update: if nonAnonymousUser();
+      allow delete: if false;
+    }
+
+    match /anggota_organisasi/{documentId} {
+      allow read: if signedIn();
+      allow create, update: if nonAnonymousUser()
+        && hasOnlyKeys([
+          'nim',
+          'nama',
+          'tempat_lahir',
+          'tgl_lahir',
+          'jk',
+          'alamat',
+          'prodi',
+          'email',
+          'wa',
+          'divisi',
+          'angkatan',
+          'foto',
+          'timestamp'
+        ]);
+      allow delete: if nonAnonymousUser();
+    }
+
+    match /kas_organisasi/{documentId} {
+      allow read: if nonAnonymousUser();
+      allow create: if nonAnonymousUser()
+        && hasOnlyKeys([
+          'tanggal',
+          'jenis',
+          'sumberDana',
+          'kategori',
+          'keterangan',
+          'nominal',
+          'nominalKampus',
+          'nominalOrganisasi',
+          'timestamp'
+        ]);
+      allow update: if nonAnonymousUser()
+        && request.resource.data.keys().hasOnly([
+          'tanggal',
+          'jenis',
+          'sumberDana',
+          'kategori',
+          'keterangan',
+          'nominal',
+          'nominalKampus',
+          'nominalOrganisasi',
+          'timestamp',
+          'updatedAt'
+        ]);
+      allow delete: if nonAnonymousUser();
+    }
+
+    match /arsip_surat/{documentId} {
+      allow read: if nonAnonymousUser();
+      allow create: if nonAnonymousUser()
+        && hasOnlyKeys([
+          'jenis',
+          'tanggal',
+          'nomor',
+          'pihak',
+          'perihal',
+          'fileData',
+          'fileType',
+          'timestamp'
+        ]);
+      allow update: if false;
+      allow delete: if nonAnonymousUser();
+    }
+
+    match /audit_logs/{documentId} {
+      allow read: if nonAnonymousUser();
+      allow create: if nonAnonymousUser()
+        && hasOnlyKeys([
+          'action',
+          'entity',
+          'label',
+          'details',
+          'actorUid',
+          'actorEmail',
+          'timestamp'
+        ])
+        && request.resource.data.actorUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

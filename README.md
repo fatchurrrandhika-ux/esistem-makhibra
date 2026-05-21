@@ -64,7 +64,26 @@ Aplikasi ini mendukung metadata PWA melalui `manifest.json` dengan fitur:
 - HTTPS wajib.
 - Meta robots noindex untuk halaman internal.
 - Security headers di `.htaccess`.
+- Firestore rules tersedia di `firestore.rules`.
 - **Catatan hardening CSP**: saat siap, migrasikan inline script/style ke nonce/hash agar `Content-Security-Policy` tidak perlu `unsafe-inline`.
+
+### Deploy Firestore Rules
+
+Via Firebase Console:
+
+1. Buka Firebase Console.
+2. Pilih project `kasku-85860`.
+3. Masuk ke Firestore Database > Rules.
+4. Salin isi `firestore.rules`.
+5. Klik Publish.
+
+Via Firebase CLI:
+
+```powershell
+firebase login
+firebase use kasku-85860
+firebase deploy --only firestore:rules
+```
 
 ## Dashboard Features
 

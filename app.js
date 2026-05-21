@@ -478,10 +478,6 @@ auth.onAuthStateChanged((user) => {
 
     if (user) {
         // === USER SUDAH LOGIN ===
-        if(!isEditMode && !user.isAnonymous) {
-            window.showToast("KONEKSI BERHASIL", `Menyinkronkan data dengan Cloud...`, "success");
-        }
-        
         // Sembunyikan halaman login dengan mulus
         if(loginView) { 
             if(document.getElementById('early-route-style')) {

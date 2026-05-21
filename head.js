@@ -64,6 +64,8 @@ window.tailwind.config = {
     };
 })();
 
+const initialHashView = window.location.hash && window.location.hash.startsWith('#view-') ? window.location.hash.slice(1) : '';
+
 if (window.location.search.includes('verify=') || window.location.search.includes('print=')) {
     const earlyStyle = document.createElement('style');
     earlyStyle.textContent = 'aside, header, main, #view-login, #loading-overlay { display: none !important; } body { background-color: #f1f5f9; }';
@@ -71,5 +73,10 @@ if (window.location.search.includes('verify=') || window.location.search.include
 } else if (window.location.search.includes('edit=')) {
     const earlyStyle = document.createElement('style');
     earlyStyle.textContent = '#view-dashboard, #view-login, #loading-overlay { display: none !important; }';
+    document.head.appendChild(earlyStyle);
+} else if (initialHashView && initialHashView !== 'view-login') {
+    const earlyStyle = document.createElement('style');
+    earlyStyle.id = 'early-route-style';
+    earlyStyle.textContent = '#view-login { display: none !important; } #loading-overlay { display: flex !important; }';
     document.head.appendChild(earlyStyle);
 }

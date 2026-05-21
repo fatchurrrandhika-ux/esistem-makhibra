@@ -160,6 +160,41 @@ const setText = (id, value) => {
     if(el) el.innerText = value;
 };
 
+const appViews = [
+    'view-dashboard',
+    'view-kelola-anggota',
+    'view-tambah-anggota',
+    'view-detail-anggota',
+    'view-catat-transaksi',
+    'view-catat-pengeluaran',
+    'view-riwayat-transaksi',
+    'view-lpj-kampus',
+    'view-arsip-surat',
+    'view-tambah-arsip',
+    'view-buat-surat',
+    'view-setting',
+    'view-webmaster'
+];
+
+const getRouteView = () => {
+    const hashView = window.location.hash ? window.location.hash.substring(1) : '';
+    if(hashView && appViews.includes(hashView) && document.getElementById(hashView)) return hashView;
+
+    const storedView = localStorage.getItem('eSistem:lastView');
+    if(storedView && appViews.includes(storedView) && document.getElementById(storedView)) return storedView;
+
+    return 'view-dashboard';
+};
+
+const rememberRouteView = (viewId) => {
+    if(appViews.includes(viewId)) localStorage.setItem('eSistem:lastView', viewId);
+};
+
+const clearEarlyRouteStyle = () => {
+    const earlyRouteStyle = document.getElementById('early-route-style');
+    if(earlyRouteStyle) earlyRouteStyle.remove();
+};
+
 function getFormattedJakartaTime(now) {
     const parts = appTimeFormatter.formatToParts(now).reduce((result, part) => {
         result[part.type] = part.value;
@@ -369,6 +404,7 @@ window.switchMenu = (element, viewId, isSubmenu = false, pushState = true) => {
     }
 
     window.updateTabTitle(viewId);
+    rememberRouteView(viewId);
 
     // Update URL Hash agar sistem "Back" browser berfungsi
     if (pushState && viewId !== 'view-login' && viewId !== 'view-public-verify') {
@@ -448,11 +484,16 @@ auth.onAuthStateChanged((user) => {
         
         // Sembunyikan halaman login dengan mulus
         if(loginView) { 
-            loginView.classList.replace('opacity-100', 'opacity-0'); 
-            setTimeout(() => { 
+            if(document.getElementById('early-route-style')) {
                 loginView.classList.add('hidden'); 
                 loginView.style.display = 'none'; 
-            }, 500); 
+            } else {
+                loginView.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => {
+                    loginView.classList.add('hidden');
+                    loginView.style.display = 'none';
+                }, 500);
+            }
         }
         
         // Mulai Tarik Data dari Firebase
@@ -468,10 +509,7 @@ auth.onAuthStateChanged((user) => {
             try { history.replaceState({ view: 'view-tambah-anggota' }, "", window.location.pathname + "#view-tambah-anggota"); } catch(e) {}
         } else if(!user.isAnonymous) {
             // Tentukan tampilan awal (Dashboard)
-            let initialView = 'view-dashboard';
-            if (window.location.hash && document.getElementById(window.location.hash.substring(1))) {
-                initialView = window.location.hash.substring(1);
-            }
+            let initialView = getRouteView();
 
             let menuEl = null; let isSub = false;
             document.querySelectorAll('.sidebar-menu').forEach(el => {
@@ -482,14 +520,24 @@ auth.onAuthStateChanged((user) => {
             });
 
             window.switchMenu(menuEl, initialView, isSub, false);
-            try { if (!history.state) history.replaceState({ view: initialView }, "", "#" + initialView); } catch(e) {}
+            try {
+                if (window.location.hash.substring(1) !== initialView) {
+                    history.replaceState({ view: initialView }, "", "#" + initialView);
+                } else if (!history.state) {
+                    history.replaceState({ view: initialView }, "", "#" + initialView);
+                }
+            } catch(e) {}
         }
+
+        clearEarlyRouteStyle();
 
     } else {
         // === USER BELUM LOGIN ATAU LOGOUT ===
         if(isEditMode) {
             if(loadingOverlay) { loadingOverlay.classList.add('hidden'); loadingOverlay.classList.remove('flex'); }
         } else {
+            clearEarlyRouteStyle();
+
             // Tampilkan halaman login kembali
             if(loginView) {
                 loginView.style.display = 'flex';
@@ -504,6 +552,7 @@ auth.onAuthStateChanged((user) => {
             if(unsubscribeAnggota) unsubscribeAnggota();
             if(unsubscribeWebmaster) unsubscribeWebmaster();
             if(unsubscribeArsip) unsubscribeArsip();
+            localStorage.removeItem('eSistem:lastView');
             
             // Sembunyikan konten lain
             document.querySelectorAll('.view-section').forEach(el => {

@@ -61,7 +61,7 @@ header {
 .widget-box { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-radius: 0.5rem; }
 
 /* Perbaikan Tampilan Warna Sidebar Menjadi Hitam Pekat */
-.sidebar, #sidebar, [id*="sidebar"], [class*="sidebar"] {
+#sidebar {
     background-color: #000000 !important;
 }
 

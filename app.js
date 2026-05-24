@@ -235,6 +235,84 @@ const updateCurrentRole = () => {
     applyRoleAccess();
 };
 
+const tableState = {
+    anggota: { page: 1, pageSize: 10, sortKey: 'nama', sortDir: 'asc' },
+    kas: { page: 1, pageSize: 10, sortKey: 'tanggal', sortDir: 'desc' },
+    arsip: { page: 1, pageSize: 10, sortKey: 'tanggal', sortDir: 'desc' }
+};
+
+const isMobileList = () => window.matchMedia && window.matchMedia('(max-width: 640px)').matches;
+
+const compareValues = (a, b, dir = 'asc') => {
+    const av = a === undefined || a === null ? '' : a;
+    const bv = b === undefined || b === null ? '' : b;
+    const result = typeof av === 'number' && typeof bv === 'number'
+        ? av - bv
+        : String(av).localeCompare(String(bv), 'id-ID', { numeric: true, sensitivity: 'base' });
+    return dir === 'desc' ? -result : result;
+};
+
+const sortRows = (rows, key, dir) => rows.slice().sort((a, b) => compareValues(a[key], b[key], dir));
+
+const paginateRows = (rows, state) => {
+    const totalPages = Math.max(1, Math.ceil(rows.length / state.pageSize));
+    if(state.page > totalPages) state.page = totalPages;
+    if(state.page < 1) state.page = 1;
+    const start = (state.page - 1) * state.pageSize;
+    return { rows: rows.slice(start, start + state.pageSize), totalPages, start };
+};
+
+const renderPagination = (id, tableName, count, totalPages) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const state = tableState[tableName];
+    el.innerHTML = `<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
+        <span>Halaman <b class="text-slate-700">${state.page}</b> dari <b class="text-slate-700">${totalPages}</b> - ${count} data</span>
+        <div class="flex items-center gap-2">
+            <button type="button" onclick="window.changeTablePage('${tableName}', -1)" class="px-3 py-1.5 rounded border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40" ${state.page <= 1 ? 'disabled' : ''}>Sebelumnya</button>
+            <button type="button" onclick="window.changeTablePage('${tableName}', 1)" class="px-3 py-1.5 rounded border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40" ${state.page >= totalPages ? 'disabled' : ''}>Berikutnya</button>
+        </div>
+    </div>`;
+};
+
+window.changeTablePage = (tableName, delta) => {
+    if(!tableState[tableName]) return;
+    tableState[tableName].page += delta;
+    if(tableName === 'anggota') window.renderTabelAnggota();
+    if(tableName === 'kas') window.renderTabelKas();
+    if(tableName === 'arsip') window.renderTabelArsip();
+};
+
+window.sortTable = (tableName, key) => {
+    const state = tableState[tableName];
+    if(!state) return;
+    state.sortDir = state.sortKey === key && state.sortDir === 'asc' ? 'desc' : 'asc';
+    state.sortKey = key;
+    state.page = 1;
+    if(tableName === 'anggota') window.renderTabelAnggota();
+    if(tableName === 'kas') window.renderTabelKas();
+    if(tableName === 'arsip') window.renderTabelArsip();
+};
+
+const emptyAction = (title, message, label, action, icon = 'ph-database') => `<div class="py-10 px-4 text-center">
+    <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 mx-auto flex items-center justify-center mb-3"><i class="ph-bold ${icon} text-2xl"></i></div>
+    <p class="font-black text-slate-700">${escapeHtml(title)}</p>
+    <p class="text-xs text-slate-500 mt-1 mb-4">${escapeHtml(message)}</p>
+    ${label && action ? `<button type="button" onclick="${action}" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors">${escapeHtml(label)}</button>` : ''}
+</div>`;
+
+function renderTableSkeleton(tbodyId, columns = 6, rows = 5) {
+    const tbody = document.getElementById(tbodyId);
+    if(!tbody || tbody.children.length) return;
+    tbody.innerHTML = Array.from({ length: rows }).map(() => `<tr>${Array.from({ length: columns }).map(() => '<td class="p-3"><span class="skeleton-line"></span></td>').join('')}</tr>`).join('');
+}
+
+function renderInitialSkeletons() {
+    renderTableSkeleton('tableAnggotaBody', 7, 6);
+    renderTableSkeleton('tableBody', 6, 6);
+    renderTableSkeleton('tabelBodyArsip', 6, 5);
+}
+
 const appViews = [
     'view-dashboard',
     'view-kelola-anggota',
@@ -419,6 +497,7 @@ function updateDashboardSummary() {
     setText('dash-arsip-terbaru', suratTerbaru ? (suratTerbaru.perihal || suratTerbaru.pihak || '-') : 'Belum ada arsip');
     setText('dash-total-arsip', arsip.length);
     setText('dash-lpj-count', lpjRows.length);
+    renderInternalNotifications({ anggota, arsip, kasBulanIni, lpjRows, keluarBulanIni });
 
     if(chartInstance) {
         const trend = getMonthlyTrend(kas);
@@ -428,6 +507,32 @@ function updateDashboardSummary() {
         chartInstance.update();
         window.updateDashboardChartState();
     }
+}
+
+function renderInternalNotifications({ anggota = [], arsip = [], kasBulanIni = [], lpjRows = [], keluarBulanIni = 0 } = {}) {
+    const target = document.getElementById('internalNotificationList');
+    if(!target) return;
+    const items = [];
+    const incompleteMembers = anggota.filter((row) => !row.email || !row.wa || !row.divisi || !row.angkatan);
+    const largeExpense = (window.cachedKasData || []).filter((row) => row.jenis === 'Pengeluaran' && Number(row.nominal || 0) >= 1000000).slice(-3);
+    if(incompleteMembers.length) items.push({ icon: 'ph-user-warning', title: 'Data anggota belum lengkap', body: `${incompleteMembers.length} anggota perlu dilengkapi email, WA, divisi, atau angkatan.`, color: 'amber' });
+    if(largeExpense.length) items.push({ icon: 'ph-warning-circle', title: 'Kas keluar besar', body: `${largeExpense.length} transaksi pengeluaran besar perlu ditinjau bendahara.`, color: 'rose' });
+    if(!lpjRows.length && keluarBulanIni > 0) items.push({ icon: 'ph-file-text', title: 'LPJ belum tersedia', body: 'Ada pengeluaran bulan ini, tetapi data LPJ kampus/campuran belum tercatat.', color: 'blue' });
+    if(arsip.length) items.push({ icon: 'ph-folder-plus', title: 'Arsip terbaru tersedia', body: `${arsip.length} dokumen tersimpan di E-Arsip.`, color: 'emerald' });
+    if(!items.length) {
+        target.innerHTML = '<div class="p-4 text-sm text-slate-400 text-center">Tidak ada notifikasi internal saat ini.</div>';
+        return;
+    }
+    const colorMap = {
+        amber: 'bg-amber-50 text-amber-700',
+        rose: 'bg-rose-50 text-rose-700',
+        blue: 'bg-blue-50 text-blue-700',
+        emerald: 'bg-emerald-50 text-emerald-700'
+    };
+    target.innerHTML = items.map((item) => `<div class="p-4 flex items-start gap-3 border-b border-slate-100 last:border-b-0">
+        <div class="w-9 h-9 rounded-lg ${colorMap[item.color] || colorMap.blue} flex items-center justify-center shrink-0"><i class="ph-bold ${item.icon} text-lg"></i></div>
+        <div><p class="text-sm font-black text-slate-800">${escapeHtml(item.title)}</p><p class="text-xs text-slate-500 mt-0.5">${escapeHtml(item.body)}</p></div>
+    </div>`).join('');
 }
 
 function getFormattedJakartaTime(now) {
@@ -537,6 +642,20 @@ window.closeConfirmModal = () => {
     if(!modal) return;
     modal.classList.add('opacity-0'); modal.children[0].classList.add('scale-95');
     setTimeout(() => { modal.classList.add('hidden'); }, 300);
+};
+
+window.customConfirmTyped = (msg, expectedText, callback) => {
+    const expected = String(expectedText || '').trim();
+    if(!expected) {
+        window.customConfirm(msg, callback);
+        return;
+    }
+    const typed = window.prompt(`${msg}\n\nKetik persis: ${expected}`);
+    if(typed === expected) {
+        callback();
+    } else if(typed !== null) {
+        window.showToast('Konfirmasi Tidak Cocok', 'Tindakan dibatalkan karena teks konfirmasi tidak sesuai.', 'error');
+    }
 };
 
 // ==========================================
@@ -704,15 +823,17 @@ auth.onAuthStateChanged((user) => {
     if(loadingOverlay) { loadingOverlay.classList.add('hidden'); loadingOverlay.classList.remove('flex'); }
 
     // Jika mode publik (Scan QR atau Print)
-    if (urlParams.get('verify') || urlParams.get('print')) {
+    if (urlParams.get('verify') || urlParams.get('verifyLetter') || urlParams.get('print')) {
         if(!user) {
             auth.signInAnonymously().catch(err => {
                 if(urlParams.get('verify')) window.renderPublicVerification(urlParams.get('verify'));
+                if(urlParams.get('verifyLetter')) window.renderPublicLetterVerification(urlParams.get('verifyLetter'));
                 if(urlParams.get('print')) window.renderPrintView(urlParams.get('print'), urlParams.get('id'));
             });
             return;
         }
         if(urlParams.get('verify')) window.renderPublicVerification(urlParams.get('verify'));
+        if(urlParams.get('verifyLetter')) window.renderPublicLetterVerification(urlParams.get('verifyLetter'));
         if(urlParams.get('print')) window.renderPrintView(urlParams.get('print'), urlParams.get('id'));
         return;
     }
@@ -1222,7 +1343,7 @@ window.hapusAnggota = (id) => {
     if(!requirePermission('delete_members', 'Role Anda tidak dapat menghapus anggota.')) return;
     const data = window.cachedAnggotaData[id];
     const nama = data ? data.nama : "anggota ini";
-    window.customConfirm(`TINDAKAN PERMANEN:\nYakin ingin menghapus seluruh biodata ${nama}?`, async () => {
+    window.customConfirmTyped(`TINDAKAN PERMANEN:\nYakin ingin menghapus seluruh biodata ${nama}?`, data ? (data.nim || nama) : nama, async () => {
         try {
             await db.collection("anggota_organisasi").doc(id).delete();
             await addAuditLog('delete', 'anggota', `Menghapus anggota ${nama}`, { id, nim: data ? data.nim : '' });
@@ -1265,7 +1386,7 @@ window.lihatDetailAnggota = (id) => {
         btnHapus.classList.toggle('hidden', !hasPermission('delete_members'));
         btnHapus.onclick = () => {
             if(!requirePermission('delete_members', 'Role Anda tidak dapat menghapus anggota.')) return;
-            window.customConfirm(`TINDAKAN PERMANEN:\nYakin ingin menghapus seluruh biodata ${data.nama}?`, async () => {
+            window.customConfirmTyped(`TINDAKAN PERMANEN:\nYakin ingin menghapus seluruh biodata ${data.nama}?`, data.nim || data.nama, async () => {
                 try {
                     await db.collection("anggota_organisasi").doc(id).delete();
                     await addAuditLog('delete', 'anggota', `Menghapus anggota ${data.nama || data.nim}`, { id, nim: data.nim || '' });
@@ -1347,18 +1468,19 @@ window.renderTabelAnggota = () => {
     const elKat = document.getElementById('filterKategori');
     const elVal = document.getElementById('filterNilai');
     const elCari = document.getElementById('pencarianTabel');
+    const elAngkatan = document.getElementById('filterAngkatanAnggota');
     
     const kat = elKat ? elKat.value : '';
     const val = elVal ? elVal.value : '';
     const search = elCari ? elCari.value.toLowerCase() : '';
+    const angkatanFilter = elAngkatan ? elAngkatan.value.trim() : '';
     
     let tbody = document.getElementById('tableAnggotaBody');
     let htmlTable = '';
-    let displayedCount = 0;
     let total = Object.keys(window.cachedAnggotaData).length;
 
     let dataArray = Object.keys(window.cachedAnggotaData).map(id => ({id, ...window.cachedAnggotaData[id]}));
-    dataArray.sort((a,b) => (a.nama || '').localeCompare(b.nama || ''));
+    let filteredRows = [];
 
     dataArray.forEach(r => {
         let passFilter = true;
@@ -1366,22 +1488,53 @@ window.renderTabelAnggota = () => {
         if(kat === 'divisi' && val && r.divisi !== val) passFilter = false;
         if(kat === 'jk' && val && r.jk !== val) passFilter = false;
         if(kat === 'angkatan' && val && String(r.angkatan) !== val) passFilter = false;
+        if(angkatanFilter && String(r.angkatan || '') !== angkatanFilter) passFilter = false;
 
         if(search) {
             let rowText = `${r.nim || ''} ${r.nama || ''} ${r.divisi || ''} ${r.angkatan || ''} ${r.alamat || ''}`.toLowerCase();
             if(!rowText.includes(search)) passFilter = false;
         }
 
-        if(passFilter) {
-            displayedCount++;
+        if(passFilter) filteredRows.push(r);
+    });
+
+    filteredRows = sortRows(filteredRows, tableState.anggota.sortKey, tableState.anggota.sortDir);
+    const page = paginateRows(filteredRows, tableState.anggota);
+
+    page.rows.forEach((r, index) => {
             const safeRNim = escapeHtml(r.nim || '-');
             const safeRName = escapeHtml(r.nama || '-');
             const safeRDivisi = escapeHtml(r.divisi || '-');
             const safeRAngkatan = escapeHtml(r.angkatan || '-');
             const safeRAlamat = escapeHtml(r.alamat || '-');
             const safeRId = JSON.stringify(String(r.id || ''));
+
+            if(isMobileList()) {
+                htmlTable += `<tr><td colspan="7" class="p-3 bg-slate-50">
+                    <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-black text-slate-800 uppercase">${safeRName}</p>
+                                <p class="text-xs text-blue-600 font-bold mt-0.5">${safeRNim}</p>
+                            </div>
+                            <span class="text-[10px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-1 rounded">${safeRAngkatan}</span>
+                        </div>
+                        <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
+                            <span>Divisi: <b class="text-slate-700">${safeRDivisi}</b></span>
+                            <span>Alamat: <b class="text-slate-700">${safeRAlamat}</b></span>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <button onclick="window.lihatDetailAnggota(${safeRId})" class="flex-1 bg-blue-50 text-blue-700 px-3 py-2 rounded font-bold text-xs">Detail</button>
+                            <button data-permission="manage_members" onclick="window.editAnggota(${safeRId})" class="flex-1 bg-emerald-50 text-emerald-700 px-3 py-2 rounded font-bold text-xs">Edit</button>
+                            <button data-permission="delete_members" onclick="window.hapusAnggota(${safeRId})" class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
+                        </div>
+                    </div>
+                </td></tr>`;
+                return;
+            }
+
             htmlTable += `<tr class="hover:bg-slate-50 transition-colors text-slate-700">
-                <td class="p-2.5 border-b border-slate-200">${displayedCount}</td>
+                <td class="p-2.5 border-b border-slate-200">${page.start + index + 1}</td>
                 <td class="p-2.5 border-b border-slate-200">${safeRNim}</td>
                 <td class="p-2.5 border-b border-slate-200 text-[#3c8dbc] uppercase font-bold cursor-pointer hover:underline" onclick="window.lihatDetailAnggota(${safeRId})" title="Klik untuk lihat E-Profil">${safeRName}</td>
                 <td class="p-2.5 border-b border-slate-200 uppercase">${safeRDivisi}</td>
@@ -1392,15 +1545,15 @@ window.renderTabelAnggota = () => {
                     <button data-permission="delete_members" onclick="window.hapusAnggota(${safeRId})" class="bg-[#dd4b39] hover:bg-red-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center transition-colors" title="Hapus"><i class="ph-bold ph-x"></i></button>
                 </td>
             </tr>`;
-        }
     });
 
-    if(tbody) tbody.innerHTML = displayedCount === 0 ? `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-medium">Tidak ada data yang sesuai dengan pencarian/filter.</td></tr>` : htmlTable;
+    if(tbody) tbody.innerHTML = filteredRows.length === 0 ? `<tr><td colspan="7">${emptyAction('Belum ada anggota sesuai filter', 'Ubah filter pencarian atau tambahkan data anggota baru.', 'Tambah Anggota', 'window.bukaFormTambah()', 'ph-user-plus')}</td></tr>` : htmlTable;
 
     const tabelInfo = document.getElementById('tableInfo');
-    if(tabelInfo) tabelInfo.innerText = `Menampilkan ${displayedCount > 0 ? 1 : 0} s/d ${displayedCount} dari ${total} Entri Data`;
+    if(tabelInfo) tabelInfo.innerText = `Menampilkan ${filteredRows.length ? page.start + 1 : 0} s/d ${Math.min(page.start + tableState.anggota.pageSize, filteredRows.length)} dari ${total} Entri Data`;
     const tabelJumlah = document.getElementById('tabel-jumlah');
-    if(tabelJumlah) tabelJumlah.innerText = displayedCount;
+    if(tabelJumlah) tabelJumlah.innerText = filteredRows.length;
+    renderPagination('paginationAnggota', 'anggota', filteredRows.length, page.totalPages);
     applyRoleAccess();
 };
 
@@ -1423,14 +1576,17 @@ window.updatePilihanFilter = () => {
             return `<option value="${safeValue}">${safeValue}</option>`;
         }).join('');
 
+    tableState.anggota.page = 1;
     window.renderTabelAnggota();
 };
 
 window.resetFilterTabel = () => {
     setInputValue('filterKategori', '');
+    setInputValue('filterAngkatanAnggota', '');
     const filterNilai = document.getElementById('filterNilai');
     if(filterNilai) filterNilai.innerHTML = '<option value="">- Pilih Kategori Terlebih Dahulu -</option>';
     setInputValue('pencarianTabel', '');
+    tableState.anggota.page = 1;
     window.renderTabelAnggota();
 };
 
@@ -1534,7 +1690,7 @@ window.simpanPengeluaran = async (e) => {
 
 window.hapusKas = (id, ket) => {
     if(!requirePermission('delete_finance', 'Role Anda tidak dapat menghapus transaksi kas.')) return;
-    window.customConfirm(`Tindakan Permanen:\nYakin hapus transaksi kas:\n"${ket}" ?`, async () => {
+    window.customConfirmTyped(`Tindakan Permanen:\nYakin hapus transaksi kas:\n"${ket}" ?`, ket || id, async () => {
         try {
             await db.collection("kas_organisasi").doc(id).delete();
             await addAuditLog('delete', 'kas', `Menghapus transaksi kas: ${ket || id}`, { id });
@@ -1615,28 +1771,67 @@ window.renderTabelKas = () => {
     const elBulan = document.getElementById('filterBulanKas');
     const elTahun = document.getElementById('filterTahunKas');
     const elCari = document.getElementById('cariKas');
+    const elMulai = document.getElementById('filterKasMulai');
+    const elSelesai = document.getElementById('filterKasSelesai');
+    const elSumber = document.getElementById('filterSumberKas');
     
     const fBulan = elBulan ? elBulan.value : '';
     const fTahun = elTahun ? elTahun.value : '';
     const cari = elCari ? elCari.value.toLowerCase() : '';
+    const fMulai = elMulai ? elMulai.value : '';
+    const fSelesai = elSelesai ? elSelesai.value : '';
+    const fSumber = elSumber ? elSumber.value : '';
     const tbody = document.getElementById('tableBody');
     
-    let htmlTable = ''; let count = 0;
+    let htmlTable = '';
+    let rows = [];
 
-    for (let i = window.cachedKasData.length - 1; i >= 0; i--) {
+    for (let i = 0; i < window.cachedKasData.length; i++) {
         const r = window.cachedKasData[i];
         const parts = (r.tanggal || '').split('-');
         if(fTahun && parts[0] !== fTahun) continue;
         if(fBulan && parts[1] !== fBulan) continue;
+        if(fMulai && String(r.tanggal || '') < fMulai) continue;
+        if(fSelesai && String(r.tanggal || '') > fSelesai) continue;
+        if(fSumber && r.sumberDana !== fSumber) continue;
         if(cari && !(r.keterangan || '').toLowerCase().includes(cari) && !(r.kategori || '').toLowerCase().includes(cari)) continue;
+        rows.push(r);
+    }
 
-        count++;
+    rows = sortRows(rows, tableState.kas.sortKey, tableState.kas.sortDir);
+    const page = paginateRows(rows, tableState.kas);
+
+    page.rows.forEach((r) => {
         const isMasuk = r.jenis === 'Pemasukan';
         const nom = Number(r.nominal);
         const safeRTanggal = escapeHtml(r.tanggal || '');
         const safeRKeterangan = escapeHtml(r.keterangan || '-');
         const safeRKategori = escapeHtml(r.kategori || '-');
+        const safeRSumber = escapeHtml(r.sumberDana || '-');
         const safeRId = JSON.stringify(String(r.id || ''));
+
+        if(isMobileList()) {
+            htmlTable += `<tr><td colspan="6" class="p-3 bg-slate-50">
+                <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-black text-slate-800">${safeRKeterangan}</p>
+                            <p class="text-xs text-slate-500 mt-0.5">${safeRTanggal} - ${safeRKategori}</p>
+                        </div>
+                        <span class="text-[10px] font-black uppercase px-2 py-1 rounded ${isMasuk ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">${escapeHtml(r.jenis || '-')}</span>
+                    </div>
+                    <div class="mt-3 flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Sumber: <b class="text-slate-700">${safeRSumber}</b></span>
+                        <span class="font-black ${isMasuk ? 'text-emerald-700' : 'text-rose-700'}">${formatRp(nom)}</span>
+                    </div>
+                    <div class="mt-4 flex gap-2">
+                        <button data-permission="manage_finance" onclick="window.bukaEditTransaksi(${safeRId})" class="flex-1 bg-amber-50 text-amber-700 px-3 py-2 rounded font-bold text-xs">Edit</button>
+                        <button data-permission="delete_finance" onclick="window.hapusKas(${safeRId}, ${JSON.stringify(r.keterangan || '')})" class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
+                    </div>
+                </div>
+            </td></tr>`;
+            return;
+        }
         
         htmlTable += `<tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
             <td class="px-4 py-3 text-slate-500 font-medium text-[11px] whitespace-nowrap">${safeRTanggal}</td>
@@ -1654,10 +1849,11 @@ window.renderTabelKas = () => {
                 </div>
             </td>
         </tr>`;
-    }
+    });
 
-    if(tbody) tbody.innerHTML = count === 0 ? '<tr><td colspan="6" class="text-center py-12 text-slate-400 font-medium">Data transaksi tidak ditemukan / kosong.</td></tr>' : htmlTable;
-    if(document.getElementById('infoTabelKas')) document.getElementById('infoTabelKas').innerText = `Menampilkan ${count} Transaksi`;
+    if(tbody) tbody.innerHTML = rows.length === 0 ? `<tr><td colspan="6">${emptyAction('Belum ada transaksi sesuai filter', 'Catat kas masuk atau ubah filter tanggal/sumber dana.', 'Catat Kas Masuk', "window.switchView('view-catat-transaksi')", 'ph-wallet')}</td></tr>` : htmlTable;
+    if(document.getElementById('infoTabelKas')) document.getElementById('infoTabelKas').innerText = `Menampilkan ${rows.length} Transaksi`;
+    renderPagination('paginationKas', 'kas', rows.length, page.totalPages);
     applyRoleAccess();
 };
 
@@ -1980,6 +2176,33 @@ window.generateLPJ = () => {
     openPrintableDocument('LPJ Dana Kampus', body);
 };
 
+const ROMAN_MONTHS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+const SURAT_TEMPLATE_CONFIG = {
+    tugas: { code: 'ST', perihal: 'Surat Tugas', isi: 'Dengan hormat,\n\nSehubungan dengan kebutuhan pelaksanaan kegiatan kelembagaan, kami menugaskan pengurus LPM MAKHIBRA untuk melaksanakan tugas yang telah ditetapkan oleh organisasi.\n\nDemikian surat tugas ini dibuat agar dapat digunakan sebagaimana mestinya.' },
+    undangan: { code: 'UND', perihal: 'Undangan Kegiatan', isi: 'Dengan hormat,\n\nSehubungan dengan akan dilaksanakannya kegiatan LPM MAKHIBRA, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan berpartisipasi dalam kegiatan tersebut.\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya, kami ucapkan terima kasih.' },
+    permohonan: { code: 'PRM', perihal: 'Permohonan', isi: 'Dengan hormat,\n\nMelalui surat ini, kami dari LPM MAKHIBRA bermaksud mengajukan permohonan dukungan/izin terkait kebutuhan kegiatan organisasi.\n\nDemikian permohonan ini kami sampaikan. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.' },
+    peminjaman: { code: 'PJM', perihal: 'Permohonan Peminjaman Tempat', isi: 'Dengan hormat,\n\nSehubungan dengan kegiatan yang akan diselenggarakan oleh LPM MAKHIBRA, kami bermaksud mengajukan permohonan peminjaman tempat untuk menunjang kelancaran kegiatan tersebut.\n\nDemikian surat permohonan ini kami sampaikan. Atas perhatian dan izinnya, kami ucapkan terima kasih.' },
+    lpj: { code: 'LPJ', perihal: 'Laporan Pertanggungjawaban Kegiatan', isi: 'Dengan hormat,\n\nBersama surat ini kami menyampaikan laporan pertanggungjawaban kegiatan LPM MAKHIBRA sebagai bentuk akuntabilitas pelaksanaan program kerja organisasi.\n\nDemikian laporan ini kami sampaikan. Atas perhatian dan kerja samanya, kami ucapkan terima kasih.' }
+};
+
+window.applySuratTemplate = () => {
+    const template = SURAT_TEMPLATE_CONFIG[getInputValue('gs-template')];
+    if(!template) return;
+    setInputValue('gs-perihal', template.perihal);
+    setInputValue('gs-isi', template.isi);
+    if(!getInputValue('gs-nomor')) window.generateNomorSurat();
+};
+
+window.generateNomorSurat = () => {
+    const template = SURAT_TEMPLATE_CONFIG[getInputValue('gs-template')] || SURAT_TEMPLATE_CONFIG.permohonan;
+    const dateRaw = getInputValue('gs-tanggal') || getJakartaDateInputValue();
+    const date = new Date(`${dateRaw}T00:00:00`);
+    const month = ROMAN_MONTHS[date.getMonth()] || ROMAN_MONTHS[new Date().getMonth()];
+    const year = date.getFullYear();
+    const monthlyDocs = Object.values(window.cachedArsipData || {}).filter((row) => String(row.tanggal || '').slice(0, 7) === dateRaw.slice(0, 7));
+    setInputValue('gs-nomor', `${String(monthlyDocs.length + 1).padStart(3, '0')}/${template.code}/LPM-MAKHIBRA/${month}/${year}`);
+};
+
 window.generateSuratOtomatis = async (e) => {
     e.preventDefault();
     const readFile = async (id) => {
@@ -1991,12 +2214,15 @@ window.generateSuratOtomatis = async (e) => {
     const paragraphs = escapeHtml(getInputValue('gs-isi')).split('\n').filter(Boolean).map((p) => `<p>${p}</p>`).join('');
     const sign = (jabatan, nama, img) => `<div><p>${escapeHtml(jabatan || '')}</p>${img ? `<img src="${img}" style="height:64px;object-fit:contain">` : '<div style="height:64px"></div>'}<p class="name">${escapeHtml(nama || '')}</p></div>`;
 
+    const verificationUrl = `${window.location.origin}${window.location.pathname}?verifyLetter=${encodeURIComponent(getInputValue('gs-nomor'))}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent(verificationUrl)}`;
     const body = `<div class="kop">${window.appConfig.kopImg ? `<img src="${safeUrl(window.appConfig.kopImg)}">` : '<h2>LPM MAKHIBRA</h2>'}</div>
         <p>Nomor: ${escapeHtml(getInputValue('gs-nomor'))}<br>Lampiran: ${escapeHtml(getInputValue('gs-lampiran') || '-')}<br>Perihal: <strong>${escapeHtml(getInputValue('gs-perihal'))}</strong></p>
         <p>Kepada Yth.<br>${escapeHtml(getInputValue('gs-tujuan'))}<br>di ${escapeHtml(getInputValue('gs-alamat'))}</p>
         ${paragraphs}
         <p class="right">${escapeHtml(getInputValue('gs-tempat'))}, ${escapeHtml(getInputValue('gs-tanggal'))}</p>
-        <div class="ttd">${sign(getInputValue('gs-jabatan-1'), getInputValue('gs-nama-1'), ttd1)}${sign(getInputValue('gs-jabatan-2'), getInputValue('gs-nama-2'), ttd2)}${sign(getInputValue('gs-jabatan-3'), getInputValue('gs-nama-3'), ttd3 || stempel)}</div>`;
+        <div class="ttd">${sign(getInputValue('gs-jabatan-1'), getInputValue('gs-nama-1'), ttd1)}${sign(getInputValue('gs-jabatan-2'), getInputValue('gs-nama-2'), ttd2)}${sign(getInputValue('gs-jabatan-3'), getInputValue('gs-nama-3'), ttd3 || stempel)}</div>
+        <div style="margin-top:24px;font-size:10px;color:#475569;display:flex;align-items:center;gap:10px"><img src="${qrUrl}" style="width:72px;height:72px"><span>QR verifikasi dokumen: ${escapeHtml(getInputValue('gs-nomor'))}<br>${escapeHtml(verificationUrl)}</span></div>`;
     openPrintableDocument('Surat Otomatis', body);
 };
 
@@ -2034,6 +2260,26 @@ window.renderPublicVerification = async (id) => {
     } catch(err) {
         content.innerHTML = '<p class="text-center text-rose-600 font-bold">Data anggota tidak ditemukan.</p>';
     }
+};
+
+window.renderPublicLetterVerification = (nomor) => {
+    const view = document.getElementById('view-public-verify');
+    const content = document.getElementById('public-verify-content');
+    if(view) {
+        view.classList.remove('hidden');
+        view.classList.add('flex');
+    }
+    if(!content) return;
+    content.innerHTML = `<div class="text-center">
+        <div class="w-20 h-20 rounded-2xl bg-emerald-50 text-emerald-700 mx-auto flex items-center justify-center mb-4"><i class="ph-fill ph-shield-check text-4xl"></i></div>
+        <h3 class="text-xl font-black text-slate-800">Dokumen Terverifikasi</h3>
+        <p class="text-sm text-slate-500 mt-2">Nomor surat ini dibuat melalui generator e-Sistem LPM MAKHIBRA.</p>
+        <div class="mt-5 text-left text-sm bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p><strong>Nomor:</strong> ${escapeHtml(nomor || '-')}</p>
+            <p><strong>Status:</strong> Valid secara format sistem</p>
+            <p><strong>Waktu Cek:</strong> ${escapeHtml(appDateFormatter.format(new Date()))} ${escapeHtml(getFormattedJakartaTime(new Date()))} WIB</p>
+        </div>
+    </div>`;
 };
 
 window.renderPrintView = async (type, id) => {
@@ -2122,7 +2368,7 @@ window.simpanArsip = async (e) => {
 
 window.hapusArsip = (id) => {
     if(!requirePermission('delete_archive', 'Role Anda tidak dapat menghapus arsip.')) return;
-    window.customConfirm(`Yakin ingin menghapus arsip dokumen ini selamanya?`, async () => {
+    window.customConfirmTyped(`Yakin ingin menghapus arsip dokumen ini selamanya?`, id, async () => {
         try {
             await db.collection("arsip_surat").doc(id).delete();
             await addAuditLog('delete', 'arsip', `Menghapus arsip surat ${id}`, { id });
@@ -2146,23 +2392,33 @@ function sinkronArsipRealtime() {
 window.renderTabelArsip = () => {
     const elJenis = document.getElementById('filterJenisArsip');
     const elCari = document.getElementById('cariArsip');
+    const elMulai = document.getElementById('filterArsipMulai');
+    const elSelesai = document.getElementById('filterArsipSelesai');
     
     const filterJenis = elJenis ? elJenis.value : '';
     const search = elCari ? elCari.value.toLowerCase() : '';
+    const fMulai = elMulai ? elMulai.value : '';
+    const fSelesai = elSelesai ? elSelesai.value : '';
     const tbody = document.getElementById('tabelBodyArsip');
     if(!tbody) return;
 
-    let htmlTable = ''; let count = 0;
+    let htmlTable = '';
+    let rows = [];
     let dataArray = Object.keys(window.cachedArsipData).map(id => ({id, ...window.cachedArsipData[id]}));
-    dataArray.sort((a,b) => new Date(b.tanggal || 0) - new Date(a.tanggal || 0));
 
     dataArray.forEach(r => {
         let pass = true;
         if(filterJenis && r.jenis !== filterJenis) pass = false;
+        if(fMulai && String(r.tanggal || '') < fMulai) pass = false;
+        if(fSelesai && String(r.tanggal || '') > fSelesai) pass = false;
         if(search && !`${r.nomor || ''} ${r.perihal || ''} ${r.pihak || ''}`.toLowerCase().includes(search)) pass = false;
+        if(pass) rows.push(r);
+    });
 
-        if(pass) {
-            count++;
+    rows = sortRows(rows, tableState.arsip.sortKey, tableState.arsip.sortDir);
+    const page = paginateRows(rows, tableState.arsip);
+
+    page.rows.forEach((r, index) => {
             const badgeColor = r.jenis === 'Surat Masuk' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700';
             const iconColor = r.jenis === 'Surat Masuk' ? 'ph-download-simple' : 'ph-upload-simple';
             
@@ -2172,8 +2428,28 @@ window.renderTabelArsip = () => {
             const safeRPihak = escapeHtml(r.pihak || '');
             const safeRPerihal = escapeHtml(r.perihal || '');
             const safeRId = JSON.stringify(String(r.id || ''));
+
+            if(isMobileList()) {
+                htmlTable += `<tr><td colspan="6" class="p-3 bg-slate-50">
+                    <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-black text-slate-800">${safeRNomor}</p>
+                                <p class="text-xs text-slate-500 mt-0.5">${safeRTanggal} - ${safeRPihak}</p>
+                            </div>
+                            <span class="px-2 py-1 rounded text-[10px] font-black ${badgeColor} uppercase">${safeRJenis}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-3">${safeRPerihal}</p>
+                        <div class="mt-4 flex gap-2">
+                            <button data-permission="delete_archive" onclick="window.hapusArsip(${safeRId})" class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
+                        </div>
+                    </div>
+                </td></tr>`;
+                return;
+            }
+
             htmlTable += `<tr class="hover:bg-slate-50 border-b border-slate-100">
-                <td class="px-5 py-4 text-slate-500">${count}</td>
+                <td class="px-5 py-4 text-slate-500">${page.start + index + 1}</td>
                 <td class="px-5 py-4"><span class="px-2.5 py-1 rounded text-[11px] font-bold ${badgeColor} uppercase tracking-wider flex items-center gap-1 w-max"><i class="ph-bold ${iconColor}"></i> ${safeRJenis}</span></td>
                 <td class="px-5 py-4">
                     <p class="font-bold text-slate-800">${safeRNomor}</p>
@@ -2187,10 +2463,10 @@ window.renderTabelArsip = () => {
                     </div>
                 </td>
             </tr>`;
-        }
     });
 
-    tbody.innerHTML = count === 0 ? `<tr><td colspan="6" class="text-center py-10 text-slate-400 font-medium">Arsip surat tidak ditemukan.</td></tr>` : htmlTable;
+    tbody.innerHTML = rows.length === 0 ? `<tr><td colspan="6">${emptyAction('Belum ada arsip sesuai filter', 'Arsipkan surat masuk/keluar atau ubah filter pencarian.', 'Arsipkan Surat', "window.switchView('view-tambah-arsip')", 'ph-folders')}</td></tr>` : htmlTable;
+    renderPagination('paginationArsip', 'arsip', rows.length, page.totalPages);
     applyRoleAccess();
 };
 
@@ -2254,6 +2530,11 @@ onReady(() => {
     
     startClock();
     initCharts();
+    renderInitialSkeletons();
+
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js').catch((err) => console.warn('Service worker gagal didaftarkan:', err));
+    }
 });
 
 document.addEventListener('visibilitychange', () => {

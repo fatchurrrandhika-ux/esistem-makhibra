@@ -515,6 +515,19 @@
                         </div>
                     </div>
 
+                    <div class="bg-white border border-slate-200 shadow-sm rounded-md overflow-hidden">
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                            <div>
+                                <h3 class="text-[16px] font-semibold text-slate-800">Notifikasi Internal</h3>
+                                <p class="text-xs text-slate-500 mt-1">Pengingat otomatis dari data anggota, kas, arsip, dan LPJ.</p>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded">Smart Alert</span>
+                        </div>
+                        <div id="internalNotificationList">
+                            <div class="p-4 text-sm text-slate-400 text-center">Menunggu sinkronisasi data...</div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
                         <div class="lg:col-span-2 bg-white border border-slate-200 shadow-sm rounded-md flex flex-col">
                             <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
@@ -718,6 +731,7 @@
                         <select id="filterNilai" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-auto bg-white flex-1 md:flex-none md:min-w-[200px]">
                             <option value="">- Pilih Kategori Terlebih Dahulu -</option>
                         </select>
+                        <input type="text" id="filterAngkatanAnggota" onkeyup="window.renderTabelAnggota()" placeholder="Angkatan" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-[120px] bg-white">
                         <div class="flex gap-2 w-full md:w-auto">
                             <button onclick="window.renderTabelAnggota()" class="bg-[#3c8dbc] hover:bg-[#367fa9] text-white px-4 py-1.5 font-bold shadow-sm transition-colors flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-magnifying-glass"></i> CARI</button>
                             <button onclick="window.resetFilterTabel()" class="bg-[#dd4b39] hover:bg-red-700 text-white px-4 py-1.5 font-bold shadow-sm transition-colors flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-arrows-clockwise"></i> RESET</button>
@@ -756,11 +770,11 @@
                                     <thead class="bg-slate-50">
                                         <tr>
                                             <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">No <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">NIM <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Nama Lengkap <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Divisi <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Angkatan <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Alamat <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th onclick="window.sortTable('anggota','nim')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">NIM <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th onclick="window.sortTable('anggota','nama')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Nama Lengkap <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th onclick="window.sortTable('anggota','divisi')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Divisi <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th onclick="window.sortTable('anggota','angkatan')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Angkatan <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th onclick="window.sortTable('anggota','alamat')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Alamat <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
                                             <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 text-center cursor-pointer hover:bg-slate-100 group">Aksi <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
                                         </tr>
                                     </thead>
@@ -771,11 +785,7 @@
 
                             <div class="flex flex-col md:flex-row justify-between items-center mt-4 text-[13px] text-slate-600 gap-3">
                                 <div id="tableInfo">Menampilkan 0 s/d 0 dari 0 Entri Data</div>
-                                <div class="flex border border-slate-300 rounded-sm overflow-hidden shadow-sm">
-                                    <button class="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border-r border-slate-300 transition-colors">Sebelumnya</button>
-                                    <button class="px-3.5 py-1.5 bg-[#3c8dbc] text-white font-bold border-r border-[#367fa9]">1</button>
-                                    <button class="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 transition-colors">Selanjutnya</button>
-                                </div>
+                                <div id="paginationAnggota" class="w-full md:w-auto"></div>
                             </div>
                         </div>
                     </div>
@@ -992,8 +1002,8 @@
                             <button onclick="window.downloadCSVData('Buku_Kas')" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors w-full sm:w-auto flex items-center justify-center gap-2"><i class="ph-bold ph-download-simple text-lg"></i> Download Excel</button>
                         </div>
                         
-                        <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-3 text-[13px]">
-                            <div class="flex gap-2 w-full md:w-auto">
+                        <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col xl:flex-row justify-between items-center gap-3 text-[13px]">
+                            <div class="flex flex-col sm:flex-row gap-2 w-full xl:w-auto">
                                 <select id="filterBulanKas" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:outline-none focus:border-blue-500 rounded w-full md:w-auto bg-white font-medium">
                                     <option value="">Semua Bulan</option>
                                     <option value="01">Januari</option>
@@ -1017,8 +1027,16 @@
                                     <option value="2027">2027</option>
                                     <option value="2028">2028</option>
                                 </select>
+                                <select id="filterSumberKas" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:outline-none focus:border-blue-500 rounded w-full md:w-auto bg-white font-medium">
+                                    <option value="">Semua Sumber</option>
+                                    <option value="organisasi">Organisasi</option>
+                                    <option value="kampus">Kampus</option>
+                                    <option value="campuran">Campuran</option>
+                                </select>
                             </div>
-                            <div class="flex items-center gap-2 w-full md:w-auto">
+                            <div class="flex flex-col sm:flex-row items-center gap-2 w-full xl:w-auto">
+                                <input type="date" id="filterKasMulai" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full sm:w-auto bg-white">
+                                <input type="date" id="filterKasSelesai" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full sm:w-auto bg-white">
                                 <input type="text" id="cariKas" onkeyup="window.renderTabelKas()" placeholder="Cari keterangan..." class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full md:w-[250px] bg-white">
                             </div>
                         </div>
@@ -1027,19 +1045,20 @@
                             <table class="min-w-full text-sm">
                                 <thead class="bg-slate-200/70 sticky top-0 border-b border-slate-300 shadow-sm z-10">
                                     <tr>
-                                        <th class="px-4 py-3 text-left font-bold text-slate-700 uppercase text-xs w-24">Tanggal</th>
-                                        <th class="px-4 py-3 text-left font-bold text-slate-700 uppercase text-xs">Keterangan</th>
-                                        <th class="px-4 py-3 text-right font-bold text-emerald-700 uppercase text-xs">Masuk (Rp)</th>
-                                        <th class="px-4 py-3 text-right font-bold text-rose-700 uppercase text-xs">Keluar (Rp)</th>
-                                        <th class="px-4 py-3 text-right font-black text-slate-800 uppercase text-xs">Saldo (Rp)</th>
+                                        <th onclick="window.sortTable('kas','tanggal')" class="px-4 py-3 text-left font-bold text-slate-700 uppercase text-xs w-24 cursor-pointer">Tanggal</th>
+                                        <th onclick="window.sortTable('kas','keterangan')" class="px-4 py-3 text-left font-bold text-slate-700 uppercase text-xs cursor-pointer">Keterangan</th>
+                                        <th onclick="window.sortTable('kas','nominal')" class="px-4 py-3 text-right font-bold text-emerald-700 uppercase text-xs cursor-pointer">Masuk (Rp)</th>
+                                        <th onclick="window.sortTable('kas','nominal')" class="px-4 py-3 text-right font-bold text-rose-700 uppercase text-xs cursor-pointer">Keluar (Rp)</th>
+                                        <th onclick="window.sortTable('kas','saldoCalc')" class="px-4 py-3 text-right font-black text-slate-800 uppercase text-xs cursor-pointer">Saldo (Rp)</th>
                                         <th class="px-4 py-3 text-center font-bold text-slate-700 uppercase text-xs w-20">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableBody" class="divide-y divide-slate-100 bg-white"></tbody>
                             </table>
                         </div>
-                        <div class="p-3 bg-white text-right text-[11px] text-slate-500 font-bold uppercase tracking-wider" id="infoTabelKas">
-                            Menampilkan 0 Transaksi
+                        <div class="p-3 bg-white text-[11px] text-slate-500 font-bold uppercase tracking-wider flex flex-col sm:flex-row justify-between gap-3">
+                            <div id="infoTabelKas">Menampilkan 0 Transaksi</div>
+                            <div id="paginationKas"></div>
                         </div>
                     </div>
                 </div>
@@ -1107,13 +1126,15 @@
                     </div>
 
                     <div class="widget-box bg-white overflow-hidden border border-slate-200">
-                        <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                            <div class="flex gap-2 w-full sm:w-auto">
+                        <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col lg:flex-row justify-between items-center gap-4">
+                            <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
                                 <select id="filterJenisArsip" onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
                                     <option value="">Semua Jenis Surat</option>
                                     <option value="Surat Masuk">Surat Masuk</option>
                                     <option value="Surat Keluar">Surat Keluar</option>
                                 </select>
+                                <input type="date" id="filterArsipMulai" onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
+                                <input type="date" id="filterArsipSelesai" onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
                             </div>
                             <input type="text" id="cariArsip" onkeyup="window.renderTabelArsip()" placeholder="Cari perihal / nomor surat..." class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-[250px]">
                         </div>
@@ -1122,16 +1143,17 @@
                                 <thead class="bg-slate-100 border-b border-slate-200">
                                     <tr>
                                         <th class="px-5 py-3 font-bold text-slate-600 w-10">No</th>
-                                        <th class="px-5 py-3 font-bold text-slate-600">Jenis</th>
-                                        <th class="px-5 py-3 font-bold text-slate-600">No. Surat & Tanggal</th>
-                                        <th class="px-5 py-3 font-bold text-slate-600">Asal / Tujuan</th>
-                                        <th class="px-5 py-3 font-bold text-slate-600">Perihal</th>
+                                        <th onclick="window.sortTable('arsip','jenis')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Jenis</th>
+                                        <th onclick="window.sortTable('arsip','tanggal')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">No. Surat & Tanggal</th>
+                                        <th onclick="window.sortTable('arsip','pihak')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Asal / Tujuan</th>
+                                        <th onclick="window.sortTable('arsip','perihal')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Perihal</th>
                                         <th class="px-5 py-3 font-bold text-slate-600 text-center">Dokumen</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabelBodyArsip" class="divide-y divide-slate-100"></tbody>
                             </table>
                         </div>
+                        <div id="paginationArsip" class="p-3 bg-white"></div>
                     </div>
                 </div>
 
@@ -1180,6 +1202,21 @@
                     <div class="widget-box bg-white overflow-hidden border border-slate-200 max-w-5xl mx-auto">
                         <form id="formGenerateSurat" onsubmit="window.generateSuratOtomatis(event)" class="p-6 sm:p-8 bg-slate-50">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                                <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-end bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-emerald-800 mb-1.5 uppercase">Template Surat</label>
+                                        <select id="gs-template" onchange="window.applySuratTemplate()" class="w-full px-4 py-2.5 border border-emerald-200 rounded-lg text-sm outline-none focus:border-emerald-600 bg-white">
+                                            <option value="">Pilih Template</option>
+                                            <option value="tugas">Surat Tugas</option>
+                                            <option value="undangan">Undangan</option>
+                                            <option value="permohonan">Permohonan</option>
+                                            <option value="peminjaman">Peminjaman Tempat</option>
+                                            <option value="lpj">LPJ Kegiatan</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" onclick="window.generateNomorSurat()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2"><i class="ph-bold ph-hash"></i> NOMOR OTOMATIS</button>
+                                    <button type="button" onclick="window.applySuratTemplate()" class="bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-4 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2"><i class="ph-bold ph-magic-wand"></i> TERAPKAN</button>
+                                </div>
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nomor Surat</label><input type="text" id="gs-nomor" required placeholder="Contoh: 015/LPM/C/V/2026" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-emerald-600"></div>
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Lampiran (Opsional)</label><input type="text" id="gs-lampiran" placeholder="Contoh: 1 (Satu) Berkas / -" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-emerald-600"></div>
                                 <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Perihal / Hal</label><input type="text" id="gs-perihal" required placeholder="Contoh: Permohonan Peminjaman Ruangan" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-emerald-600 font-bold"></div>

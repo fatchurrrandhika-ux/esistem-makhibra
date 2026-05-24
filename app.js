@@ -52,7 +52,29 @@ window.cachedArsipData = {};
 window.cachedKasData = [];
 window.cachedAnggotaData = {};
 window.cachedAuditLogs = [];
-window.appConfig = { kopImg: "", footerImg: "", footerCetak: "", pimpinanNama: "", ttdImg: "", nomorSurat: "" };
+window.currentUserRole = 'viewer';
+window.currentUserRoleLabel = 'Viewer';
+window.appConfig = { kopImg: "", footerImg: "", footerCetak: "", pimpinanNama: "", ttdImg: "", nomorSurat: "", roles: {} };
+
+const ROLE_LABELS = {
+    webmaster: 'Webmaster',
+    ketua: 'Ketua / Sekretaris',
+    sekretaris: 'Ketua / Sekretaris',
+    bendahara: 'Bendahara',
+    admin_divisi: 'Admin Divisi',
+    viewer: 'Viewer'
+};
+
+const ROLE_PERMISSIONS = {
+    webmaster: ['manage_settings', 'manage_roles', 'manage_members', 'delete_members', 'manage_finance', 'delete_finance', 'manage_archive', 'delete_archive', 'backup_restore', 'view_reports'],
+    ketua: ['manage_members', 'manage_archive', 'delete_archive', 'view_reports', 'backup_export'],
+    sekretaris: ['manage_members', 'manage_archive', 'delete_archive', 'view_reports', 'backup_export'],
+    bendahara: ['manage_finance', 'delete_finance', 'view_reports', 'backup_export'],
+    admin_divisi: ['manage_members', 'manage_archive', 'view_reports'],
+    viewer: ['view_reports']
+};
+
+const SAFE_ARCHIVE_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
 
 // ==========================================
 // 3. FUNGSI UTILITIES (ALAT BANTU)
@@ -162,6 +184,57 @@ const setText = (id, value) => {
     if(el) el.innerText = value;
 };
 
+const parseCurrencyNumber = (value) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : NaN;
+};
+
+const isValidDateInput = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
+
+const getRoleLabel = (role) => ROLE_LABELS[role] || ROLE_LABELS.viewer;
+
+const hasPermission = (permission) => {
+    const permissions = ROLE_PERMISSIONS[window.currentUserRole] || ROLE_PERMISSIONS.viewer;
+    return permissions.includes(permission);
+};
+
+const requirePermission = (permission, message = 'Akses Anda tidak diizinkan untuk tindakan ini.') => {
+    if(hasPermission(permission)) return true;
+    window.showToast('Akses Ditolak', message, 'error');
+    return false;
+};
+
+const setActionVisibility = (selector, allowed) => {
+    document.querySelectorAll(selector).forEach((el) => {
+        el.classList.toggle('hidden', !allowed);
+        if('disabled' in el) el.disabled = !allowed;
+    });
+};
+
+function applyRoleAccess() {
+    setText('currentUserRoleLabel', window.currentUserRoleLabel || getRoleLabel(window.currentUserRole));
+    setActionVisibility('[data-permission="manage_members"]', hasPermission('manage_members'));
+    setActionVisibility('[data-permission="delete_members"]', hasPermission('delete_members'));
+    setActionVisibility('[data-permission="manage_finance"]', hasPermission('manage_finance'));
+    setActionVisibility('[data-permission="delete_finance"]', hasPermission('delete_finance'));
+    setActionVisibility('[data-permission="manage_archive"]', hasPermission('manage_archive'));
+    setActionVisibility('[data-permission="delete_archive"]', hasPermission('delete_archive'));
+    setActionVisibility('[data-permission="manage_settings"]', hasPermission('manage_settings'));
+    setActionVisibility('[data-permission="manage_roles"]', hasPermission('manage_roles'));
+    setActionVisibility('[data-permission="backup_restore"]', hasPermission('backup_restore'));
+    setActionVisibility('[data-permission="backup_export"]', hasPermission('backup_restore') || hasPermission('backup_export'));
+}
+
+const updateCurrentRole = () => {
+    const user = auth.currentUser;
+    const roles = window.appConfig.roles || {};
+    const roleCount = Object.keys(roles).length;
+    const role = user && roles[user.uid] ? roles[user.uid] : (roleCount === 0 ? 'webmaster' : 'viewer');
+    window.currentUserRole = ROLE_PERMISSIONS[role] ? role : 'viewer';
+    window.currentUserRoleLabel = getRoleLabel(window.currentUserRole);
+    applyRoleAccess();
+};
+
 const appViews = [
     'view-dashboard',
     'view-kelola-anggota',
@@ -177,6 +250,16 @@ const appViews = [
     'view-setting',
     'view-webmaster'
 ];
+
+const VIEW_PERMISSIONS = {
+    'view-tambah-anggota': 'manage_members',
+    'view-catat-transaksi': 'manage_finance',
+    'view-catat-pengeluaran': 'manage_finance',
+    'view-tambah-arsip': 'manage_archive',
+    'view-buat-surat': 'manage_archive',
+    'view-setting': 'backup_export',
+    'view-webmaster': 'manage_settings'
+};
 
 const getRouteView = () => {
     const hashView = window.location.hash ? window.location.hash.substring(1) : '';
@@ -282,6 +365,69 @@ function sinkronAuditRealtime() {
             console.warn('Audit log tidak dapat disinkronkan:', error);
             renderAuditLog();
         });
+}
+
+function getRecentArchive() {
+    const rows = Object.entries(window.cachedArsipData || {}).map(([id, row]) => ({ id, ...row }));
+    rows.sort((a, b) => new Date(b.tanggal || 0) - new Date(a.tanggal || 0));
+    return rows[0] || null;
+}
+
+function getMonthlyTrend(rows = window.cachedKasData || []) {
+    const now = new Date();
+    const months = [];
+    for(let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        months.push({
+            key,
+            label: date.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' }),
+            masuk: 0,
+            keluar: 0
+        });
+    }
+
+    rows.forEach((row) => {
+        const key = String(row.tanggal || '').slice(0, 7);
+        const target = months.find((month) => month.key === key);
+        if(!target) return;
+        if(row.jenis === 'Pemasukan') target.masuk += Number(row.nominal || 0);
+        if(row.jenis === 'Pengeluaran') target.keluar += Number(row.nominal || 0);
+    });
+
+    return months;
+}
+
+function updateDashboardSummary() {
+    const anggota = Object.values(window.cachedAnggotaData || {});
+    const arsip = Object.values(window.cachedArsipData || {});
+    const kas = window.cachedKasData || [];
+    const currentMonth = getJakartaDateInputValue().slice(0, 7);
+    const kasBulanIni = kas.filter((row) => String(row.tanggal || '').startsWith(currentMonth));
+    const masukBulanIni = kasBulanIni.filter((row) => row.jenis === 'Pemasukan').reduce((sum, row) => sum + Number(row.nominal || 0), 0);
+    const keluarBulanIni = kasBulanIni.filter((row) => row.jenis === 'Pengeluaran').reduce((sum, row) => sum + Number(row.nominal || 0), 0);
+    const suratTerbaru = getRecentArchive();
+    const lpjRows = kas.filter((row) => row.sumberDana === 'kampus' || row.sumberDana === 'campuran');
+    const deadline = new Date();
+    deadline.setDate(10);
+    if(new Date().getDate() > 10) deadline.setMonth(deadline.getMonth() + 1);
+
+    setText('dash-anggota-aktif', anggota.length);
+    setText('dash-kas-bulan-ini', formatRp(masukBulanIni - keluarBulanIni));
+    setText('dash-surat-terbaru', suratTerbaru ? `${suratTerbaru.jenis || 'Surat'} - ${suratTerbaru.nomor || suratTerbaru.perihal || '-'}` : 'Belum ada surat');
+    setText('dash-deadline-lpj', appDateFormatter.format(deadline));
+    setText('dash-arsip-terbaru', suratTerbaru ? (suratTerbaru.perihal || suratTerbaru.pihak || '-') : 'Belum ada arsip');
+    setText('dash-total-arsip', arsip.length);
+    setText('dash-lpj-count', lpjRows.length);
+
+    if(chartInstance) {
+        const trend = getMonthlyTrend(kas);
+        chartInstance.data.labels = trend.map((item) => item.label);
+        chartInstance.data.datasets[0].data = trend.map((item) => item.masuk);
+        chartInstance.data.datasets[1].data = trend.map((item) => item.keluar);
+        chartInstance.update();
+        window.updateDashboardChartState();
+    }
 }
 
 function getFormattedJakartaTime(now) {
@@ -455,6 +601,14 @@ window.updateTabTitle = (viewId) => {
 };
 
 window.switchMenu = (element, viewId, isSubmenu = false, pushState = true) => {
+    const requiredPermission = VIEW_PERMISSIONS[viewId];
+    if(requiredPermission && !hasPermission(requiredPermission) && !(requiredPermission === 'backup_export' && hasPermission('backup_restore'))) {
+        window.showToast('Akses Ditolak', 'Role Anda tidak memiliki akses ke fitur ini.', 'error');
+        viewId = 'view-dashboard';
+        element = document.querySelector('.sidebar-menu[onclick*="view-dashboard"]');
+        isSubmenu = false;
+    }
+
     // Sembunyikan semua section
     document.querySelectorAll('.view-section').forEach(el => {
         if(el.id !== 'view-login' && el.id !== 'view-public-verify') {
@@ -567,6 +721,11 @@ auth.onAuthStateChanged((user) => {
 
     if (user) {
         // === USER SUDAH LOGIN ===
+        if(!user.isAnonymous && Object.keys(window.appConfig.roles || {}).length === 0) {
+            window.currentUserRole = 'webmaster';
+            window.currentUserRoleLabel = 'Webmaster';
+            applyRoleAccess();
+        }
         // Sembunyikan halaman login dengan mulus
         if(loginView) { 
             if(document.getElementById('early-route-style')) {
@@ -639,6 +798,9 @@ auth.onAuthStateChanged((user) => {
             if(unsubscribeWebmaster) unsubscribeWebmaster();
             if(unsubscribeArsip) unsubscribeArsip();
             if(unsubscribeAudit) unsubscribeAudit();
+            window.currentUserRole = 'viewer';
+            window.currentUserRoleLabel = 'Viewer';
+            applyRoleAccess();
             localStorage.removeItem('eSistem:lastView');
             
             // Sembunyikan konten lain
@@ -671,6 +833,8 @@ function syncUIWithDB() {
             window.appConfig.pimpinanNama = data.pimpinanNama || "";
             window.appConfig.ttdImg = data.ttdImg || "";
             window.appConfig.nomorSurat = data.nomorSurat || "";
+            window.appConfig.roles = data.roles || {};
+            updateCurrentRole();
 
             const elSidebarTitle = document.getElementById('ui-sidebar-app-title'); if(elSidebarTitle) elSidebarTitle.innerText = nJudul;
             const elNavTitle = document.getElementById('ui-navbar-title'); if(elNavTitle) elNavTitle.innerText = nInstansi;
@@ -699,6 +863,7 @@ function syncUIWithDB() {
             const wmFootCetak = document.getElementById('wm-footer-cetak'); if(wmFootCetak) wmFootCetak.value = window.appConfig.footerCetak;
             const wmPim = document.getElementById('wm-pimpinan-nama'); if(wmPim) wmPim.value = window.appConfig.pimpinanNama;
             const wmNom = document.getElementById('wm-nomor-surat'); if(wmNom) wmNom.value = window.appConfig.nomorSurat;
+            renderRoleManager();
 
             const hintKop = document.getElementById('hint-kop');
             if(hintKop) {
@@ -728,6 +893,7 @@ function syncUIWithDB() {
 
 window.saveWebmasterConfig = async (e) => {
     e.preventDefault();
+    if(!requirePermission('manage_settings', 'Hanya Webmaster yang dapat menyimpan pengaturan sistem.')) return;
     const btn = document.getElementById('btn-save-wm'); const original = btn.innerHTML; btn.disabled = true; btn.innerHTML = "Menyimpan...";
     try {
         let payload = {
@@ -760,8 +926,70 @@ window.hapusFooter = () => {
     window.showToast("Dihapus", "Footer dihapus dari antrean. Silakan klik SIMPAN untuk mematenkan.", "success");
 };
 
+function renderRoleManager() {
+    const list = document.getElementById('roleManagerList');
+    if(!list) return;
+    setText('currentFirebaseUid', auth.currentUser ? auth.currentUser.uid : '-');
+
+    const roles = window.appConfig.roles || {};
+    const entries = Object.entries(roles);
+    if(!entries.length) {
+        list.innerHTML = '<div class="p-4 text-xs text-slate-500 bg-amber-50 border border-amber-100 rounded-lg">Belum ada role tersimpan. User login saat ini diperlakukan sebagai Webmaster awal sampai role disimpan.</div>';
+        return;
+    }
+
+    list.innerHTML = entries.map(([uid, role]) => `<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 border border-slate-200 rounded-lg bg-white">
+        <div class="min-w-0">
+            <p class="text-xs font-black text-slate-700 uppercase">${escapeHtml(getRoleLabel(role))}</p>
+            <p class="text-[11px] text-slate-500 break-all">${escapeHtml(uid)}</p>
+        </div>
+        <button type="button" onclick="window.removeUserRole(${JSON.stringify(uid)})" data-permission="manage_roles" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded text-xs font-bold transition-colors">Hapus</button>
+    </div>`).join('');
+    applyRoleAccess();
+}
+
+window.saveUserRole = async (e) => {
+    e.preventDefault();
+    if(!requirePermission('manage_roles', 'Hanya Webmaster yang dapat mengatur role pengguna.')) return;
+
+    const uid = getInputValue('role-user-uid').trim();
+    const role = getInputValue('role-user-role');
+    if(!uid || !ROLE_PERMISSIONS[role]) {
+        window.showToast('Data Belum Lengkap', 'UID pengguna dan role wajib diisi.', 'error');
+        return;
+    }
+
+    const roles = { ...(window.appConfig.roles || {}), [uid]: role };
+    const currentUid = auth.currentUser && auth.currentUser.uid;
+    if(currentUid && Object.keys(window.appConfig.roles || {}).length === 0 && !roles[currentUid]) {
+        roles[currentUid] = 'webmaster';
+    }
+    try {
+        await db.collection('settings').doc('webmaster').set({ roles }, { merge: true });
+        await addAuditLog('config', 'settings', `Mengatur role ${getRoleLabel(role)}`, { uid, role });
+        setInputValue('role-user-uid', '');
+        window.showToast('Role Disimpan', 'Hak akses pengguna berhasil diperbarui.', 'success');
+    } catch(err) {
+        window.showToast('Gagal', 'Role pengguna gagal disimpan.', 'error');
+    }
+};
+
+window.removeUserRole = async (uid) => {
+    if(!requirePermission('manage_roles', 'Hanya Webmaster yang dapat menghapus role pengguna.')) return;
+    const roles = { ...(window.appConfig.roles || {}) };
+    delete roles[uid];
+    try {
+        await db.collection('settings').doc('webmaster').set({ roles }, { merge: true });
+        await addAuditLog('config', 'settings', 'Menghapus role pengguna', { uid });
+        window.showToast('Role Dihapus', 'Hak akses pengguna telah dihapus.', 'success');
+    } catch(err) {
+        window.showToast('Gagal', 'Role pengguna gagal dihapus.', 'error');
+    }
+};
+
 window.saveCetakConfig = async (e) => {
     e.preventDefault();
+    if(!requirePermission('manage_settings', 'Hanya Webmaster yang dapat menyimpan pengaturan cetak.')) return;
     const btn = document.getElementById('btn-save-cetak'); const original = btn.innerHTML; btn.disabled = true; btn.innerHTML = "Menyimpan...";
     try {
         let payload = {
@@ -849,6 +1077,7 @@ window.gantiTabAnggota = (tabNum) => {
 };
 
 window.bukaFormTambah = (element = null, isSubmenu = false) => {
+    if(!requirePermission('manage_members', 'Role Anda tidak dapat menambah anggota.')) return;
     currentEditAnggotaId = null;
     const formTitle = document.getElementById('form-title-anggota'); if(formTitle) formTitle.innerText = "TAMBAH DATA ANGGOTA";
     const form = document.getElementById('formTambahAnggota'); if(form) form.reset();
@@ -871,6 +1100,7 @@ window.batalAnggota = () => {
 
 window.simpanAnggota = async (e) => {
     e.preventDefault();
+    if(!requirePermission('manage_members', 'Role Anda tidak dapat menyimpan data anggota.')) return;
     const btn = e.target.querySelector('button[type="submit"]');
     const original = btn.innerHTML;
     btn.innerHTML = 'Menyimpan...';
@@ -890,6 +1120,11 @@ window.simpanAnggota = async (e) => {
             angkatan: document.getElementById('anggota-angkatan').value.trim(),
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        if(!payload.nim || !payload.nama || !payload.jk || !payload.tempat_lahir || !isValidDateInput(payload.tgl_lahir) || !payload.alamat) {
+            window.showToast('Data Belum Lengkap', 'NIM, nama, jenis kelamin, tempat/tanggal lahir, dan alamat wajib valid.', 'error');
+            return;
+        }
 
         const normalizedNim = payload.nim.toLowerCase();
         const duplicateId = Object.keys(window.cachedAnggotaData || {}).find((id) => {
@@ -942,6 +1177,7 @@ window.simpanAnggota = async (e) => {
 };
 
 window.editAnggota = async (id) => {
+    if(!requirePermission('manage_members', 'Role Anda tidak dapat mengedit anggota.')) return;
     let data = window.cachedAnggotaData[id];
     
     if(!data) {
@@ -983,6 +1219,7 @@ window.editAnggota = async (id) => {
 };
 
 window.hapusAnggota = (id) => {
+    if(!requirePermission('delete_members', 'Role Anda tidak dapat menghapus anggota.')) return;
     const data = window.cachedAnggotaData[id];
     const nama = data ? data.nama : "anggota ini";
     window.customConfirm(`TINDAKAN PERMANEN:\nYakin ingin menghapus seluruh biodata ${nama}?`, async () => {
@@ -1016,10 +1253,18 @@ window.lihatDetailAnggota = (id) => {
     setTxt('detail-divisi-side', data.divisi);
     setTxt('detail-angkatan-side', data.angkatan || '-');
     
-    const btnEdit = document.getElementById('btn-edit-detail'); if(btnEdit) btnEdit.onclick = () => window.open(window.location.pathname + `?edit=${id}`, '_blank');
+    const btnEdit = document.getElementById('btn-edit-detail');
+    if(btnEdit) {
+        btnEdit.classList.toggle('hidden', !hasPermission('manage_members'));
+        btnEdit.onclick = () => {
+            if(requirePermission('manage_members', 'Role Anda tidak dapat mengedit anggota.')) window.open(window.location.pathname + `?edit=${id}`, '_blank');
+        };
+    }
     const btnHapus = document.getElementById('btn-hapus-detail');
     if(btnHapus) {
+        btnHapus.classList.toggle('hidden', !hasPermission('delete_members'));
         btnHapus.onclick = () => {
+            if(!requirePermission('delete_members', 'Role Anda tidak dapat menghapus anggota.')) return;
             window.customConfirm(`TINDAKAN PERMANEN:\nYakin ingin menghapus seluruh biodata ${data.nama}?`, async () => {
                 try {
                     await db.collection("anggota_organisasi").doc(id).delete();
@@ -1076,6 +1321,7 @@ function sinkronAnggotaRealtime() {
         });
         
         window.renderTabelAnggota();
+        updateDashboardSummary();
         
         const dashAnggota = document.getElementById('dash-total-anggota'); if(dashAnggota) dashAnggota.innerText = total;
 
@@ -1142,8 +1388,8 @@ window.renderTabelAnggota = () => {
                 <td class="p-2.5 border-b border-slate-200">${safeRAngkatan}</td>
                 <td class="p-2.5 border-b border-slate-200 uppercase">${safeRAlamat}</td>
                 <td class="p-2.5 border-b border-slate-200 text-center">
-                    <button onclick="window.open(window.location.pathname + '?edit=' + encodeURIComponent(${safeRId}), '_blank')" class="bg-[#00a65a] hover:bg-green-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center mr-1 transition-colors" title="Edit di Tab Baru"><i class="ph-bold ph-pencil-simple"></i></button>
-                    <button onclick="window.hapusAnggota(${safeRId})" class="bg-[#dd4b39] hover:bg-red-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center transition-colors" title="Hapus"><i class="ph-bold ph-x"></i></button>
+                    <button data-permission="manage_members" onclick="window.editAnggota(${safeRId})" class="bg-[#00a65a] hover:bg-green-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center mr-1 transition-colors" title="Edit Anggota"><i class="ph-bold ph-pencil-simple"></i></button>
+                    <button data-permission="delete_members" onclick="window.hapusAnggota(${safeRId})" class="bg-[#dd4b39] hover:bg-red-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center transition-colors" title="Hapus"><i class="ph-bold ph-x"></i></button>
                 </td>
             </tr>`;
         }
@@ -1155,6 +1401,7 @@ window.renderTabelAnggota = () => {
     if(tabelInfo) tabelInfo.innerText = `Menampilkan ${displayedCount > 0 ? 1 : 0} s/d ${displayedCount} dari ${total} Entri Data`;
     const tabelJumlah = document.getElementById('tabel-jumlah');
     if(tabelJumlah) tabelJumlah.innerText = displayedCount;
+    applyRoleAccess();
 };
 
 window.updatePilihanFilter = () => {
@@ -1209,16 +1456,22 @@ window.updateCampuranTotal = () => {
 
 window.simpanPembayaran = async (e) => {
     e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const ori = btn.innerText; btn.innerText = 'Merekam...'; btn.disabled = true;
+    if(!requirePermission('manage_finance', 'Role Anda tidak dapat mencatat kas masuk.')) { btn.innerText = ori; btn.disabled = false; return; }
     try { 
+        const nominal = parseCurrencyNumber(document.getElementById('nomPembayaran').value);
         const payload = {
             tanggal: document.getElementById('tglPembayaran').value,
             jenis: 'Pemasukan',
             sumberDana: document.getElementById('sumberDanaPembayaran').value,
             kategori: document.getElementById('kategoriPembayaran').value.trim(),
             keterangan: document.getElementById('ketPembayaran').value.trim(),
-            nominal: Number(document.getElementById('nomPembayaran').value),
+            nominal,
             timestamp: firebase.firestore.FieldValue.serverTimestamp() 
         };
+        if(!isValidDateInput(payload.tanggal) || !payload.sumberDana || !payload.kategori || !payload.keterangan || !Number.isFinite(payload.nominal) || payload.nominal <= 0) {
+            window.showToast('Data Tidak Valid', 'Tanggal, sumber dana, kategori, keterangan, dan nominal positif wajib diisi.', 'error');
+            return;
+        }
         const docRef = await db.collection("kas_organisasi").add(payload);
         await addAuditLog('create', 'kas', `Mencatat kas masuk ${formatRp(payload.nominal)}`, { id: docRef.id, sumberDana: payload.sumberDana, kategori: payload.kategori });
         document.getElementById('formInputPembayaran').reset(); 
@@ -1231,11 +1484,22 @@ window.simpanPembayaran = async (e) => {
 
 window.simpanPengeluaran = async (e) => {
     e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const ori = btn.innerText; btn.innerText = 'Merekam...'; btn.disabled = true;
+    if(!requirePermission('manage_finance', 'Role Anda tidak dapat mencatat kas keluar.')) { btn.innerText = ori; btn.disabled = false; return; }
     try {
         const sumber = document.getElementById('sumberDanaPengeluaran').value;
-        const totalNominal = Number(document.getElementById('nomPengeluaran').value);
-        const nominalKampus = sumber === 'campuran' ? Number(document.getElementById('nomCampuranKampus').value) : 0;
-        const nominalOrganisasi = sumber === 'campuran' ? Number(document.getElementById('nomCampuranOrganisasi').value) : 0;
+        const totalNominal = parseCurrencyNumber(document.getElementById('nomPengeluaran').value);
+        const nominalKampus = sumber === 'campuran' ? parseCurrencyNumber(document.getElementById('nomCampuranKampus').value) : 0;
+        const nominalOrganisasi = sumber === 'campuran' ? parseCurrencyNumber(document.getElementById('nomCampuranOrganisasi').value) : 0;
+
+        if(!isValidDateInput(document.getElementById('tglPengeluaran').value) || !sumber || !document.getElementById('kategoriPengeluaranForm').value.trim() || !document.getElementById('ketPengeluaran').value.trim() || !Number.isFinite(totalNominal) || totalNominal <= 0) {
+            window.showToast('Data Tidak Valid', 'Tanggal, sumber dana, kategori, keterangan, dan nominal positif wajib diisi.', 'error');
+            return;
+        }
+
+        if (sumber === 'campuran' && (!Number.isFinite(nominalKampus) || !Number.isFinite(nominalOrganisasi) || nominalKampus < 0 || nominalOrganisasi < 0)) {
+            window.showToast('Data Tidak Valid', 'Rincian dana campuran tidak boleh kosong atau minus.', 'error');
+            return;
+        }
 
         if (sumber === 'campuran' && (nominalKampus + nominalOrganisasi) !== totalNominal) {
             window.showToast('Gagal', 'Total nominal campuran harus sama dengan jumlah rincian kampus dan organisasi.', 'error');
@@ -1269,6 +1533,7 @@ window.simpanPengeluaran = async (e) => {
 };
 
 window.hapusKas = (id, ket) => {
+    if(!requirePermission('delete_finance', 'Role Anda tidak dapat menghapus transaksi kas.')) return;
     window.customConfirm(`Tindakan Permanen:\nYakin hapus transaksi kas:\n"${ket}" ?`, async () => {
         try {
             await db.collection("kas_organisasi").doc(id).delete();
@@ -1338,15 +1603,9 @@ function sinkronKasRealtime() {
         setText('totalDanaKampusKeluar', formatRp(danaKampusKeluar));
         setText('sisaDanaKampus', formatRp(danaKampusMasuk - danaKampusKeluar));
 
-        if(chartInstance) {
-            chartInstance.data.datasets[0].data = [tMasuk];
-            chartInstance.data.datasets[1].data = [tKeluar];
-            chartInstance.update();
-            window.updateDashboardChartState();
-            
-        }
         window.renderTabelKas();
         window.renderLPJKampus();
+        updateDashboardSummary();
     }, (error) => {
         console.error("Error fetching kas data:", error);
     });
@@ -1390,8 +1649,8 @@ window.renderTabelKas = () => {
             <td class="px-4 py-3 text-right font-black text-slate-800 bg-slate-50/50 text-xs">${formatRp(r.saldoCalc)}</td>
             <td class="px-4 py-3 text-center">
                 <div class="flex justify-center gap-1">
-                    <button onclick="window.bukaEditTransaksi(${safeRId})" class="bg-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white p-1.5 rounded transition-colors" title="Edit Transaksi"><i class="ph-bold ph-pencil-simple"></i></button>
-                    <button onclick="window.hapusKas(${safeRId}, ${JSON.stringify(r.keterangan || '')})" class="bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white p-1.5 rounded transition-colors" title="Hapus Transaksi"><i class="ph-bold ph-trash"></i></button>
+                    <button data-permission="manage_finance" onclick="window.bukaEditTransaksi(${safeRId})" class="bg-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white p-1.5 rounded transition-colors" title="Edit Transaksi"><i class="ph-bold ph-pencil-simple"></i></button>
+                    <button data-permission="delete_finance" onclick="window.hapusKas(${safeRId}, ${JSON.stringify(r.keterangan || '')})" class="bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white p-1.5 rounded transition-colors" title="Hapus Transaksi"><i class="ph-bold ph-trash"></i></button>
                 </div>
             </td>
         </tr>`;
@@ -1399,6 +1658,7 @@ window.renderTabelKas = () => {
 
     if(tbody) tbody.innerHTML = count === 0 ? '<tr><td colspan="6" class="text-center py-12 text-slate-400 font-medium">Data transaksi tidak ditemukan / kosong.</td></tr>' : htmlTable;
     if(document.getElementById('infoTabelKas')) document.getElementById('infoTabelKas').innerText = `Menampilkan ${count} Transaksi`;
+    applyRoleAccess();
 };
 
 window.renderLPJKampus = () => {
@@ -1424,11 +1684,12 @@ window.renderLPJKampus = () => {
 window.updateDashboardChartState = () => {
     const empty = document.getElementById('dashboard-chart-empty');
     if(!empty || !chartInstance) return;
-    const total = chartInstance.data.datasets.reduce((sum, ds) => sum + Number(ds.data[0] || 0), 0);
+    const total = chartInstance.data.datasets.reduce((sum, ds) => sum + ds.data.reduce((itemSum, value) => itemSum + Number(value || 0), 0), 0);
     empty.classList.toggle('hidden', total > 0);
 };
 
 window.bukaEditTransaksi = (id) => {
+    if(!requirePermission('manage_finance', 'Role Anda tidak dapat mengedit transaksi kas.')) return;
     const data = (window.cachedKasData || []).find((row) => row.id === id);
     if(!data) {
         window.showToast('Gagal', 'Data transaksi tidak ditemukan.', 'error');
@@ -1483,14 +1744,25 @@ window.updateEditCampuranTotal = () => {
 
 window.simpanEditTransaksi = async (e) => {
     e.preventDefault();
+    if(!requirePermission('manage_finance', 'Role Anda tidak dapat mengedit transaksi kas.')) return;
     const id = getInputValue('edit-transaksi-id');
     if(!id) return;
 
     const jenis = getInputValue('edit-jenis');
     const sumberDana = getInputValue('edit-sumber-dana');
-    const nominal = Number(getInputValue('edit-nominal'));
-    const nominalKampus = sumberDana === 'campuran' ? Number(getInputValue('edit-nominal-kampus')) : 0;
-    const nominalOrganisasi = sumberDana === 'campuran' ? Number(getInputValue('edit-nominal-organisasi')) : 0;
+    const nominal = parseCurrencyNumber(getInputValue('edit-nominal'));
+    const nominalKampus = sumberDana === 'campuran' ? parseCurrencyNumber(getInputValue('edit-nominal-kampus')) : 0;
+    const nominalOrganisasi = sumberDana === 'campuran' ? parseCurrencyNumber(getInputValue('edit-nominal-organisasi')) : 0;
+
+    if(!isValidDateInput(getInputValue('edit-tanggal')) || !jenis || !sumberDana || !getInputValue('edit-kategori').trim() || !getInputValue('edit-keterangan').trim() || !Number.isFinite(nominal) || nominal <= 0) {
+        window.showToast('Data Tidak Valid', 'Tanggal, kategori, keterangan, dan nominal positif wajib diisi.', 'error');
+        return;
+    }
+
+    if(jenis === 'Pengeluaran' && sumberDana === 'campuran' && (!Number.isFinite(nominalKampus) || !Number.isFinite(nominalOrganisasi) || nominalKampus < 0 || nominalOrganisasi < 0)) {
+        window.showToast('Data Tidak Valid', 'Rincian dana campuran tidak boleh kosong atau minus.', 'error');
+        return;
+    }
 
     if(jenis === 'Pengeluaran' && sumberDana === 'campuran' && nominalKampus + nominalOrganisasi !== nominal) {
         window.showToast('Gagal', 'Total dana campuran harus sama dengan nominal transaksi.', 'error');
@@ -1567,6 +1839,104 @@ window.downloadCSVData = (type) => {
 
     downloadTextFile(filename, makeCsv(headers, rows));
     window.showToast('Export Berhasil', `${rows.length} baris data diunduh.`, 'success');
+};
+
+const serializeFirestoreValue = (value) => {
+    if(value && typeof value.toDate === 'function') return value.toDate().toISOString();
+    if(Array.isArray(value)) return value.map(serializeFirestoreValue);
+    if(value && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, serializeFirestoreValue(item)]));
+    }
+    return value;
+};
+
+window.downloadFullBackup = async () => {
+    if(!requirePermission('backup_export', 'Role Anda tidak dapat mengunduh backup data.')) return;
+
+    const backup = {
+        meta: {
+            app: 'e-Sistem LPM MAKHIBRA',
+            exportedAt: new Date().toISOString(),
+            exportedBy: getCurrentActor()
+        },
+        anggota_organisasi: Object.entries(window.cachedAnggotaData || {}).map(([id, row]) => ({ id, ...serializeFirestoreValue(row) })),
+        kas_organisasi: (window.cachedKasData || []).map((row) => serializeFirestoreValue(row)),
+        arsip_surat: Object.entries(window.cachedArsipData || {}).map(([id, row]) => ({ id, ...serializeFirestoreValue(row) })),
+        settings: serializeFirestoreValue(window.appConfig)
+    };
+
+    downloadTextFile(`backup-e-sistem-${getJakartaDateInputValue()}.json`, JSON.stringify(backup, null, 2), 'application/json;charset=utf-8;');
+    await addAuditLog('config', 'settings', 'Mengunduh backup penuh sistem', { anggota: backup.anggota_organisasi.length, kas: backup.kas_organisasi.length, arsip: backup.arsip_surat.length });
+    window.showToast('Backup Berhasil', 'File backup JSON lengkap berhasil diunduh.', 'success');
+};
+
+const cleanImportedRow = (row, allowedKeys) => {
+    const result = {};
+    allowedKeys.forEach((key) => {
+        if(row[key] !== undefined) result[key] = row[key];
+    });
+    return result;
+};
+
+const writeBackupCollection = async (collectionName, rows, allowedKeys, batchLimit = 400) => {
+    let batch = db.batch();
+    let count = 0;
+    let total = 0;
+    for(const row of rows || []) {
+        const id = String(row.id || '').trim();
+        const clean = cleanImportedRow(row, allowedKeys);
+        clean.restoredAt = firebase.firestore.FieldValue.serverTimestamp();
+        const ref = id ? db.collection(collectionName).doc(id) : db.collection(collectionName).doc();
+        batch.set(ref, clean, { merge: true });
+        count++;
+        total++;
+        if(count >= batchLimit) {
+            await batch.commit();
+            batch = db.batch();
+            count = 0;
+        }
+    }
+    if(count) await batch.commit();
+    return total;
+};
+
+window.restoreFullBackup = async () => {
+    if(!requirePermission('backup_restore', 'Hanya Webmaster yang dapat melakukan restore backup.')) return;
+    const input = document.getElementById('backupRestoreFile');
+    if(!input || !input.files || !input.files[0]) {
+        window.showToast('File Belum Dipilih', 'Pilih file backup JSON terlebih dahulu.', 'error');
+        return;
+    }
+
+    const file = input.files[0];
+    if(file.type && file.type !== 'application/json') {
+        window.showToast('Format Ditolak', 'Restore hanya menerima file JSON hasil backup sistem.', 'error');
+        return;
+    }
+
+    try {
+        const text = await file.text();
+        const backup = JSON.parse(text);
+        if(!backup || !Array.isArray(backup.anggota_organisasi) || !Array.isArray(backup.kas_organisasi) || !Array.isArray(backup.arsip_surat)) {
+            window.showToast('Backup Tidak Valid', 'Struktur file backup tidak dikenali.', 'error');
+            return;
+        }
+
+        window.customConfirm('Restore akan menimpa/menambahkan data dari file backup ke Firebase. Lanjutkan?', async () => {
+            try {
+                const anggotaCount = await writeBackupCollection('anggota_organisasi', backup.anggota_organisasi, ['nim', 'nama', 'tempat_lahir', 'tgl_lahir', 'jk', 'alamat', 'prodi', 'email', 'wa', 'divisi', 'angkatan', 'foto']);
+                const kasCount = await writeBackupCollection('kas_organisasi', backup.kas_organisasi, ['tanggal', 'jenis', 'sumberDana', 'kategori', 'keterangan', 'nominal', 'nominalKampus', 'nominalOrganisasi']);
+                const arsipCount = await writeBackupCollection('arsip_surat', backup.arsip_surat, ['jenis', 'tanggal', 'nomor', 'pihak', 'perihal', 'fileData', 'fileType']);
+                await addAuditLog('config', 'settings', 'Restore backup sistem', { anggota: anggotaCount, kas: kasCount, arsip: arsipCount });
+                input.value = '';
+                window.showToast('Restore Selesai', 'Backup berhasil dipulihkan ke database.', 'success');
+            } catch(err) {
+                window.showToast('Restore Gagal', 'Data backup gagal dipulihkan.', 'error');
+            }
+        });
+    } catch(err) {
+        window.showToast('Backup Tidak Valid', 'File JSON tidak dapat dibaca.', 'error');
+    }
 };
 
 window.handleSimulatedDownload = (name, format) => {
@@ -1702,6 +2072,7 @@ window.renderPrintView = async (type, id) => {
 // ... (KODE MANAJEMEN E-ARSIP SURAT)
 window.simpanArsip = async (e) => {
     e.preventDefault();
+    if(!requirePermission('manage_archive', 'Role Anda tidak dapat menambah arsip.')) return;
     const btn = e.target.querySelector('button[type="submit"]'); const ori = btn.innerHTML;
     btn.innerHTML = 'MENGUPLOD...'; btn.disabled = true;
     
@@ -1712,6 +2083,9 @@ window.simpanArsip = async (e) => {
     const file = fileInput.files[0];
     if (file.size > 1048576) {
         window.showToast("File Kebesaran", "Ukuran maksimal file adalah 1 MB!", "error"); btn.innerHTML = ori; btn.disabled = false; return;
+    }
+    if(!SAFE_ARCHIVE_TYPES.includes(file.type)) {
+        window.showToast("Format Ditolak", "Arsip hanya menerima PDF, PNG, JPG, atau JPEG.", "error"); btn.innerHTML = ori; btn.disabled = false; return;
     }
 
     try {
@@ -1732,6 +2106,10 @@ window.simpanArsip = async (e) => {
             fileType: file.type,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
+        if(!payload.jenis || !isValidDateInput(payload.tanggal) || !payload.nomor || !payload.pihak || !payload.perihal) {
+            window.showToast('Data Belum Lengkap', 'Jenis, tanggal, nomor, pihak, dan perihal arsip wajib diisi.', 'error');
+            return;
+        }
         const docRef = await db.collection("arsip_surat").add(payload);
         await addAuditLog('create', 'arsip', `Mengarsipkan ${payload.jenis}: ${payload.nomor || payload.perihal}`, { id: docRef.id, jenis: payload.jenis, nomor: payload.nomor });
         
@@ -1743,6 +2121,7 @@ window.simpanArsip = async (e) => {
 };
 
 window.hapusArsip = (id) => {
+    if(!requirePermission('delete_archive', 'Role Anda tidak dapat menghapus arsip.')) return;
     window.customConfirm(`Yakin ingin menghapus arsip dokumen ini selamanya?`, async () => {
         try {
             await db.collection("arsip_surat").doc(id).delete();
@@ -1760,6 +2139,7 @@ function sinkronArsipRealtime() {
         window.cachedArsipData = {};
         snapshot.forEach((doc) => { window.cachedArsipData[doc.id] = doc.data(); });
         window.renderTabelArsip();
+        updateDashboardSummary();
     });
 }
 
@@ -1803,7 +2183,7 @@ window.renderTabelArsip = () => {
                 <td class="px-5 py-4 text-slate-600 truncate max-w-[200px]">${safeRPerihal}</td>
                 <td class="px-5 py-4 text-center">
                     <div class="flex justify-center gap-1">
-                        <button onclick="window.hapusArsip(${safeRId})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 p-1.5 rounded shadow-sm transition-colors"><i class="ph-bold ph-trash"></i></button>
+                        <button data-permission="delete_archive" onclick="window.hapusArsip(${safeRId})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 p-1.5 rounded shadow-sm transition-colors"><i class="ph-bold ph-trash"></i></button>
                     </div>
                 </td>
             </tr>`;
@@ -1811,6 +2191,7 @@ window.renderTabelArsip = () => {
     });
 
     tbody.innerHTML = count === 0 ? `<tr><td colspan="6" class="text-center py-10 text-slate-400 font-medium">Arsip surat tidak ditemukan.</td></tr>` : htmlTable;
+    applyRoleAccess();
 };
 
 
@@ -1820,9 +2201,10 @@ window.renderTabelArsip = () => {
 function initCharts() {
     const ctxBar = document.getElementById('keuanganChart');
     if(ctxBar && !chartInstance) {
+        const trend = getMonthlyTrend([]);
         chartInstance = new Chart(ctxBar, {
             type: 'bar',
-            data: { labels: ['Bulan Ini'], datasets: [{ label: 'Pemasukan', data: [0], backgroundColor: '#3498db' }, { label: 'Pengeluaran', data: [0], backgroundColor: '#e74c3c' }] },
+            data: { labels: trend.map((item) => item.label), datasets: [{ label: 'Pemasukan', data: trend.map((item) => item.masuk), backgroundColor: '#3498db' }, { label: 'Pengeluaran', data: trend.map((item) => item.keluar), backgroundColor: '#e74c3c' }] },
             options: { 
                 responsive: true, maintainAspectRatio: false, 
                 plugins: { legend: { display: false } }, 

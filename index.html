@@ -291,7 +291,7 @@
                     <i id="icon-bankdata" class="ph-bold ph-caret-left text-xs transition-transform"></i>
                 </a>
                 <div id="submenu-bankdata" class="hidden flex-col bg-slate-900 py-2">
-                    <a href="#" onclick="window.bukaFormTambah(this, true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-user-plus text-lg"></i> Tambah Anggota</a>
+                    <a href="#" data-permission="manage_members" onclick="window.bukaFormTambah(this, true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-user-plus text-lg"></i> Tambah Anggota</a>
                     <a href="#" onclick="window.switchMenu(this, 'view-kelola-anggota', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-blue-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-list-bullets text-lg"></i> Database Anggota</a>
                 </div>
             </div>
@@ -302,8 +302,8 @@
                     <i id="icon-keuangan" class="ph-bold ph-caret-left text-xs transition-transform"></i>
                 </a>
                 <div id="submenu-keuangan" class="hidden flex-col bg-slate-900 py-2">
-                    <a href="#" onclick="window.switchMenu(this, 'view-catat-transaksi', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-download-simple text-lg"></i> Kas Masuk</a>
-                    <a href="#" onclick="window.switchMenu(this, 'view-catat-pengeluaran', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-rose-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> Kas Keluar</a>
+                    <a href="#" data-permission="manage_finance" onclick="window.switchMenu(this, 'view-catat-transaksi', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-download-simple text-lg"></i> Kas Masuk</a>
+                    <a href="#" data-permission="manage_finance" onclick="window.switchMenu(this, 'view-catat-pengeluaran', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-rose-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> Kas Keluar</a>
                     <a href="#" onclick="window.switchMenu(this, 'view-riwayat-transaksi', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-amber-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-clock-counter-clockwise text-lg"></i> Riwayat Transaksi</a>
                     <a href="#" onclick="window.switchMenu(this, 'view-lpj-kampus', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-blue-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-file-text text-lg"></i> LPJ Dana Kampus</a>
                 </div>
@@ -316,16 +316,17 @@
                 </a>
                 <div id="submenu-sekretariat" class="hidden flex-col bg-slate-900 py-2">
                     <a href="#" onclick="window.switchMenu(this, 'view-arsip-surat', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-indigo-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-envelope-open text-lg"></i> E-Arsip Surat</a>
-                    <a href="#" onclick="window.switchMenu(this, 'view-buat-surat', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-magic-wand text-lg"></i> Buat Surat Otomatis</a>
+                    <a href="#" data-permission="manage_archive" onclick="window.switchMenu(this, 'view-tambah-arsip', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-indigo-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> Upload Arsip</a>
+                    <a href="#" data-permission="manage_archive" onclick="window.switchMenu(this, 'view-buat-surat', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-magic-wand text-lg"></i> Buat Surat Otomatis</a>
                 </div>
             </div>
 
-            <a href="#" onclick="window.switchMenu(this, 'view-setting'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-1">
+            <a href="#" data-permission="backup_export" onclick="window.switchMenu(this, 'view-setting'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-1">
                 <i class="ph-fill ph-cloud-arrow-down text-xl w-6"></i> <span>Unduh Laporan</span>
             </a>
 
             <p class="px-5 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-4 mb-1">Pengaturan</p>
-            <a href="#" onclick="window.switchMenu(this, 'view-webmaster'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+            <a href="#" data-permission="manage_settings" onclick="window.switchMenu(this, 'view-webmaster'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
                 <i class="ph-fill ph-gear-six text-xl w-6"></i> <span>Webmaster Sistem</span>
             </a>
             <a href="#" onclick="window.handleLogout(); event.preventDefault();" class="flex items-center gap-3 px-5 py-3.5 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors border-l-4 border-transparent mt-2">
@@ -368,6 +369,10 @@
 
         <!-- KANAN -->
         <div class="flex items-center gap-2 shrink-0">
+            <div class="hidden sm:flex flex-col items-end leading-tight">
+                <span class="text-[9px] font-black uppercase tracking-wider text-slate-400">Role</span>
+                <span id="currentUserRoleLabel" class="text-[10px] font-black text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">Viewer</span>
+            </div>
             <!-- Waktu -->
             <div class="text-right leading-tight min-w-[118px] sm:min-w-[170px]" aria-live="polite">
                 <p id="currentDate"
@@ -397,7 +402,7 @@
                     
                     <div class="space-y-5 no-print">
                         <div class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                            <button onclick="window.bukaFormTambah()" class="bg-slate-50 border border-slate-200 hover:bg-emerald-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-permission="manage_members" onclick="window.bukaFormTambah()" class="bg-slate-50 border border-slate-200 hover:bg-emerald-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-emerald-500 group-hover:text-emerald-600 mb-2 transition-colors"><use href="#icon-user-add"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-emerald-700">Tambah<br>Anggota</span>
                             </button>
@@ -405,11 +410,11 @@
                                 <svg class="w-9 h-9 text-blue-500 group-hover:text-blue-600 mb-2 transition-colors"><use href="#icon-address-book"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-blue-700">Data<br>Anggota</span>
                             </button>
-                            <button onclick="window.switchView('view-catat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-teal-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-permission="manage_finance" onclick="window.switchView('view-catat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-teal-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-teal-500 group-hover:text-teal-600 mb-2 transition-colors"><use href="#icon-money-in"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-teal-700">Kas<br>Masuk</span>
                             </button>
-                            <button onclick="window.switchView('view-catat-pengeluaran')" class="bg-slate-50 border border-slate-200 hover:bg-rose-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-permission="manage_finance" onclick="window.switchView('view-catat-pengeluaran')" class="bg-slate-50 border border-slate-200 hover:bg-rose-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-rose-500 group-hover:text-rose-600 mb-2 transition-colors"><use href="#icon-receipt-out"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-rose-700">Kas<br>Keluar</span>
                             </button>
@@ -471,6 +476,30 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Anggota Aktif</p>
+                                <p class="text-2xl font-black text-slate-800"><span id="dash-anggota-aktif">0</span></p>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Kas Bulan Ini</p>
+                                <p id="dash-kas-bulan-ini" class="text-xl font-black text-emerald-700">Rp 0</p>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Surat Terbaru</p>
+                                <p id="dash-surat-terbaru" class="text-sm font-bold text-slate-700 leading-snug">Belum ada surat</p>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Deadline LPJ</p>
+                                <p id="dash-deadline-lpj" class="text-sm font-bold text-rose-700 leading-snug">-</p>
+                                <p class="text-[10px] text-slate-400 mt-1"><span id="dash-lpj-count">0</span> item LPJ</p>
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Arsip Terbaru</p>
+                                <p id="dash-arsip-terbaru" class="text-sm font-bold text-slate-700 leading-snug">Belum ada arsip</p>
+                                <p class="text-[10px] text-slate-400 mt-1"><span id="dash-total-arsip">0</span> arsip</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="bg-white border border-slate-200 shadow-sm rounded-md overflow-hidden">
@@ -490,8 +519,8 @@
                         <div class="lg:col-span-2 bg-white border border-slate-200 shadow-sm rounded-md flex flex-col">
                             <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
                                 <div>
-                                    <h3 class="text-[16px] font-semibold text-slate-800">Laporan Arus Kas Bulanan</h3>
-                                    <p class="text-xs text-slate-500 mt-1">Ringkasan arus kas bulanan yang menampilkan pemasukan dan pengeluaran utama.</p>
+                                    <h3 class="text-[16px] font-semibold text-slate-800">Grafik Tren Bulanan</h3>
+                                    <p class="text-xs text-slate-500 mt-1">Perbandingan pemasukan dan pengeluaran enam bulan terakhir.</p>
                                 </div>
                                 <div class="flex rounded-sm overflow-hidden text-[11px] font-bold">
                                     <button class="bg-[#3498db] text-white px-4 py-1.5 hover:bg-blue-600 transition-colors">PEMASUKAN</button>
@@ -505,8 +534,8 @@
                                 <canvas id="keuanganChart"></canvas>
                                 <div id="dashboard-chart-empty" class="absolute inset-0 flex flex-col items-center justify-center text-center text-slate-500 px-6">
                                     <i class="ph-bold ph-circle-dashed text-4xl mb-3"></i>
-                                    <strong class="text-slate-700 font-semibold mb-1">Belum ada data arus kas bulan ini</strong>
-                                    <span class="text-sm">Silakan catat pemasukan atau pengeluaran untuk menampilkan grafik cashflow secara otomatis.</span>
+                                    <strong class="text-slate-700 font-semibold mb-1">Belum ada data arus kas</strong>
+                                    <span class="text-sm">Silakan catat pemasukan atau pengeluaran untuk menampilkan tren bulanan secara otomatis.</span>
                                 </div>
                             </div>
                         </div>
@@ -1074,7 +1103,7 @@
                             <h3 class="font-black text-slate-800 text-lg uppercase tracking-wide flex items-center gap-2"><i class="ph-fill ph-folders text-[#3b82f6]"></i> E-Arsip Surat Menyurat</h3>
                             <p class="text-xs text-slate-500 font-medium mt-1">Manajemen dokumen digital organisasi (Maks file 1MB).</p>
                         </div>
-                        <button onclick="window.switchView('view-tambah-arsip')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-md text-sm font-bold shadow-sm transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"><i class="ph-bold ph-plus-circle text-lg"></i> Arsipkan Surat</button>
+                        <button data-permission="manage_archive" onclick="window.switchView('view-tambah-arsip')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-md text-sm font-bold shadow-sm transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"><i class="ph-bold ph-plus-circle text-lg"></i> Arsipkan Surat</button>
                     </div>
 
                     <div class="widget-box bg-white overflow-hidden border border-slate-200">
@@ -1235,6 +1264,25 @@
                             </div>
                         </div>
                     </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="widget-box bg-white overflow-hidden border border-slate-200 flex flex-col">
+                            <div class="bg-slate-800 p-4 text-white"><h4 class="font-black uppercase tracking-wider text-sm flex items-center gap-2"><i class="ph-fill ph-archive-box text-xl"></i> Backup JSON Penuh</h4></div>
+                            <div class="p-6 bg-slate-50/50 flex-1">
+                                <p class="text-xs text-slate-600 mb-5 leading-relaxed">Unduh backup lengkap anggota, kas, arsip, dan pengaturan dalam satu file JSON untuk cadangan berkala organisasi.</p>
+                                <button data-permission="backup_export" onclick="window.downloadFullBackup()" class="bg-slate-800 hover:bg-black text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center gap-2 transition-colors"><i class="ph-bold ph-download-simple text-lg"></i> DOWNLOAD BACKUP JSON</button>
+                            </div>
+                        </div>
+                        <div data-permission="backup_restore" class="widget-box bg-white overflow-hidden border border-slate-200 flex flex-col">
+                            <div class="bg-amber-700 p-4 text-white"><h4 class="font-black uppercase tracking-wider text-sm flex items-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-xl"></i> Restore Backup</h4></div>
+                            <div class="p-6 bg-slate-50/50 flex-1">
+                                <p class="text-xs text-slate-600 mb-5 leading-relaxed">Pulihkan data dari file backup JSON. Fitur ini khusus Webmaster karena dapat menimpa data yang ada.</p>
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <input type="file" id="backupRestoreFile" accept="application/json,.json" class="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm file:mr-3 file:py-1 file:px-3 file:border-0 file:rounded file:bg-amber-100 file:text-amber-700">
+                                    <button onclick="window.restoreFullBackup()" class="bg-amber-700 hover:bg-amber-800 text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> RESTORE</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- VIEW: WEBMASTER (DIPERBARUI DENGAN PENGATURAN CETAK) -->
@@ -1265,6 +1313,45 @@
                                 <button type="submit" id="btn-save-wm" class="bg-slate-800 hover:bg-black text-white py-3 px-8 rounded-lg font-bold text-sm shadow-md shadow-slate-800/30 transition-all transform active:scale-95 flex items-center gap-2"><i class="ph-bold ph-cloud-arrow-up text-lg"></i> SIMPAN PENGATURAN SISTEM</button>
                             </div>
                         </form>
+                    </div>
+
+                    <div data-permission="manage_roles" class="widget-box bg-white overflow-hidden border border-slate-200">
+                        <div class="bg-gradient-to-r from-emerald-700 to-cyan-800 p-5 flex items-center gap-3 text-white">
+                            <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm"><i class="ph-fill ph-shield-check text-2xl"></i></div>
+                            <div>
+                                <h3 class="font-black uppercase tracking-wider text-sm">Role & Permission</h3>
+                                <p class="text-[10px] text-emerald-100 font-medium mt-0.5">Atur akses Webmaster, Ketua/Sekretaris, Bendahara, Admin Divisi, dan Viewer.</p>
+                            </div>
+                        </div>
+                        <div class="p-6 sm:p-8 bg-slate-50/50 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <form onsubmit="window.saveUserRole(event)" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">UID Login Saat Ini</p>
+                                    <p id="currentFirebaseUid" class="text-[11px] font-bold text-slate-700 break-all">-</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Firebase UID Pengguna</label>
+                                    <input type="text" id="role-user-uid" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-700 focus:ring-1 focus:ring-emerald-700 outline-none" placeholder="Tempel UID user dari Firebase Authentication">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Role</label>
+                                    <select id="role-user-role" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-700 focus:ring-1 focus:ring-emerald-700 outline-none">
+                                        <option value="webmaster">Webmaster</option>
+                                        <option value="ketua">Ketua / Sekretaris</option>
+                                        <option value="bendahara">Bendahara</option>
+                                        <option value="admin_divisi">Admin Divisi</option>
+                                        <option value="viewer">Viewer</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="bg-emerald-700 hover:bg-emerald-800 text-white py-3 px-6 rounded-lg font-bold text-sm shadow-md transition-all flex items-center gap-2"><i class="ph-bold ph-floppy-disk text-lg"></i> SIMPAN ROLE</button>
+                            </form>
+                            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                                <h4 class="text-xs font-black uppercase tracking-wider text-slate-600 mb-4">Daftar Role Tersimpan</h4>
+                                <div id="roleManagerList" class="space-y-3">
+                                    <div class="p-4 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-lg">Memuat role pengguna...</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- KOTAK 2: PENGATURAN CETAK DOKUMEN -->

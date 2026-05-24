@@ -11,19 +11,102 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
+    function roleConfigPath() {
+      return /databases/$(database)/documents/settings/webmaster;
+    }
+
+    function hasConfiguredRole() {
+      return nonAnonymousUser()
+        && exists(roleConfigPath())
+        && ('roles' in get(roleConfigPath()).data)
+        && (request.auth.uid in get(roleConfigPath()).data.roles);
+    }
+
+    function hasRole(roles) {
+      return hasConfiguredRole()
+        && get(roleConfigPath()).data.roles[request.auth.uid] in roles;
+    }
+
+    function bootstrapWebmaster() {
+      return nonAnonymousUser()
+        && (
+          !exists(roleConfigPath())
+          || !('roles' in get(roleConfigPath()).data)
+          || get(roleConfigPath()).data.roles.keys().size() == 0
+        );
+    }
+
     function hasOnlyKeys(keys) {
       return request.resource.data.keys().hasOnly(keys);
     }
 
+    function validDate(value) {
+      return value is string && value.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+
+    function validPositiveMoney(value) {
+      return value is number && value > 0;
+    }
+
+    function validNonNegativeMoney(value) {
+      return value is number && value >= 0;
+    }
+
+    function validAnggota() {
+      return request.resource.data.nim is string
+        && request.resource.data.nim.size() > 0
+        && request.resource.data.nama is string
+        && request.resource.data.nama.size() > 0
+        && request.resource.data.tempat_lahir is string
+        && request.resource.data.tempat_lahir.size() > 0
+        && validDate(request.resource.data.tgl_lahir)
+        && request.resource.data.jk in ['Laki-laki', 'Perempuan']
+        && request.resource.data.alamat is string
+        && request.resource.data.alamat.size() > 0;
+    }
+
+    function validKas() {
+      return validDate(request.resource.data.tanggal)
+        && request.resource.data.jenis in ['Pemasukan', 'Pengeluaran']
+        && request.resource.data.sumberDana in ['kampus', 'organisasi', 'campuran']
+        && request.resource.data.kategori is string
+        && request.resource.data.kategori.size() > 0
+        && request.resource.data.keterangan is string
+        && request.resource.data.keterangan.size() > 0
+        && validPositiveMoney(request.resource.data.nominal)
+        && (!('nominalKampus' in request.resource.data) || validNonNegativeMoney(request.resource.data.nominalKampus))
+        && (!('nominalOrganisasi' in request.resource.data) || validNonNegativeMoney(request.resource.data.nominalOrganisasi))
+        && (
+          request.resource.data.sumberDana != 'campuran'
+          || request.resource.data.jenis != 'Pengeluaran'
+          || request.resource.data.nominal == request.resource.data.nominalKampus + request.resource.data.nominalOrganisasi
+        );
+    }
+
+    function validArsip() {
+      return request.resource.data.jenis in ['Surat Masuk', 'Surat Keluar']
+        && validDate(request.resource.data.tanggal)
+        && request.resource.data.nomor is string
+        && request.resource.data.nomor.size() > 0
+        && request.resource.data.pihak is string
+        && request.resource.data.pihak.size() > 0
+        && request.resource.data.perihal is string
+        && request.resource.data.perihal.size() > 0
+        && request.resource.data.fileType in ['application/pdf', 'image/png', 'image/jpeg']
+        && request.resource.data.fileData is string
+        && request.resource.data.fileData.size() <= 1500000;
+    }
+
     match /settings/{documentId} {
       allow read: if signedIn();
-      allow create, update: if nonAnonymousUser();
+      allow create: if bootstrapWebmaster() || hasRole(['webmaster']);
+      allow update: if hasRole(['webmaster']) || (documentId == 'webmaster' && bootstrapWebmaster());
       allow delete: if false;
     }
 
     match /anggota_organisasi/{documentId} {
       allow read: if signedIn();
-      allow create, update: if nonAnonymousUser()
+      allow create, update: if (hasRole(['webmaster', 'ketua', 'sekretaris', 'admin_divisi']) || bootstrapWebmaster())
         && hasOnlyKeys([
           'nim',
           'nama',
@@ -37,14 +120,16 @@ service cloud.firestore {
           'divisi',
           'angkatan',
           'foto',
-          'timestamp'
-        ]);
-      allow delete: if nonAnonymousUser();
+          'timestamp',
+          'restoredAt'
+        ])
+        && validAnggota();
+      allow delete: if hasRole(['webmaster', 'ketua']);
     }
 
     match /kas_organisasi/{documentId} {
       allow read: if nonAnonymousUser();
-      allow create: if nonAnonymousUser()
+      allow create: if (hasRole(['webmaster', 'bendahara']) || bootstrapWebmaster())
         && hasOnlyKeys([
           'tanggal',
           'jenis',
@@ -54,9 +139,11 @@ service cloud.firestore {
           'nominal',
           'nominalKampus',
           'nominalOrganisasi',
-          'timestamp'
-        ]);
-      allow update: if nonAnonymousUser()
+          'timestamp',
+          'restoredAt'
+        ])
+        && validKas();
+      allow update: if hasRole(['webmaster', 'bendahara'])
         && request.resource.data.keys().hasOnly([
           'tanggal',
           'jenis',
@@ -67,14 +154,16 @@ service cloud.firestore {
           'nominalKampus',
           'nominalOrganisasi',
           'timestamp',
-          'updatedAt'
-        ]);
-      allow delete: if nonAnonymousUser();
+          'updatedAt',
+          'restoredAt'
+        ])
+        && validKas();
+      allow delete: if hasRole(['webmaster', 'bendahara']);
     }
 
     match /arsip_surat/{documentId} {
       allow read: if nonAnonymousUser();
-      allow create: if nonAnonymousUser()
+      allow create: if (hasRole(['webmaster', 'ketua', 'sekretaris', 'admin_divisi']) || bootstrapWebmaster())
         && hasOnlyKeys([
           'jenis',
           'tanggal',
@@ -83,10 +172,12 @@ service cloud.firestore {
           'perihal',
           'fileData',
           'fileType',
-          'timestamp'
-        ]);
+          'timestamp',
+          'restoredAt'
+        ])
+        && validArsip();
       allow update: if false;
-      allow delete: if nonAnonymousUser();
+      allow delete: if hasRole(['webmaster', 'ketua', 'sekretaris']);
     }
 
     match /audit_logs/{documentId} {

@@ -269,8 +269,8 @@ const renderPagination = (id, tableName, count, totalPages) => {
     el.innerHTML = `<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
         <span>Halaman <b class="text-slate-700">${state.page}</b> dari <b class="text-slate-700">${totalPages}</b> - ${count} data</span>
         <div class="flex items-center gap-2">
-            <button type="button" onclick="window.changeTablePage('${tableName}', -1)" class="px-3 py-1.5 rounded border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40" ${state.page <= 1 ? 'disabled' : ''}>Sebelumnya</button>
-            <button type="button" onclick="window.changeTablePage('${tableName}', 1)" class="px-3 py-1.5 rounded border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40" ${state.page >= totalPages ? 'disabled' : ''}>Berikutnya</button>
+            <button type="button" data-onclick="window.changeTablePage('${tableName}', -1)" class="px-3 py-1.5 rounded border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40" ${state.page <= 1 ? 'disabled' : ''}>Sebelumnya</button>
+            <button type="button" data-onclick="window.changeTablePage('${tableName}', 1)" class="px-3 py-1.5 rounded border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40" ${state.page >= totalPages ? 'disabled' : ''}>Berikutnya</button>
         </div>
     </div>`;
 };
@@ -298,7 +298,7 @@ const emptyAction = (title, message, label, action, icon = 'ph-database') => `<d
     <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 mx-auto flex items-center justify-center mb-3"><i class="ph-bold ${icon} text-2xl"></i></div>
     <p class="font-black text-slate-700">${escapeHtml(title)}</p>
     <p class="text-xs text-slate-500 mt-1 mb-4">${escapeHtml(message)}</p>
-    ${label && action ? `<button type="button" onclick="${action}" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors">${escapeHtml(label)}</button>` : ''}
+    ${label && action ? `<button type="button" data-onclick="${action}" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors">${escapeHtml(label)}</button>` : ''}
 </div>`;
 
 function renderTableSkeleton(tbodyId, columns = 6, rows = 5) {
@@ -599,6 +599,157 @@ function onReady(callback) {
     } else {
         callback();
     }
+}
+
+const EVENT_ACTION_ALLOWLIST = new Set([
+    'applySuratTemplate',
+    'batalAnggota',
+    'bukaEditTransaksi',
+    'bukaFormTambah',
+    'changeTablePage',
+    'closeConfirmModal',
+    'closeEditModal',
+    'downloadCSVData',
+    'downloadFullBackup',
+    'editAnggota',
+    'generateLPJ',
+    'generateNomorSurat',
+    'gantiTabAnggota',
+    'gantiTabDetailView',
+    'handleLoginSubmit',
+    'handleLogout',
+    'handleSimulatedDownload',
+    'hapusAnggota',
+    'hapusArsip',
+    'hapusFooter',
+    'hapusKas',
+    'lihatDetailAnggota',
+    'removeUserRole',
+    'renderTabelAnggota',
+    'renderTabelArsip',
+    'renderTabelKas',
+    'resetFilterTabel',
+    'restoreFullBackup',
+    'saveCetakConfig',
+    'saveUserRole',
+    'saveWebmasterConfig',
+    'simpanAnggota',
+    'simpanArsip',
+    'simpanEditTransaksi',
+    'simpanPembayaran',
+    'simpanPengeluaran',
+    'sortTable',
+    'switchMenu',
+    'switchView',
+    'toggleSidebar',
+    'toggleSubmenu',
+    'updateCampuranTotal',
+    'updateEditCampuranTotal',
+    'updateEditKategori',
+    'updateKategoriPembayaran',
+    'updateKategoriPengeluaran',
+    'updatePilihanFilter'
+]);
+
+function splitActionArgs(rawArgs) {
+    const args = [];
+    let current = '';
+    let quote = '';
+    let escapeNext = false;
+
+    for(const char of rawArgs) {
+        if(escapeNext) {
+            current += char;
+            escapeNext = false;
+            continue;
+        }
+        if(char === '\\') {
+            current += char;
+            escapeNext = true;
+            continue;
+        }
+        if(quote) {
+            current += char;
+            if(char === quote) quote = '';
+            continue;
+        }
+        if(char === '"' || char === "'") {
+            quote = char;
+            current += char;
+            continue;
+        }
+        if(char === ',') {
+            args.push(current.trim());
+            current = '';
+            continue;
+        }
+        current += char;
+    }
+
+    if(current.trim()) args.push(current.trim());
+    return args;
+}
+
+function parseActionArg(token, element, event) {
+    const raw = String(token || '').trim();
+    if(raw === 'this') return element;
+    if(raw === 'event') return event;
+    if(raw === 'true') return true;
+    if(raw === 'false') return false;
+    if(raw === 'null') return null;
+    if(raw === 'undefined') return undefined;
+    if(/^[-]?\d+(\.\d+)?$/.test(raw)) return Number(raw);
+    if((raw.startsWith("'") && raw.endsWith("'")) || (raw.startsWith('"') && raw.endsWith('"'))) {
+        try {
+            return JSON.parse(raw.startsWith("'") ? `"${raw.slice(1, -1).replace(/"/g, '\\"')}"` : raw);
+        } catch(err) {
+            return raw.slice(1, -1);
+        }
+    }
+    return raw;
+}
+
+function runDataAction(actionText, element, event) {
+    String(actionText || '').split(';').map((item) => item.trim()).filter(Boolean).forEach((statement) => {
+        if(statement === 'event.preventDefault()') {
+            event.preventDefault();
+            return;
+        }
+
+        const match = statement.match(/^window\.([A-Za-z0-9_]+)\((.*)\)$/);
+        if(!match) return;
+        const fnName = match[1];
+        if(!EVENT_ACTION_ALLOWLIST.has(fnName) || typeof window[fnName] !== 'function') return;
+        const args = splitActionArgs(match[2]).map((arg) => parseActionArg(arg, element, event));
+        window[fnName](...args);
+    });
+}
+
+function bindDataEventDelegation() {
+    document.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-onclick]');
+        if(target) runDataAction(target.getAttribute('data-onclick'), target, event);
+    });
+
+    document.addEventListener('submit', (event) => {
+        const target = event.target.closest('[data-onsubmit]');
+        if(target) runDataAction(target.getAttribute('data-onsubmit'), target, event);
+    });
+
+    document.addEventListener('change', (event) => {
+        const target = event.target.closest('[data-onchange]');
+        if(target) runDataAction(target.getAttribute('data-onchange'), target, event);
+    });
+
+    document.addEventListener('keyup', (event) => {
+        const target = event.target.closest('[data-onkeyup]');
+        if(target) runDataAction(target.getAttribute('data-onkeyup'), target, event);
+    });
+
+    document.addEventListener('input', (event) => {
+        const target = event.target.closest('[data-oninput]');
+        if(target) runDataAction(target.getAttribute('data-oninput'), target, event);
+    });
 }
 
 // ==========================================
@@ -1064,7 +1215,7 @@ function renderRoleManager() {
             <p class="text-xs font-black text-slate-700 uppercase">${escapeHtml(getRoleLabel(role))}</p>
             <p class="text-[11px] text-slate-500 break-all">${escapeHtml(uid)}</p>
         </div>
-        <button type="button" onclick="window.removeUserRole(${JSON.stringify(uid)})" data-permission="manage_roles" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded text-xs font-bold transition-colors">Hapus</button>
+        <button type="button" data-onclick='window.removeUserRole(${JSON.stringify(uid)})' data-permission="manage_roles" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded text-xs font-bold transition-colors">Hapus</button>
     </div>`).join('');
     applyRoleAccess();
 }
@@ -1524,9 +1675,9 @@ window.renderTabelAnggota = () => {
                             <span>Alamat: <b class="text-slate-700">${safeRAlamat}</b></span>
                         </div>
                         <div class="mt-4 flex gap-2">
-                            <button onclick="window.lihatDetailAnggota(${safeRId})" class="flex-1 bg-blue-50 text-blue-700 px-3 py-2 rounded font-bold text-xs">Detail</button>
-                            <button data-permission="manage_members" onclick="window.editAnggota(${safeRId})" class="flex-1 bg-emerald-50 text-emerald-700 px-3 py-2 rounded font-bold text-xs">Edit</button>
-                            <button data-permission="delete_members" onclick="window.hapusAnggota(${safeRId})" class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
+                            <button data-onclick='window.lihatDetailAnggota(${safeRId})' class="flex-1 bg-blue-50 text-blue-700 px-3 py-2 rounded font-bold text-xs">Detail</button>
+                            <button data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="flex-1 bg-emerald-50 text-emerald-700 px-3 py-2 rounded font-bold text-xs">Edit</button>
+                            <button data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
                         </div>
                     </div>
                 </td></tr>`;
@@ -1536,13 +1687,13 @@ window.renderTabelAnggota = () => {
             htmlTable += `<tr class="hover:bg-slate-50 transition-colors text-slate-700">
                 <td class="p-2.5 border-b border-slate-200">${page.start + index + 1}</td>
                 <td class="p-2.5 border-b border-slate-200">${safeRNim}</td>
-                <td class="p-2.5 border-b border-slate-200 text-[#3c8dbc] uppercase font-bold cursor-pointer hover:underline" onclick="window.lihatDetailAnggota(${safeRId})" title="Klik untuk lihat E-Profil">${safeRName}</td>
+                <td class="p-2.5 border-b border-slate-200 text-[#3c8dbc] uppercase font-bold cursor-pointer hover:underline" data-onclick='window.lihatDetailAnggota(${safeRId})' title="Klik untuk lihat E-Profil">${safeRName}</td>
                 <td class="p-2.5 border-b border-slate-200 uppercase">${safeRDivisi}</td>
                 <td class="p-2.5 border-b border-slate-200">${safeRAngkatan}</td>
                 <td class="p-2.5 border-b border-slate-200 uppercase">${safeRAlamat}</td>
                 <td class="p-2.5 border-b border-slate-200 text-center">
-                    <button data-permission="manage_members" onclick="window.editAnggota(${safeRId})" class="bg-[#00a65a] hover:bg-green-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center mr-1 transition-colors" title="Edit Anggota"><i class="ph-bold ph-pencil-simple"></i></button>
-                    <button data-permission="delete_members" onclick="window.hapusAnggota(${safeRId})" class="bg-[#dd4b39] hover:bg-red-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center transition-colors" title="Hapus"><i class="ph-bold ph-x"></i></button>
+                    <button data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="bg-[#00a65a] hover:bg-green-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center mr-1 transition-colors" title="Edit Anggota"><i class="ph-bold ph-pencil-simple"></i></button>
+                    <button data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="bg-[#dd4b39] hover:bg-red-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center transition-colors" title="Hapus"><i class="ph-bold ph-x"></i></button>
                 </td>
             </tr>`;
     });
@@ -1690,6 +1841,10 @@ window.simpanPengeluaran = async (e) => {
 
 window.hapusKas = (id, ket) => {
     if(!requirePermission('delete_finance', 'Role Anda tidak dapat menghapus transaksi kas.')) return;
+    if(!ket) {
+        const row = (window.cachedKasData || []).find((item) => item.id === id);
+        ket = row ? (row.keterangan || row.kategori || id) : id;
+    }
     window.customConfirmTyped(`Tindakan Permanen:\nYakin hapus transaksi kas:\n"${ket}" ?`, ket || id, async () => {
         try {
             await db.collection("kas_organisasi").doc(id).delete();
@@ -1825,8 +1980,8 @@ window.renderTabelKas = () => {
                         <span class="font-black ${isMasuk ? 'text-emerald-700' : 'text-rose-700'}">${formatRp(nom)}</span>
                     </div>
                     <div class="mt-4 flex gap-2">
-                        <button data-permission="manage_finance" onclick="window.bukaEditTransaksi(${safeRId})" class="flex-1 bg-amber-50 text-amber-700 px-3 py-2 rounded font-bold text-xs">Edit</button>
-                        <button data-permission="delete_finance" onclick="window.hapusKas(${safeRId}, ${JSON.stringify(r.keterangan || '')})" class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
+                        <button data-permission="manage_finance" data-onclick='window.bukaEditTransaksi(${safeRId})' class="flex-1 bg-amber-50 text-amber-700 px-3 py-2 rounded font-bold text-xs">Edit</button>
+                        <button data-permission="delete_finance" data-onclick='window.hapusKas(${safeRId})' class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
                     </div>
                 </div>
             </td></tr>`;
@@ -1844,8 +1999,8 @@ window.renderTabelKas = () => {
             <td class="px-4 py-3 text-right font-black text-slate-800 bg-slate-50/50 text-xs">${formatRp(r.saldoCalc)}</td>
             <td class="px-4 py-3 text-center">
                 <div class="flex justify-center gap-1">
-                    <button data-permission="manage_finance" onclick="window.bukaEditTransaksi(${safeRId})" class="bg-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white p-1.5 rounded transition-colors" title="Edit Transaksi"><i class="ph-bold ph-pencil-simple"></i></button>
-                    <button data-permission="delete_finance" onclick="window.hapusKas(${safeRId}, ${JSON.stringify(r.keterangan || '')})" class="bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white p-1.5 rounded transition-colors" title="Hapus Transaksi"><i class="ph-bold ph-trash"></i></button>
+                    <button data-permission="manage_finance" data-onclick='window.bukaEditTransaksi(${safeRId})' class="bg-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white p-1.5 rounded transition-colors" title="Edit Transaksi"><i class="ph-bold ph-pencil-simple"></i></button>
+                    <button data-permission="delete_finance" data-onclick='window.hapusKas(${safeRId})' class="bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white p-1.5 rounded transition-colors" title="Hapus Transaksi"><i class="ph-bold ph-trash"></i></button>
                 </div>
             </td>
         </tr>`;
@@ -2157,8 +2312,9 @@ const openPrintableDocument = (title, bodyHtml) => {
             th{background:#f1f5f9}
             .right{text-align:right}.center{text-align:center}.ttd{margin-top:48px;display:flex;justify-content:space-between;gap:32px}.ttd>div{width:32%;text-align:center}.name{font-weight:bold;text-decoration:underline;margin-top:56px}
             @media print{body{margin:18mm}.no-print{display:none}}
-        </style></head><body>${bodyHtml}<script>setTimeout(() => window.print(), 300);<\/script></body></html>`);
+        </style></head><body>${bodyHtml}</body></html>`);
     win.document.close();
+    setTimeout(() => win.print(), 300);
 };
 
 window.generateLPJ = () => {
@@ -2307,8 +2463,9 @@ window.renderPrintView = async (type, id) => {
                 th,td{border:1px solid #cbd5e1;padding:8px;text-align:left;vertical-align:top}
                 th{background:#f1f5f9;width:180px}.center{text-align:center}
                 @media print{body{margin:18mm}}
-            </style></head><body>${body}<script>setTimeout(() => window.print(), 300);<\/script></body></html>`);
+            </style></head><body>${body}</body></html>`);
         document.close();
+        setTimeout(() => window.print(), 300);
     } catch(err) {
         window.showToast('Gagal', 'Data cetak tidak ditemukan.', 'error');
     }
@@ -2441,7 +2598,7 @@ window.renderTabelArsip = () => {
                         </div>
                         <p class="text-xs text-slate-600 mt-3">${safeRPerihal}</p>
                         <div class="mt-4 flex gap-2">
-                            <button data-permission="delete_archive" onclick="window.hapusArsip(${safeRId})" class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
+                            <button data-permission="delete_archive" data-onclick='window.hapusArsip(${safeRId})' class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
                         </div>
                     </div>
                 </td></tr>`;
@@ -2459,7 +2616,7 @@ window.renderTabelArsip = () => {
                 <td class="px-5 py-4 text-slate-600 truncate max-w-[200px]">${safeRPerihal}</td>
                 <td class="px-5 py-4 text-center">
                     <div class="flex justify-center gap-1">
-                        <button data-permission="delete_archive" onclick="window.hapusArsip(${safeRId})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 p-1.5 rounded shadow-sm transition-colors"><i class="ph-bold ph-trash"></i></button>
+                        <button data-permission="delete_archive" data-onclick='window.hapusArsip(${safeRId})' class="bg-rose-100 hover:bg-rose-200 text-rose-600 p-1.5 rounded shadow-sm transition-colors"><i class="ph-bold ph-trash"></i></button>
                     </div>
                 </td>
             </tr>`;
@@ -2510,6 +2667,8 @@ function initCharts() {
 }
 
 onReady(() => {
+    bindDataEventDelegation();
+
     const footerYear = document.getElementById('login-year');
     if(footerYear) footerYear.innerText = getFormattedJakartaYear(new Date());
     

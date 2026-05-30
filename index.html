@@ -16,7 +16,7 @@
     <meta name="author" content="Tim Developer LPM MAKHIBRA">
     <meta name="robots" content="noindex, nofollow">
     <meta name="googlebot" content="noindex, nofollow">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://images.unsplash.com https://ui-avatars.com https://api.qrserver.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://ui-avatars.com https://images.unsplash.com https://api.qrserver.com https://www.gstatic.com; connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://images.unsplash.com https://ui-avatars.com https://api.qrserver.com; script-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://ui-avatars.com https://images.unsplash.com https://api.qrserver.com https://www.gstatic.com; connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
  
     <meta name="language" content="Indonesian">
     
@@ -34,6 +34,7 @@
     <link rel="shortcut icon" type="image/png" href="logo_lpm-.png">
     <link rel="apple-touch-icon" href="logo_lpm-.png">
     <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
 
     <!-- Tailwind CSS, Icons, Fonts, & Chart.js -->
     <script src="head.js"></script>
@@ -117,7 +118,7 @@
             </div>
             <p id="confirm-message" class="text-sm text-slate-600 mb-6 leading-relaxed whitespace-pre-line">Yakin ingin menghapus data ini?</p>
             <div class="flex justify-end gap-3">
-                <button onclick="window.closeConfirmModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors">Batal</button>
+                <button data-onclick="window.closeConfirmModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors">Batal</button>
                 <button id="confirm-btn-yes" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md transition-colors">Ya, Hapus!</button>
             </div>
         </div>
@@ -136,20 +137,20 @@
                 </div>
             </div>
 
-            <form id="formEditTransaksi" onsubmit="window.simpanEditTransaksi(event)" class="space-y-4">
+            <form id="formEditTransaksi" data-onsubmit="window.simpanEditTransaksi(event)" class="space-y-4">
                 <input type="hidden" id="edit-transaksi-id">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Jenis Transaksi</label>
-                        <select id="edit-jenis" required onchange="window.updateEditKategori()" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-slate-500">
+                        <select id="edit-jenis" required data-onchange="window.updateEditKategori()" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-slate-500">
                             <option value="Pemasukan">Kas Masuk</option>
                             <option value="Pengeluaran">Kas Keluar</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Sumber Dana</label>
-                        <select id="edit-sumber-dana" required onchange="window.updateEditKategori()" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-slate-500">
+                        <select id="edit-sumber-dana" required data-onchange="window.updateEditKategori()" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-slate-500">
                             <option value="organisasi">Dana Organisasi</option>
                             <option value="kampus">Dana Kampus</option>
                             <option value="campuran">Dana Campuran (Kampus + Organisasi)</option>
@@ -184,14 +185,14 @@
                             <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Dana Kampus (Rp)</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 font-black text-lg">Rp</span>
-                                <input type="number" id="edit-nominal-kampus" placeholder="0" min="0" oninput="window.updateEditCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                <input type="number" id="edit-nominal-kampus" placeholder="0" min="0" data-oninput="window.updateEditCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Dana Organisasi (Rp)</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-lg">Rp</span>
-                                <input type="number" id="edit-nominal-organisasi" placeholder="0" min="0" oninput="window.updateEditCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                                <input type="number" id="edit-nominal-organisasi" placeholder="0" min="0" data-oninput="window.updateEditCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
                             </div>
                         </div>
                     </div>
@@ -199,7 +200,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" onclick="window.closeEditModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors">Batal</button>
+                    <button type="button" data-onclick="window.closeEditModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors">Batal</button>
                     <button type="submit" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-md transition-colors">Simpan Perubahan</button>
                 </div>
             </form>
@@ -243,7 +244,7 @@
             <h1 id="login-instansi-name" class="text-[26px] font-bold text-white tracking-tight mb-8 drop-shadow-md">LPM MAKHIBRA</h1>
 
             <div class="bg-white rounded-md shadow-2xl w-full p-6 sm:p-8">
-                <form id="login-form" onsubmit="window.handleLoginSubmit(event)" class="space-y-4">
+                <form id="login-form" data-onsubmit="window.handleLoginSubmit(event)" class="space-y-4">
                     <div class="relative">
                         <input type="email" id="login-email" required placeholder="Username / Email" class="w-full pl-4 pr-10 py-3 bg-white border border-slate-300 rounded-[4px] text-[13px] text-slate-600 focus:border-[#2a8b66] focus:outline-none transition-all placeholder:text-slate-400">
                         <i class="ph-fill ph-user absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-lg"></i>
@@ -268,7 +269,7 @@
     </div>
 
     <!-- SIDEBAR -->
-    <div id="sidebarOverlay" class="fixed inset-0 z-40 hidden md:hidden" onclick="window.toggleSidebar()"></div>
+    <div id="sidebarOverlay" class="fixed inset-0 z-40 hidden md:hidden" data-onclick="window.toggleSidebar()"></div>
 
     <!-- PERBAIKAN WARNA SIDEBAR LANGSUNG DI CLASS TAILWIND -->
     <aside id="sidebar" class="w-[250px] bg-[#000000] flex-col fixed inset-y-0 left-0 transform -translate-x-full md:sticky md:top-0 md:h-dvh md:translate-x-0 transition-transform duration-300 ease-in-out z-50 flex shadow-2xl no-print">
@@ -281,55 +282,55 @@
 
         <nav class="flex-1 overflow-y-auto sidebar-scrollbar py-3 text-sm">
             <p class="px-5 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Navigasi Utama</p>
-            <a href="#" onclick="window.switchMenu(this, 'view-dashboard'); event.preventDefault();" class="sidebar-menu menu-active flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+            <a href="#" data-onclick="window.switchMenu(this, 'view-dashboard'); event.preventDefault();" class="sidebar-menu menu-active flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
                 <i class="ph-fill ph-house text-xl w-6"></i> <span>Beranda</span>
             </a>
 
             <div class="w-full mt-1">
-                <a href="#" onclick="window.toggleSubmenu('submenu-bankdata', 'icon-bankdata'); event.preventDefault();" class="flex items-center justify-between px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+                <a href="#" data-onclick="window.toggleSubmenu('submenu-bankdata', 'icon-bankdata'); event.preventDefault();" class="flex items-center justify-between px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
                     <div class="flex items-center gap-3"><i class="ph-fill ph-database text-xl w-6"></i> <span>Bank Data</span></div>
                     <i id="icon-bankdata" class="ph-bold ph-caret-left text-xs transition-transform"></i>
                 </a>
                 <div id="submenu-bankdata" class="hidden flex-col bg-slate-900 py-2">
-                    <a href="#" data-permission="manage_members" onclick="window.bukaFormTambah(this, true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-user-plus text-lg"></i> Tambah Anggota</a>
-                    <a href="#" onclick="window.switchMenu(this, 'view-kelola-anggota', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-blue-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-list-bullets text-lg"></i> Database Anggota</a>
+                    <a href="#" data-permission="manage_members" data-onclick="window.bukaFormTambah(this, true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-user-plus text-lg"></i> Tambah Anggota</a>
+                    <a href="#" data-onclick="window.switchMenu(this, 'view-kelola-anggota', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-blue-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-list-bullets text-lg"></i> Database Anggota</a>
                 </div>
             </div>
 
             <div class="w-full mt-1">
-                <a href="#" onclick="window.toggleSubmenu('submenu-keuangan', 'icon-keuangan'); event.preventDefault();" class="flex items-center justify-between px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+                <a href="#" data-onclick="window.toggleSubmenu('submenu-keuangan', 'icon-keuangan'); event.preventDefault();" class="flex items-center justify-between px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
                     <div class="flex items-center gap-3"><i class="ph-fill ph-wallet text-xl w-6"></i> <span>Pembukuan Kas</span></div>
                     <i id="icon-keuangan" class="ph-bold ph-caret-left text-xs transition-transform"></i>
                 </a>
                 <div id="submenu-keuangan" class="hidden flex-col bg-slate-900 py-2">
-                    <a href="#" data-permission="manage_finance" onclick="window.switchMenu(this, 'view-catat-transaksi', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-download-simple text-lg"></i> Kas Masuk</a>
-                    <a href="#" data-permission="manage_finance" onclick="window.switchMenu(this, 'view-catat-pengeluaran', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-rose-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> Kas Keluar</a>
-                    <a href="#" onclick="window.switchMenu(this, 'view-riwayat-transaksi', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-amber-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-clock-counter-clockwise text-lg"></i> Riwayat Transaksi</a>
-                    <a href="#" onclick="window.switchMenu(this, 'view-lpj-kampus', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-blue-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-file-text text-lg"></i> LPJ Dana Kampus</a>
+                    <a href="#" data-permission="manage_finance" data-onclick="window.switchMenu(this, 'view-catat-transaksi', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-download-simple text-lg"></i> Kas Masuk</a>
+                    <a href="#" data-permission="manage_finance" data-onclick="window.switchMenu(this, 'view-catat-pengeluaran', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-rose-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> Kas Keluar</a>
+                    <a href="#" data-onclick="window.switchMenu(this, 'view-riwayat-transaksi', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-amber-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-clock-counter-clockwise text-lg"></i> Riwayat Transaksi</a>
+                    <a href="#" data-onclick="window.switchMenu(this, 'view-lpj-kampus', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-blue-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-file-text text-lg"></i> LPJ Dana Kampus</a>
                 </div>
             </div>
 
             <div class="w-full mt-1">
-                <a href="#" onclick="window.toggleSubmenu('submenu-sekretariat', 'icon-sekretariat'); event.preventDefault();" class="flex items-center justify-between px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+                <a href="#" data-onclick="window.toggleSubmenu('submenu-sekretariat', 'icon-sekretariat'); event.preventDefault();" class="flex items-center justify-between px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
                     <div class="flex items-center gap-3"><i class="ph-fill ph-folder text-xl w-6"></i> <span>Kesekretariatan</span></div>
                     <i id="icon-sekretariat" class="ph-bold ph-caret-left text-xs transition-transform"></i>
                 </a>
                 <div id="submenu-sekretariat" class="hidden flex-col bg-slate-900 py-2">
-                    <a href="#" onclick="window.switchMenu(this, 'view-arsip-surat', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-indigo-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-envelope-open text-lg"></i> E-Arsip Surat</a>
-                    <a href="#" data-permission="manage_archive" onclick="window.switchMenu(this, 'view-tambah-arsip', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-indigo-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> Upload Arsip</a>
-                    <a href="#" data-permission="manage_archive" onclick="window.switchMenu(this, 'view-buat-surat', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-magic-wand text-lg"></i> Buat Surat Otomatis</a>
+                    <a href="#" data-onclick="window.switchMenu(this, 'view-arsip-surat', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-indigo-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-envelope-open text-lg"></i> E-Arsip Surat</a>
+                    <a href="#" data-permission="manage_archive" data-onclick="window.switchMenu(this, 'view-tambah-arsip', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-indigo-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> Upload Arsip</a>
+                    <a href="#" data-permission="manage_archive" data-onclick="window.switchMenu(this, 'view-buat-surat', true); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-2.5 text-slate-400 hover:text-emerald-400 pl-14 text-[13px] transition-colors"><i class="ph-bold ph-magic-wand text-lg"></i> Buat Surat Otomatis</a>
                 </div>
             </div>
 
-            <a href="#" data-permission="backup_export" onclick="window.switchMenu(this, 'view-setting'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-1">
+            <a href="#" data-permission="backup_export" data-onclick="window.switchMenu(this, 'view-setting'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-1">
                 <i class="ph-fill ph-cloud-arrow-down text-xl w-6"></i> <span>Unduh Laporan</span>
             </a>
 
             <p class="px-5 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-4 mb-1">Pengaturan</p>
-            <a href="#" data-permission="manage_settings" onclick="window.switchMenu(this, 'view-webmaster'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+            <a href="#" data-permission="manage_settings" data-onclick="window.switchMenu(this, 'view-webmaster'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
                 <i class="ph-fill ph-gear-six text-xl w-6"></i> <span>Webmaster Sistem</span>
             </a>
-            <a href="#" onclick="window.handleLogout(); event.preventDefault();" class="flex items-center gap-3 px-5 py-3.5 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors border-l-4 border-transparent mt-2">
+            <a href="#" data-onclick="window.handleLogout(); event.preventDefault();" class="flex items-center gap-3 px-5 py-3.5 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors border-l-4 border-transparent mt-2">
                 <i class="ph-bold ph-power text-xl w-6"></i> <span>Keluar Server</span>
             </a>
         </nav>
@@ -347,7 +348,7 @@
                 <div class="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
 
             <!-- Hamburger -->
-            <button onclick="window.toggleSidebar()" 
+            <button data-onclick="window.toggleSidebar()" 
                 class="text-slate-700 hover:text-emerald-600 transition-colors bg-slate-200 hover:bg-emerald-100 p-2 rounded-lg shadow-sm border border-slate-300 shrink-0 text-xl">
                 ☰
             </button>
@@ -388,10 +389,6 @@
         </div>
     </div>
 
-    <script>
-        if (window.startJakartaClock) window.startJakartaClock();
-    </script>
-
 </header>
 
         <main class="flex-1 custom-scrollbar p-4 md:p-6 lg:p-8 bg-slate-100">
@@ -402,27 +399,27 @@
                     
                     <div class="space-y-5 no-print">
                         <div class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                            <button data-permission="manage_members" onclick="window.bukaFormTambah()" class="bg-slate-50 border border-slate-200 hover:bg-emerald-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-permission="manage_members" data-onclick="window.bukaFormTambah()" class="bg-slate-50 border border-slate-200 hover:bg-emerald-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-emerald-500 group-hover:text-emerald-600 mb-2 transition-colors"><use href="#icon-user-add"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-emerald-700">Tambah<br>Anggota</span>
                             </button>
-                            <button onclick="window.switchView('view-kelola-anggota')" class="bg-slate-50 border border-slate-200 hover:bg-blue-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-onclick="window.switchView('view-kelola-anggota')" class="bg-slate-50 border border-slate-200 hover:bg-blue-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-blue-500 group-hover:text-blue-600 mb-2 transition-colors"><use href="#icon-address-book"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-blue-700">Data<br>Anggota</span>
                             </button>
-                            <button data-permission="manage_finance" onclick="window.switchView('view-catat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-teal-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-permission="manage_finance" data-onclick="window.switchView('view-catat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-teal-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-teal-500 group-hover:text-teal-600 mb-2 transition-colors"><use href="#icon-money-in"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-teal-700">Kas<br>Masuk</span>
                             </button>
-                            <button data-permission="manage_finance" onclick="window.switchView('view-catat-pengeluaran')" class="bg-slate-50 border border-slate-200 hover:bg-rose-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-permission="manage_finance" data-onclick="window.switchView('view-catat-pengeluaran')" class="bg-slate-50 border border-slate-200 hover:bg-rose-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-rose-500 group-hover:text-rose-600 mb-2 transition-colors"><use href="#icon-receipt-out"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-rose-700">Kas<br>Keluar</span>
                             </button>
-                            <button onclick="window.switchView('view-riwayat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-amber-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-onclick="window.switchView('view-riwayat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-amber-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-amber-500 group-hover:text-amber-600 mb-2 transition-colors"><use href="#icon-chart-report"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-amber-700">Laporan<br>Keuangan</span>
                             </button>
-                            <button onclick="window.switchView('view-lpj-kampus')" class="bg-slate-50 border border-slate-200 hover:bg-indigo-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
+                            <button data-onclick="window.switchView('view-lpj-kampus')" class="bg-slate-50 border border-slate-200 hover:bg-indigo-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
                                 <svg class="w-9 h-9 text-indigo-500 group-hover:text-indigo-600 mb-2 transition-colors"><use href="#icon-file-lpj"></use></svg>
                                 <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-indigo-700">LPJ<br>Kampus</span>
                             </button>
@@ -576,11 +573,11 @@
                         </div>
 
                         <div class="flex border-b border-slate-200 bg-slate-50 text-[13px] select-none">
-                            <div id="btn-tab-1" onclick="window.gantiTabAnggota(1)" class="px-6 py-3 bg-white border-t-[3px] border-t-[#3498db] border-r border-r-slate-200 border-l border-l-slate-200 text-[#3498db] font-bold -mb-px cursor-pointer transition-all">Identitas Pribadi</div>
-                            <div id="btn-tab-2" onclick="window.gantiTabAnggota(2)" class="px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer border-r border-slate-200 transition-all">Kontak & Organisasi</div>
+                            <div id="btn-tab-1" data-onclick="window.gantiTabAnggota(1)" class="px-6 py-3 bg-white border-t-[3px] border-t-[#3498db] border-r border-r-slate-200 border-l border-l-slate-200 text-[#3498db] font-bold -mb-px cursor-pointer transition-all">Identitas Pribadi</div>
+                            <div id="btn-tab-2" data-onclick="window.gantiTabAnggota(2)" class="px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer border-r border-slate-200 transition-all">Kontak & Organisasi</div>
                         </div>
 
-                        <form id="formTambahAnggota" onsubmit="window.simpanAnggota(event)" class="p-6">
+                        <form id="formTambahAnggota" data-onsubmit="window.simpanAnggota(event)" class="p-6">
                             
                             <div id="content-tab-1" class="block animate-[fadeIn_0.3s_ease-in-out]">
                                 <ul class="list-disc pl-5 font-bold text-slate-700 text-[13px] mb-6 uppercase">
@@ -618,7 +615,7 @@
                                 </div>
 
                                 <div class="mt-10 pt-4 flex justify-end gap-3 border-t border-slate-200">
-                                    <button type="button" onclick="window.gantiTabAnggota(2)" class="bg-[#3498db] hover:bg-blue-600 text-white py-1.5 px-6 rounded-sm font-bold text-[13px] shadow-sm transition-all transform active:scale-95 flex items-center gap-2">Formulir Selanjutnya <i class="ph-bold ph-arrow-right text-base"></i></button>
+                                    <button type="button" data-onclick="window.gantiTabAnggota(2)" class="bg-[#3498db] hover:bg-blue-600 text-white py-1.5 px-6 rounded-sm font-bold text-[13px] shadow-sm transition-all transform active:scale-95 flex items-center gap-2">Formulir Selanjutnya <i class="ph-bold ph-arrow-right text-base"></i></button>
                                 </div>
                             </div>
 
@@ -664,10 +661,10 @@
                                 </div>
 
                                 <div class="mt-10 pt-4 flex justify-between gap-3 border-t border-slate-200">
-                                    <button type="button" onclick="window.gantiTabAnggota(1)" class="bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 py-1.5 px-6 rounded-sm font-bold text-[13px] transition-colors shadow-sm flex items-center gap-2"><i class="ph-bold ph-arrow-left text-base"></i> Sebelumnya</button>
+                                    <button type="button" data-onclick="window.gantiTabAnggota(1)" class="bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 py-1.5 px-6 rounded-sm font-bold text-[13px] transition-colors shadow-sm flex items-center gap-2"><i class="ph-bold ph-arrow-left text-base"></i> Sebelumnya</button>
                                     
                                     <div class="flex gap-3">
-                                        <button type="button" onclick="window.batalAnggota()" class="bg-slate-100 border border-slate-300 hover:bg-slate-200 text-rose-600 py-1.5 px-6 rounded-sm font-bold text-[13px] transition-colors shadow-sm">Gagal / Batal</button>
+                                        <button type="button" data-onclick="window.batalAnggota()" class="bg-slate-100 border border-slate-300 hover:bg-slate-200 text-rose-600 py-1.5 px-6 rounded-sm font-bold text-[13px] transition-colors shadow-sm">Gagal / Batal</button>
                                         <button type="submit" class="bg-[#27ae60] hover:bg-emerald-600 text-white py-1.5 px-8 rounded-sm font-bold text-[13px] shadow-sm transition-all transform active:scale-95"><i class="ph-bold ph-floppy-disk mr-1"></i> SIMPAN BIODATA</button>
                                     </div>
                                 </div>
@@ -689,7 +686,7 @@
                                 </div>
                             </div>
                             <div class="bg-black/10 p-2 flex justify-center">
-                                <button onclick="window.downloadCSVData('Data_Laki')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
+                                <button data-onclick="window.downloadCSVData('Data_Laki')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
                             </div>
                         </div>
                         
@@ -702,7 +699,7 @@
                                 </div>
                             </div>
                             <div class="bg-black/10 p-2 flex justify-center">
-                                <button onclick="window.downloadCSVData('Data_Perempuan')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
+                                <button data-onclick="window.downloadCSVData('Data_Perempuan')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
                             </div>
                         </div>
 
@@ -715,14 +712,14 @@
                                 </div>
                             </div>
                             <div class="bg-black/10 p-2 flex justify-center">
-                                <button onclick="window.downloadCSVData('Data_Semua')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
+                                <button data-onclick="window.downloadCSVData('Data_Semua')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-slate-100 border border-slate-200 p-3 flex flex-col md:flex-row items-center gap-3 mb-4 text-[13px] no-print shadow-sm">
                         <span class="font-bold text-slate-700 whitespace-nowrap">Filter berdasarkan :</span>
-                        <select id="filterKategori" onchange="window.updatePilihanFilter()" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-auto bg-white">
+                        <select id="filterKategori" data-onchange="window.updatePilihanFilter()" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-auto bg-white">
                             <option value="">- Pilih Kategori -</option>
                             <option value="divisi">Divisi Organisasi</option>
                             <option value="jk">Jenis Kelamin</option>
@@ -731,10 +728,10 @@
                         <select id="filterNilai" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-auto bg-white flex-1 md:flex-none md:min-w-[200px]">
                             <option value="">- Pilih Kategori Terlebih Dahulu -</option>
                         </select>
-                        <input type="text" id="filterAngkatanAnggota" onkeyup="window.renderTabelAnggota()" placeholder="Angkatan" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-[120px] bg-white">
+                        <input type="text" id="filterAngkatanAnggota" data-onkeyup="window.renderTabelAnggota()" placeholder="Angkatan" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-[120px] bg-white">
                         <div class="flex gap-2 w-full md:w-auto">
-                            <button onclick="window.renderTabelAnggota()" class="bg-[#3c8dbc] hover:bg-[#367fa9] text-white px-4 py-1.5 font-bold shadow-sm transition-colors flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-magnifying-glass"></i> CARI</button>
-                            <button onclick="window.resetFilterTabel()" class="bg-[#dd4b39] hover:bg-red-700 text-white px-4 py-1.5 font-bold shadow-sm transition-colors flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-arrows-clockwise"></i> RESET</button>
+                            <button data-onclick="window.renderTabelAnggota()" class="bg-[#3c8dbc] hover:bg-[#367fa9] text-white px-4 py-1.5 font-bold shadow-sm transition-colors flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-magnifying-glass"></i> CARI</button>
+                            <button data-onclick="window.resetFilterTabel()" class="bg-[#dd4b39] hover:bg-red-700 text-white px-4 py-1.5 font-bold shadow-sm transition-colors flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-arrows-clockwise"></i> RESET</button>
                         </div>
                     </div>
 
@@ -742,8 +739,8 @@
                         <div class="p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100">
                             <h3 class="text-[16px] text-slate-700 flex items-center gap-2">Data Anggota | <i class="ph-fill ph-image text-[#00a65a] text-xl"></i></h3>
                             <div class="flex gap-2 text-xs">
-                                <button onclick="window.downloadCSVData('Tabel_Anggota')" class="bg-[#00a65a] hover:bg-green-700 text-white px-3 py-1.5 rounded-sm shadow-sm font-bold flex items-center gap-1 transition-colors"><i class="ph-bold ph-download-simple text-sm"></i> DOWNLOAD EXCEL <i class="ph-bold ph-caret-down ml-1"></i></button>
-                                <button onclick="window.bukaFormTambah()" class="bg-[#dd4b39] hover:bg-red-700 text-white px-3 py-1.5 rounded-sm shadow-sm font-bold flex items-center gap-1 transition-colors"><i class="ph-bold ph-plus text-sm"></i> TAMBAH ANGGOTA</button>
+                                <button data-onclick="window.downloadCSVData('Tabel_Anggota')" class="bg-[#00a65a] hover:bg-green-700 text-white px-3 py-1.5 rounded-sm shadow-sm font-bold flex items-center gap-1 transition-colors"><i class="ph-bold ph-download-simple text-sm"></i> DOWNLOAD EXCEL <i class="ph-bold ph-caret-down ml-1"></i></button>
+                                <button data-onclick="window.bukaFormTambah()" class="bg-[#dd4b39] hover:bg-red-700 text-white px-3 py-1.5 rounded-sm shadow-sm font-bold flex items-center gap-1 transition-colors"><i class="ph-bold ph-plus text-sm"></i> TAMBAH ANGGOTA</button>
                             </div>
                         </div>
 
@@ -760,7 +757,7 @@
                                     </div>
                                     <div class="flex items-center gap-2 w-full sm:w-auto">
                                         Pencarian Cepat: 
-                                        <input type="text" id="pencarianTabel" onkeyup="window.renderTabelAnggota()" placeholder="Ketik nama / NIM..." class="border border-slate-300 px-2 py-1 outline-none w-full sm:w-[200px] focus:border-[#3c8dbc]">
+                                        <input type="text" id="pencarianTabel" data-onkeyup="window.renderTabelAnggota()" placeholder="Ketik nama / NIM..." class="border border-slate-300 px-2 py-1 outline-none w-full sm:w-[200px] focus:border-[#3c8dbc]">
                                     </div>
                                 </div>
                             </div>
@@ -770,11 +767,11 @@
                                     <thead class="bg-slate-50">
                                         <tr>
                                             <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">No <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th onclick="window.sortTable('anggota','nim')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">NIM <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th onclick="window.sortTable('anggota','nama')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Nama Lengkap <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th onclick="window.sortTable('anggota','divisi')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Divisi <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th onclick="window.sortTable('anggota','angkatan')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Angkatan <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th onclick="window.sortTable('anggota','alamat')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Alamat <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','nim')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">NIM <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','nama')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Nama Lengkap <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','divisi')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Divisi <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','angkatan')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Angkatan <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','alamat')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Alamat <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
                                             <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 text-center cursor-pointer hover:bg-slate-100 group">Aksi <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
                                         </tr>
                                     </thead>
@@ -793,7 +790,7 @@
 
                 <!-- VIEW: DETAIL ANGGOTA (E-PROFIL) -->
                 <div id="view-detail-anggota" class="view-section hidden no-print">
-                    <button onclick="window.switchView('view-kelola-anggota')" class="mb-5 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-sm text-sm font-bold flex items-center gap-2 shadow-sm transition-colors"><i class="ph-bold ph-arrow-left"></i> Kembali ke Data Anggota</button>
+                    <button data-onclick="window.switchView('view-kelola-anggota')" class="mb-5 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-sm text-sm font-bold flex items-center gap-2 shadow-sm transition-colors"><i class="ph-bold ph-arrow-left"></i> Kembali ke Data Anggota</button>
                     
                     <div class="flex flex-col lg:flex-row gap-5">
                         <div class="w-full lg:w-1/3 bg-white border border-slate-200 shadow-sm flex flex-col">
@@ -831,8 +828,8 @@
                         <div class="w-full lg:w-2/3">
                             <div class="bg-white border border-slate-200 shadow-sm flex flex-col h-full">
                                 <div class="flex border-b border-slate-200 bg-slate-50 text-[13px] select-none">
-                                    <div id="tab-detail-1" onclick="window.gantiTabDetailView(1)" class="px-6 py-3 bg-white border-t-[3px] border-t-[#3c8dbc] border-r border-slate-200 text-[#3c8dbc] font-bold cursor-pointer transition-all -mb-px">Identitas Pribadi</div>
-                                    <div id="tab-detail-2" onclick="window.gantiTabDetailView(2)" class="px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer transition-all border-r border-slate-200">Kontak & Organisasi</div>
+                                    <div id="tab-detail-1" data-onclick="window.gantiTabDetailView(1)" class="px-6 py-3 bg-white border-t-[3px] border-t-[#3c8dbc] border-r border-slate-200 text-[#3c8dbc] font-bold cursor-pointer transition-all -mb-px">Identitas Pribadi</div>
+                                    <div id="tab-detail-2" data-onclick="window.gantiTabDetailView(2)" class="px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer transition-all border-r border-slate-200">Kontak & Organisasi</div>
                                 </div>
                                 
                                 <div id="content-detail-1" class="p-5 flex-1 block animate-[fadeIn_0.3s_ease-in-out]">
@@ -907,10 +904,10 @@
                                 <p class="text-[10px] text-emerald-200 font-medium mt-0.5">Catat uang masuk ke dalam buku kas digital organisasi.</p>
                             </div>
                         </div>
-                        <form id="formInputPembayaran" onsubmit="window.simpanPembayaran(event)" class="p-6 sm:p-8 bg-slate-50/50">
+                        <form id="formInputPembayaran" data-onsubmit="window.simpanPembayaran(event)" class="p-6 sm:p-8 bg-slate-50/50">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Sumber Dana</label>
-                                    <select id="sumberDanaPembayaran" required onchange="window.updateKategoriPembayaran()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all">
+                                    <select id="sumberDanaPembayaran" required data-onchange="window.updateKategoriPembayaran()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all">
                                         <option value="organisasi">Dana Organisasi</option>
                                         <option value="kampus">Dana Kampus</option>
                                     </select>
@@ -942,10 +939,10 @@
                                 <p class="text-[10px] text-rose-200 font-medium mt-0.5">Catat uang keluar untuk keperluan operasional organisasi.</p>
                             </div>
                         </div>
-                        <form id="formInputPengeluaran" onsubmit="window.simpanPengeluaran(event)" class="p-6 sm:p-8 bg-slate-50/50">
+                        <form id="formInputPengeluaran" data-onsubmit="window.simpanPengeluaran(event)" class="p-6 sm:p-8 bg-slate-50/50">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Sumber Dana</label>
-                                    <select id="sumberDanaPengeluaran" required onchange="window.updateKategoriPengeluaran()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all">
+                                    <select id="sumberDanaPengeluaran" required data-onchange="window.updateKategoriPengeluaran()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all">
                                         <option value="organisasi">Dana Organisasi</option>
                                         <option value="kampus">Dana Kampus</option>
                                         <option value="campuran">Dana Campuran (Kampus + Organisasi)</option>
@@ -967,14 +964,14 @@
                                             <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Dana Kampus (Rp)</label>
                                             <div class="relative">
                                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 font-black text-lg">Rp</span>
-                                                <input type="number" id="nomCampuranKampus" placeholder="0" min="0" oninput="window.updateCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                                <input type="number" id="nomCampuranKampus" placeholder="0" min="0" data-oninput="window.updateCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                                             </div>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Dana Organisasi (Rp)</label>
                                             <div class="relative">
                                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-lg">Rp</span>
-                                                <input type="number" id="nomCampuranOrganisasi" placeholder="0" min="0" oninput="window.updateCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                                                <input type="number" id="nomCampuranOrganisasi" placeholder="0" min="0" data-oninput="window.updateCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
                                             </div>
                                         </div>
                                     </div>
@@ -999,12 +996,12 @@
                                     <p class="text-[10px] text-slate-300 font-medium mt-0.5">Riwayat seluruh arus kas masuk dan keluar organisasi.</p>
                                 </div>
                             </div>
-                            <button onclick="window.downloadCSVData('Buku_Kas')" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors w-full sm:w-auto flex items-center justify-center gap-2"><i class="ph-bold ph-download-simple text-lg"></i> Download Excel</button>
+                            <button data-onclick="window.downloadCSVData('Buku_Kas')" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors w-full sm:w-auto flex items-center justify-center gap-2"><i class="ph-bold ph-download-simple text-lg"></i> Download Excel</button>
                         </div>
                         
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col xl:flex-row justify-between items-center gap-3 text-[13px]">
                             <div class="flex flex-col sm:flex-row gap-2 w-full xl:w-auto">
-                                <select id="filterBulanKas" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:outline-none focus:border-blue-500 rounded w-full md:w-auto bg-white font-medium">
+                                <select id="filterBulanKas" data-onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:outline-none focus:border-blue-500 rounded w-full md:w-auto bg-white font-medium">
                                     <option value="">Semua Bulan</option>
                                     <option value="01">Januari</option>
                                     <option value="02">Februari</option>
@@ -1019,7 +1016,7 @@
                                     <option value="11">November</option>
                                     <option value="12">Desember</option>
                                 </select>
-                                <select id="filterTahunKas" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:outline-none focus:border-blue-500 rounded w-full md:w-auto bg-white font-medium">
+                                <select id="filterTahunKas" data-onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:outline-none focus:border-blue-500 rounded w-full md:w-auto bg-white font-medium">
                                     <option value="">Semua Tahun</option>
                                     <option value="2024">2024</option>
                                     <option value="2025">2025</option>
@@ -1027,7 +1024,7 @@
                                     <option value="2027">2027</option>
                                     <option value="2028">2028</option>
                                 </select>
-                                <select id="filterSumberKas" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:outline-none focus:border-blue-500 rounded w-full md:w-auto bg-white font-medium">
+                                <select id="filterSumberKas" data-onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:outline-none focus:border-blue-500 rounded w-full md:w-auto bg-white font-medium">
                                     <option value="">Semua Sumber</option>
                                     <option value="organisasi">Organisasi</option>
                                     <option value="kampus">Kampus</option>
@@ -1035,9 +1032,9 @@
                                 </select>
                             </div>
                             <div class="flex flex-col sm:flex-row items-center gap-2 w-full xl:w-auto">
-                                <input type="date" id="filterKasMulai" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full sm:w-auto bg-white">
-                                <input type="date" id="filterKasSelesai" onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full sm:w-auto bg-white">
-                                <input type="text" id="cariKas" onkeyup="window.renderTabelKas()" placeholder="Cari keterangan..." class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full md:w-[250px] bg-white">
+                                <input type="date" id="filterKasMulai" data-onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full sm:w-auto bg-white">
+                                <input type="date" id="filterKasSelesai" data-onchange="window.renderTabelKas()" class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full sm:w-auto bg-white">
+                                <input type="text" id="cariKas" data-onkeyup="window.renderTabelKas()" placeholder="Cari keterangan..." class="border border-slate-300 px-3 py-1.5 focus:border-blue-500 focus:outline-none rounded w-full md:w-[250px] bg-white">
                             </div>
                         </div>
 
@@ -1045,11 +1042,11 @@
                             <table class="min-w-full text-sm">
                                 <thead class="bg-slate-200/70 sticky top-0 border-b border-slate-300 shadow-sm z-10">
                                     <tr>
-                                        <th onclick="window.sortTable('kas','tanggal')" class="px-4 py-3 text-left font-bold text-slate-700 uppercase text-xs w-24 cursor-pointer">Tanggal</th>
-                                        <th onclick="window.sortTable('kas','keterangan')" class="px-4 py-3 text-left font-bold text-slate-700 uppercase text-xs cursor-pointer">Keterangan</th>
-                                        <th onclick="window.sortTable('kas','nominal')" class="px-4 py-3 text-right font-bold text-emerald-700 uppercase text-xs cursor-pointer">Masuk (Rp)</th>
-                                        <th onclick="window.sortTable('kas','nominal')" class="px-4 py-3 text-right font-bold text-rose-700 uppercase text-xs cursor-pointer">Keluar (Rp)</th>
-                                        <th onclick="window.sortTable('kas','saldoCalc')" class="px-4 py-3 text-right font-black text-slate-800 uppercase text-xs cursor-pointer">Saldo (Rp)</th>
+                                        <th data-onclick="window.sortTable('kas','tanggal')" class="px-4 py-3 text-left font-bold text-slate-700 uppercase text-xs w-24 cursor-pointer">Tanggal</th>
+                                        <th data-onclick="window.sortTable('kas','keterangan')" class="px-4 py-3 text-left font-bold text-slate-700 uppercase text-xs cursor-pointer">Keterangan</th>
+                                        <th data-onclick="window.sortTable('kas','nominal')" class="px-4 py-3 text-right font-bold text-emerald-700 uppercase text-xs cursor-pointer">Masuk (Rp)</th>
+                                        <th data-onclick="window.sortTable('kas','nominal')" class="px-4 py-3 text-right font-bold text-rose-700 uppercase text-xs cursor-pointer">Keluar (Rp)</th>
+                                        <th data-onclick="window.sortTable('kas','saldoCalc')" class="px-4 py-3 text-right font-black text-slate-800 uppercase text-xs cursor-pointer">Saldo (Rp)</th>
                                         <th class="px-4 py-3 text-center font-bold text-slate-700 uppercase text-xs w-20">Aksi</th>
                                     </tr>
                                 </thead>
@@ -1074,7 +1071,7 @@
                                     <p class="text-[10px] text-blue-200 font-medium mt-0.5">LPJ penggunaan dana kampus dan rincian dana campuran (kampus + organisasi) untuk keperluan event organisasi.</p>
                                 </div>
                             </div>
-                            <button onclick="window.generateLPJ()" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors w-full sm:w-auto flex items-center justify-center gap-2"><i class="ph-bold ph-printer"></i> Generate LPJ PDF</button>
+                            <button data-onclick="window.generateLPJ()" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors w-full sm:w-auto flex items-center justify-center gap-2"><i class="ph-bold ph-printer"></i> Generate LPJ PDF</button>
                         </div>
                         <div class="p-6">
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -1122,31 +1119,31 @@
                             <h3 class="font-black text-slate-800 text-lg uppercase tracking-wide flex items-center gap-2"><i class="ph-fill ph-folders text-[#3b82f6]"></i> E-Arsip Surat Menyurat</h3>
                             <p class="text-xs text-slate-500 font-medium mt-1">Manajemen dokumen digital organisasi (Maks file 1MB).</p>
                         </div>
-                        <button data-permission="manage_archive" onclick="window.switchView('view-tambah-arsip')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-md text-sm font-bold shadow-sm transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"><i class="ph-bold ph-plus-circle text-lg"></i> Arsipkan Surat</button>
+                        <button data-permission="manage_archive" data-onclick="window.switchView('view-tambah-arsip')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-md text-sm font-bold shadow-sm transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"><i class="ph-bold ph-plus-circle text-lg"></i> Arsipkan Surat</button>
                     </div>
 
                     <div class="widget-box bg-white overflow-hidden border border-slate-200">
                         <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-col lg:flex-row justify-between items-center gap-4">
                             <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                                <select id="filterJenisArsip" onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
+                                <select id="filterJenisArsip" data-onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
                                     <option value="">Semua Jenis Surat</option>
                                     <option value="Surat Masuk">Surat Masuk</option>
                                     <option value="Surat Keluar">Surat Keluar</option>
                                 </select>
-                                <input type="date" id="filterArsipMulai" onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
-                                <input type="date" id="filterArsipSelesai" onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
+                                <input type="date" id="filterArsipMulai" data-onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
+                                <input type="date" id="filterArsipSelesai" data-onchange="window.renderTabelArsip()" class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-auto bg-white">
                             </div>
-                            <input type="text" id="cariArsip" onkeyup="window.renderTabelArsip()" placeholder="Cari perihal / nomor surat..." class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-[250px]">
+                            <input type="text" id="cariArsip" data-onkeyup="window.renderTabelArsip()" placeholder="Cari perihal / nomor surat..." class="border border-slate-300 rounded px-3 py-1.5 text-sm outline-none focus:border-indigo-500 w-full sm:w-[250px]">
                         </div>
                         <div class="overflow-x-auto custom-scrollbar">
                             <table class="w-full text-sm text-left whitespace-nowrap">
                                 <thead class="bg-slate-100 border-b border-slate-200">
                                     <tr>
                                         <th class="px-5 py-3 font-bold text-slate-600 w-10">No</th>
-                                        <th onclick="window.sortTable('arsip','jenis')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Jenis</th>
-                                        <th onclick="window.sortTable('arsip','tanggal')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">No. Surat & Tanggal</th>
-                                        <th onclick="window.sortTable('arsip','pihak')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Asal / Tujuan</th>
-                                        <th onclick="window.sortTable('arsip','perihal')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Perihal</th>
+                                        <th data-onclick="window.sortTable('arsip','jenis')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Jenis</th>
+                                        <th data-onclick="window.sortTable('arsip','tanggal')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">No. Surat & Tanggal</th>
+                                        <th data-onclick="window.sortTable('arsip','pihak')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Asal / Tujuan</th>
+                                        <th data-onclick="window.sortTable('arsip','perihal')" class="px-5 py-3 font-bold text-slate-600 cursor-pointer">Perihal</th>
                                         <th class="px-5 py-3 font-bold text-slate-600 text-center">Dokumen</th>
                                     </tr>
                                 </thead>
@@ -1159,7 +1156,7 @@
 
                 <!-- VIEW: FORM TAMBAH ARSIP -->
                 <div id="view-tambah-arsip" class="view-section hidden">
-                    <button onclick="window.switchView('view-arsip-surat')" class="mb-5 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-sm text-sm font-bold flex items-center gap-2 shadow-sm transition-colors"><i class="ph-bold ph-arrow-left"></i> Kembali ke Tabel Arsip</button>
+                    <button data-onclick="window.switchView('view-arsip-surat')" class="mb-5 bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-sm text-sm font-bold flex items-center gap-2 shadow-sm transition-colors"><i class="ph-bold ph-arrow-left"></i> Kembali ke Tabel Arsip</button>
                     
                     <div class="widget-box bg-white overflow-hidden border border-slate-200 max-w-4xl mx-auto">
                         <div class="bg-gradient-to-r from-indigo-700 to-blue-800 p-5 flex items-center gap-3 text-white">
@@ -1169,7 +1166,7 @@
                                 <p class="text-[10px] text-indigo-200 font-medium mt-0.5">Unggah dokumen fisik ke dalam server Cloud untuk disimpan selamanya.</p>
                             </div>
                         </div>
-                        <form id="formInputArsip" onsubmit="window.simpanArsip(event)" class="p-6 sm:p-8 bg-slate-50">
+                        <form id="formInputArsip" data-onsubmit="window.simpanArsip(event)" class="p-6 sm:p-8 bg-slate-50">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Jenis Surat</label><select id="arsipJenis" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-indigo-600"><option value="" disabled selected>- Pilih Jenis -</option><option value="Surat Masuk">Surat Masuk</option><option value="Surat Keluar">Surat Keluar</option></select></div>
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Tanggal Surat</label><input type="date" id="arsipTanggal" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-indigo-600 text-slate-700"></div>
@@ -1200,12 +1197,12 @@
                     </div>
 
                     <div class="widget-box bg-white overflow-hidden border border-slate-200 max-w-5xl mx-auto">
-                        <form id="formGenerateSurat" onsubmit="window.generateSuratOtomatis(event)" class="p-6 sm:p-8 bg-slate-50">
+                        <form id="formGenerateSurat" data-onsubmit="window.generateSuratOtomatis(event)" class="p-6 sm:p-8 bg-slate-50">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-end bg-emerald-50 border border-emerald-100 rounded-xl p-4">
                                     <div>
                                         <label class="block text-xs font-bold text-emerald-800 mb-1.5 uppercase">Template Surat</label>
-                                        <select id="gs-template" onchange="window.applySuratTemplate()" class="w-full px-4 py-2.5 border border-emerald-200 rounded-lg text-sm outline-none focus:border-emerald-600 bg-white">
+                                        <select id="gs-template" data-onchange="window.applySuratTemplate()" class="w-full px-4 py-2.5 border border-emerald-200 rounded-lg text-sm outline-none focus:border-emerald-600 bg-white">
                                             <option value="">Pilih Template</option>
                                             <option value="tugas">Surat Tugas</option>
                                             <option value="undangan">Undangan</option>
@@ -1214,8 +1211,8 @@
                                             <option value="lpj">LPJ Kegiatan</option>
                                         </select>
                                     </div>
-                                    <button type="button" onclick="window.generateNomorSurat()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2"><i class="ph-bold ph-hash"></i> NOMOR OTOMATIS</button>
-                                    <button type="button" onclick="window.applySuratTemplate()" class="bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-4 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2"><i class="ph-bold ph-magic-wand"></i> TERAPKAN</button>
+                                    <button type="button" data-onclick="window.generateNomorSurat()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2"><i class="ph-bold ph-hash"></i> NOMOR OTOMATIS</button>
+                                    <button type="button" data-onclick="window.applySuratTemplate()" class="bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-4 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2"><i class="ph-bold ph-magic-wand"></i> TERAPKAN</button>
                                 </div>
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nomor Surat</label><input type="text" id="gs-nomor" required placeholder="Contoh: 015/LPM/C/V/2026" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-emerald-600"></div>
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Lampiran (Opsional)</label><input type="text" id="gs-lampiran" placeholder="Contoh: 1 (Satu) Berkas / -" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-emerald-600"></div>
@@ -1285,8 +1282,8 @@
                             <div class="p-6 flex-1 flex flex-col justify-between bg-slate-50/50">
                                 <p class="text-xs text-slate-600 mb-6 leading-relaxed">Unduh seluruh database anggota aktif beserta biodata lengkap (NIM, Kontak, Alamat, dll) dalam format Spreadsheet (Excel) atau cetak langsung menjadi dokumen PDF resmi.</p>
                                 <div class="flex gap-3 mt-auto">
-                                    <button onclick="window.downloadCSVData('Data_Semua')" class="flex-1 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"><i class="ph-bold ph-file-xls text-lg"></i> EXCEL</button>
-                                    <button onclick="window.handleSimulatedDownload('Data_Anggota', 'PDF')" class="flex-1 bg-white border-2 border-rose-500 text-rose-600 hover:bg-rose-50 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"><i class="ph-bold ph-file-pdf text-lg"></i> PDF</button>
+                                    <button data-onclick="window.downloadCSVData('Data_Semua')" class="flex-1 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"><i class="ph-bold ph-file-xls text-lg"></i> EXCEL</button>
+                                    <button data-onclick="window.handleSimulatedDownload('Data_Anggota', 'PDF')" class="flex-1 bg-white border-2 border-rose-500 text-rose-600 hover:bg-rose-50 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"><i class="ph-bold ph-file-pdf text-lg"></i> PDF</button>
                                 </div>
                             </div>
                         </div>
@@ -1295,8 +1292,8 @@
                             <div class="p-6 flex-1 flex flex-col justify-between bg-slate-50/50">
                                 <p class="text-xs text-slate-600 mb-6 leading-relaxed">Unduh rekapan laporan keuangan lengkap yang berisi rincian tanggal, deskripsi, arus kas masuk, arus kas keluar, dan mutasi sisa saldo akhir.</p>
                                 <div class="flex gap-3 mt-auto">
-                                    <button onclick="window.downloadCSVData('Buku_Kas')" class="flex-1 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"><i class="ph-bold ph-file-xls text-lg"></i> EXCEL</button>
-                                    <button onclick="window.handleSimulatedDownload('Buku_Kas', 'PDF')" class="flex-1 bg-white border-2 border-rose-500 text-rose-600 hover:bg-rose-50 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"><i class="ph-bold ph-file-pdf text-lg"></i> PDF</button>
+                                    <button data-onclick="window.downloadCSVData('Buku_Kas')" class="flex-1 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"><i class="ph-bold ph-file-xls text-lg"></i> EXCEL</button>
+                                    <button data-onclick="window.handleSimulatedDownload('Buku_Kas', 'PDF')" class="flex-1 bg-white border-2 border-rose-500 text-rose-600 hover:bg-rose-50 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"><i class="ph-bold ph-file-pdf text-lg"></i> PDF</button>
                                 </div>
                             </div>
                         </div>
@@ -1306,7 +1303,7 @@
                             <div class="bg-slate-800 p-4 text-white"><h4 class="font-black uppercase tracking-wider text-sm flex items-center gap-2"><i class="ph-fill ph-archive-box text-xl"></i> Backup JSON Penuh</h4></div>
                             <div class="p-6 bg-slate-50/50 flex-1">
                                 <p class="text-xs text-slate-600 mb-5 leading-relaxed">Unduh backup lengkap anggota, kas, arsip, dan pengaturan dalam satu file JSON untuk cadangan berkala organisasi.</p>
-                                <button data-permission="backup_export" onclick="window.downloadFullBackup()" class="bg-slate-800 hover:bg-black text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center gap-2 transition-colors"><i class="ph-bold ph-download-simple text-lg"></i> DOWNLOAD BACKUP JSON</button>
+                                <button data-permission="backup_export" data-onclick="window.downloadFullBackup()" class="bg-slate-800 hover:bg-black text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center gap-2 transition-colors"><i class="ph-bold ph-download-simple text-lg"></i> DOWNLOAD BACKUP JSON</button>
                             </div>
                         </div>
                         <div data-permission="backup_restore" class="widget-box bg-white overflow-hidden border border-slate-200 flex flex-col">
@@ -1315,7 +1312,7 @@
                                 <p class="text-xs text-slate-600 mb-5 leading-relaxed">Pulihkan data dari file backup JSON. Fitur ini khusus Webmaster karena dapat menimpa data yang ada.</p>
                                 <div class="flex flex-col sm:flex-row gap-3">
                                     <input type="file" id="backupRestoreFile" accept="application/json,.json" class="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm file:mr-3 file:py-1 file:px-3 file:border-0 file:rounded file:bg-amber-100 file:text-amber-700">
-                                    <button onclick="window.restoreFullBackup()" class="bg-amber-700 hover:bg-amber-800 text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> RESTORE</button>
+                                    <button data-onclick="window.restoreFullBackup()" class="bg-amber-700 hover:bg-amber-800 text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-colors"><i class="ph-bold ph-upload-simple text-lg"></i> RESTORE</button>
                                 </div>
                             </div>
                         </div>
@@ -1334,7 +1331,7 @@
                                 <p class="text-[10px] text-slate-400 font-medium mt-0.5">Konfigurasi identitas organisasi yang terhubung ke Cloud Firebase.</p>
                             </div>
                         </div>
-                        <form onsubmit="window.saveWebmasterConfig(event)" class="p-6 sm:p-8 bg-slate-50/50">
+                        <form data-onsubmit="window.saveWebmasterConfig(event)" class="p-6 sm:p-8 bg-slate-50/50">
                             <div class="space-y-5 max-w-xl bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nama Instansi / Organisasi</label><input type="text" id="wm-instansi" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none font-bold text-blue-700 transition-all"></div>
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Judul Aplikasi</label><input type="text" id="wm-judul" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-slate-800 focus:ring-1 focus:ring-slate-800 outline-none transition-all"></div>
@@ -1361,7 +1358,7 @@
                             </div>
                         </div>
                         <div class="p-6 sm:p-8 bg-slate-50/50 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <form onsubmit="window.saveUserRole(event)" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                            <form data-onsubmit="window.saveUserRole(event)" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
                                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
                                     <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">UID Login Saat Ini</p>
                                     <p id="currentFirebaseUid" class="text-[11px] font-bold text-slate-700 break-all">-</p>
@@ -1400,7 +1397,7 @@
                                 <p class="text-[10px] text-blue-200 font-medium mt-0.5">Konfigurasi Header (Kop Surat), Footer, dan Watermark dokumen cetak.</p>
                             </div>
                         </div>
-                        <form onsubmit="window.saveCetakConfig(event)" class="p-6 sm:p-8 bg-slate-50/50">
+                        <form data-onsubmit="window.saveCetakConfig(event)" class="p-6 sm:p-8 bg-slate-50/50">
                             <div class="space-y-5 max-w-xl bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Gambar Header / Kop Surat (JPG/PNG)</label>
@@ -1414,7 +1411,7 @@
                                         <p class="text-[10px] text-slate-500 italic">* Opsional. Kosongkan/hapus jika tidak diperlukan.</p>
                                         <div id="hint-footer-container" class="hidden items-center gap-2">
                                             <span class="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><i class="ph-fill ph-check-circle"></i> Tersimpan</span>
-                                            <button type="button" onclick="window.hapusFooter()" class="text-[10px] bg-rose-100 text-rose-700 hover:bg-rose-200 px-2 py-0.5 rounded font-bold transition-colors shadow-sm">Hapus</button>
+                                            <button type="button" data-onclick="window.hapusFooter()" class="text-[10px] bg-rose-100 text-rose-700 hover:bg-rose-200 px-2 py-0.5 rounded font-bold transition-colors shadow-sm">Hapus</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1466,17 +1463,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-    <script>
-        // Trik Cache Busting Otomatis
-        const version = new Date().getTime();
-        const cssLink = document.createElement('link');
-        cssLink.rel = 'stylesheet';
-        cssLink.href = `styles.css?v=${version}`;
-        document.head.appendChild(cssLink);
-
-        const appScript = document.createElement('script');
-        appScript.src = `app.js?v=${version}`;
-        document.body.appendChild(appScript);
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>

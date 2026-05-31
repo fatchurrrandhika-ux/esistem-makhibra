@@ -566,79 +566,118 @@
                 </div>
 
                 <!-- VIEW: TAMBAH ANGGOTA -->
-                <div id="view-tambah-anggota" class="view-section hidden no-print">
-                    <div class="bg-white border border-slate-300 shadow-sm rounded-sm mb-6">
-                        <div class="bg-[#27ae60] p-3 flex justify-between items-center text-white rounded-t-sm">
-                            <h3 class="font-bold uppercase text-sm flex items-center gap-2"><i class="ph-bold ph-user-plus text-lg"></i> <span id="form-title-anggota">TAMBAH DATA ANGGOTA</span></h3>
+                <div id="view-tambah-anggota" class="view-section hidden no-print space-y-5">
+                    <div class="bankdata-hero overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 p-5 sm:p-6">
+                            <div class="flex items-start gap-4">
+                                <div class="bankdata-icon bg-slate-900 text-white">
+                                    <i class="ph-fill ph-identification-badge text-3xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600">Bank Data Anggota</p>
+                                    <h2 class="mt-1 text-xl sm:text-2xl font-black text-slate-900 leading-tight"><span id="form-title-anggota">TAMBAH DATA ANGGOTA</span></h2>
+                                    <p class="mt-2 max-w-2xl text-sm text-slate-500 leading-relaxed">Rekam identitas, kontak, dan penempatan organisasi dalam satu alur data yang siap tersinkron ke database.</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                                    <span class="block text-slate-400 font-bold uppercase">Status</span>
+                                    <b class="text-slate-800">Validasi Aktif</b>
+                                </div>
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                                    <span class="block text-slate-400 font-bold uppercase">Foto</span>
+                                    <b class="text-slate-800">Rasio 3x4</b>
+                                </div>
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 col-span-2 sm:col-span-1">
+                                    <span class="block text-slate-400 font-bold uppercase">NIM</span>
+                                    <b class="text-slate-800">Anti Duplikat</b>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="member-form-shell bg-white border border-slate-200 shadow-sm rounded-lg mb-6 overflow-hidden">
+                        <div class="flex flex-col sm:flex-row border-b border-slate-200 bg-slate-50/70 text-[13px] select-none p-2 gap-2">
+                            <button type="button" id="btn-tab-1" data-onclick="window.gantiTabAnggota(1)" class="member-tab member-tab-active">
+                                <span class="member-step">1</span>
+                                <span>
+                                    <b>Identitas Pribadi</b>
+                                    <small>NIM, nama, lahir, alamat</small>
+                                </span>
+                            </button>
+                            <button type="button" id="btn-tab-2" data-onclick="window.gantiTabAnggota(2)" class="member-tab">
+                                <span class="member-step">2</span>
+                                <span>
+                                    <b>Kontak & Organisasi</b>
+                                    <small>Prodi, WA, divisi, foto</small>
+                                </span>
+                            </button>
                         </div>
 
-                        <div class="flex border-b border-slate-200 bg-slate-50 text-[13px] select-none">
-                            <div id="btn-tab-1" data-onclick="window.gantiTabAnggota(1)" class="px-6 py-3 bg-white border-t-[3px] border-t-[#3498db] border-r border-r-slate-200 border-l border-l-slate-200 text-[#3498db] font-bold -mb-px cursor-pointer transition-all">Identitas Pribadi</div>
-                            <div id="btn-tab-2" data-onclick="window.gantiTabAnggota(2)" class="px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer border-r border-slate-200 transition-all">Kontak & Organisasi</div>
-                        </div>
-
-                        <form id="formTambahAnggota" data-onsubmit="window.simpanAnggota(event)" class="p-6">
+                        <form id="formTambahAnggota" data-onsubmit="window.simpanAnggota(event)" class="member-form p-5 sm:p-6 lg:p-8">
                             
                             <div id="content-tab-1" class="block animate-[fadeIn_0.3s_ease-in-out]">
-                                <ul class="list-disc pl-5 font-bold text-slate-700 text-[13px] mb-6 uppercase">
-                                    <li>IDENTITAS PESERTA DIDIK / ANGGOTA</li>
-                                </ul>
+                                <div class="member-section-title">
+                                    <i class="ph-fill ph-user-focus"></i>
+                                    <span>Identitas Peserta Didik / Anggota</span>
+                                </div>
 
-                                <div class="space-y-4 text-[13px] text-slate-700 max-w-5xl">
-                                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                                        <label class="w-full md:w-[160px] font-bold md:text-right shrink-0">Nomor Induk (NIM) <span class="text-rose-500">*</span></label>
+                                <div class="space-y-4 text-[13px] text-slate-700 max-w-6xl">
+                                    <div class="member-field-row">
+                                        <label class="member-label">Nomor Induk (NIM) <span class="text-rose-500">*</span></label>
                                         <div class="flex-1 flex gap-2 w-full">
-                                            <input type="text" id="anggota-nim" required class="flex-1 border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none bg-slate-50" placeholder="Ketik manual NIM / NIK">
+                                            <input type="text" id="anggota-nim" required class="member-input flex-1" placeholder="Ketik manual NIM / NIK">
                                         </div>
-                                        <label class="w-full md:w-[80px] font-bold md:text-right shrink-0">Kelamin <span class="text-rose-500">*</span></label>
-                                        <select id="anggota-jk" required class="w-full md:w-[220px] border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none bg-white">
+                                        <label class="member-label member-label-short">Kelamin <span class="text-rose-500">*</span></label>
+                                        <select id="anggota-jk" required class="member-input w-full md:w-[220px]">
                                             <option value="" disabled selected>-Pilih-</option>
                                             <option value="Laki-laki">Laki-laki</option>
                                             <option value="Perempuan">Perempuan</option>
                                         </select>
                                     </div>
-                                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                                        <label class="w-full md:w-[160px] font-bold md:text-right shrink-0">Nama Lengkap <span class="text-rose-500">*</span></label>
-                                        <input type="text" id="anggota-nama" required class="w-full md:flex-1 border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none">
+                                    <div class="member-field-row">
+                                        <label class="member-label">Nama Lengkap <span class="text-rose-500">*</span></label>
+                                        <input type="text" id="anggota-nama" required class="member-input w-full md:flex-1">
                                     </div>
-                                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                                        <label class="w-full md:w-[160px] font-bold md:text-right shrink-0">TTL <span class="text-rose-500">*</span></label>
+                                    <div class="member-field-row">
+                                        <label class="member-label">TTL <span class="text-rose-500">*</span></label>
                                         <div class="flex-1 flex flex-col sm:flex-row gap-3 w-full">
-                                            <input type="text" id="anggota-tempat-lahir" required placeholder="Tempat Lahir" class="w-full sm:flex-1 border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none">
-                                            <input type="date" id="anggota-tgl-lahir" required class="w-full sm:w-[250px] border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none text-slate-600">
+                                            <input type="text" id="anggota-tempat-lahir" required placeholder="Tempat Lahir" class="member-input w-full sm:flex-1">
+                                            <input type="date" id="anggota-tgl-lahir" required class="member-input w-full sm:w-[250px] text-slate-600">
                                         </div>
                                     </div>
-                                    <div class="flex flex-col md:flex-row gap-4 items-start">
-                                        <label class="w-full md:w-[160px] font-bold md:text-right shrink-0 pt-1.5">Alamat Lengkap <span class="text-rose-500">*</span></label>
-                                        <input type="text" id="anggota-alamat" required placeholder="Jalan/Dusun, RT/RW, Desa, Kecamatan, Provinsi..." class="w-full md:flex-1 border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none">
+                                    <div class="member-field-row items-start">
+                                        <label class="member-label pt-2">Alamat Lengkap <span class="text-rose-500">*</span></label>
+                                        <input type="text" id="anggota-alamat" required placeholder="Jalan/Dusun, RT/RW, Desa, Kecamatan, Provinsi..." class="member-input w-full md:flex-1">
                                     </div>
                                 </div>
 
-                                <div class="mt-10 pt-4 flex justify-end gap-3 border-t border-slate-200">
-                                    <button type="button" data-onclick="window.gantiTabAnggota(2)" class="bg-[#3498db] hover:bg-blue-600 text-white py-1.5 px-6 rounded-sm font-bold text-[13px] shadow-sm transition-all transform active:scale-95 flex items-center gap-2">Formulir Selanjutnya <i class="ph-bold ph-arrow-right text-base"></i></button>
+                                <div class="mt-10 pt-5 flex justify-end gap-3 border-t border-slate-200">
+                                    <button type="button" data-onclick="window.gantiTabAnggota(2)" class="member-primary-btn">Formulir Selanjutnya <i class="ph-bold ph-arrow-right text-base"></i></button>
                                 </div>
                             </div>
 
                             <div id="content-tab-2" class="hidden animate-[fadeIn_0.3s_ease-in-out]">
-                                <ul class="list-disc pl-5 font-bold text-slate-700 text-[13px] mb-6 uppercase">
-                                    <li>KETERANGAN AKADEMIK & ORGANISASI</li>
-                                </ul>
+                                <div class="member-section-title">
+                                    <i class="ph-fill ph-network"></i>
+                                    <span>Keterangan Akademik & Organisasi</span>
+                                </div>
 
-                                <div class="space-y-4 text-[13px] text-slate-700 max-w-5xl">
-                                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                                        <label class="w-full md:w-[160px] font-bold md:text-right shrink-0">Program Studi <span class="text-rose-500">*</span></label>
-                                        <input type="text" id="anggota-prodi" required placeholder="Nama Fakultas / Program Studi" class="w-full md:flex-1 border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none">
+                                <div class="space-y-4 text-[13px] text-slate-700 max-w-6xl">
+                                    <div class="member-field-row">
+                                        <label class="member-label">Program Studi <span class="text-rose-500">*</span></label>
+                                        <input type="text" id="anggota-prodi" required placeholder="Nama Fakultas / Program Studi" class="member-input w-full md:flex-1">
                                     </div>
-                                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                                        <label class="w-full md:w-[160px] font-bold md:text-right shrink-0">No. WhatsApp <span class="text-rose-500">*</span></label>
-                                        <input type="number" id="anggota-wa" required placeholder="0812..." class="w-full md:flex-1 border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none">
+                                    <div class="member-field-row">
+                                        <label class="member-label">No. WhatsApp <span class="text-rose-500">*</span></label>
+                                        <input type="number" id="anggota-wa" required placeholder="0812..." class="member-input w-full md:flex-1">
                                         
-                                        <label class="w-full md:w-[80px] font-bold md:text-right shrink-0">Email</label>
-                                        <input type="email" id="anggota-email" placeholder="email@domain.com" class="w-full md:w-[220px] border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none">
+                                        <label class="member-label member-label-short">Email</label>
+                                        <input type="email" id="anggota-email" placeholder="email@domain.com" class="member-input w-full md:w-[260px]">
                                     </div>
-                                    <div class="flex flex-col md:flex-row gap-4 items-center">
-                                        <label class="w-full md:w-[160px] font-bold md:text-right shrink-0">Divisi Organisasi <span class="text-rose-500">*</span></label>
-                                        <select id="anggota-divisi" required class="w-full md:flex-1 border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none bg-white">
+                                    <div class="member-field-row">
+                                        <label class="member-label">Divisi Organisasi <span class="text-rose-500">*</span></label>
+                                        <select id="anggota-divisi" required class="member-input w-full md:flex-1">
                                             <option value="" disabled selected>- Pilih Penempatan -</option>
                                             <option value="Pimpinan Umum">Pimpinan Umum</option>
                                             <option value="Sekretaris">Sekretaris</option>
@@ -648,24 +687,24 @@
                                             <option value="Jarkominfo">Jarkominfo</option>
                                         </select>
                                         
-                                        <label class="w-full md:w-[80px] font-bold md:text-right shrink-0">Angkatan <span class="text-rose-500">*</span></label>
-                                        <input type="number" id="anggota-angkatan" required placeholder="- Tahun -" class="w-full md:w-[220px] border border-slate-300 px-3 py-1.5 focus:border-[#3498db] focus:outline-none">
+                                        <label class="member-label member-label-short">Angkatan <span class="text-rose-500">*</span></label>
+                                        <input type="number" id="anggota-angkatan" required placeholder="- Tahun -" class="member-input w-full md:w-[220px]">
                                     </div>
-                                    <div class="flex flex-col md:flex-row gap-4 items-center pt-2">
-                                        <label class="w-full md:w-[160px] font-bold md:text-right shrink-0">Foto (Opsional)</label>
+                                    <div class="member-field-row items-start pt-2">
+                                        <label class="member-label pt-2">Foto (Opsional)</label>
                                         <div class="flex-1">
-                                            <input type="file" id="anggota-foto" accept="image/*" class="w-full border border-slate-300 px-2 py-1 focus:border-[#3498db] focus:outline-none text-[13px] bg-white cursor-pointer file:mr-4 file:py-1 file:px-3 file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
-                                            <p class="text-[11px] text-slate-500 mt-1 italic">* Foto otomatis dikompres ke rasio 3x4. <span id="foto-hint" class="text-emerald-600 font-bold hidden"><i class="ph-bold ph-check-circle"></i> Foto sudah ada. Biarkan kosong jika tidak ingin mengubah.</span></p>
+                                            <input type="file" id="anggota-foto" accept="image/*" class="member-input w-full cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-slate-900 file:text-white file:font-bold hover:file:bg-slate-700">
+                                            <p class="text-[11px] text-slate-500 mt-2">Foto otomatis dikompres ke rasio 3x4. <span id="foto-hint" class="text-emerald-600 font-bold hidden"><i class="ph-bold ph-check-circle"></i> Foto sudah ada. Biarkan kosong jika tidak ingin mengubah.</span></p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="mt-10 pt-4 flex justify-between gap-3 border-t border-slate-200">
-                                    <button type="button" data-onclick="window.gantiTabAnggota(1)" class="bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 py-1.5 px-6 rounded-sm font-bold text-[13px] transition-colors shadow-sm flex items-center gap-2"><i class="ph-bold ph-arrow-left text-base"></i> Sebelumnya</button>
+                                <div class="mt-10 pt-5 flex flex-col sm:flex-row justify-between gap-3 border-t border-slate-200">
+                                    <button type="button" data-onclick="window.gantiTabAnggota(1)" class="member-secondary-btn"><i class="ph-bold ph-arrow-left text-base"></i> Sebelumnya</button>
                                     
-                                    <div class="flex gap-3">
-                                        <button type="button" data-onclick="window.batalAnggota()" class="bg-slate-100 border border-slate-300 hover:bg-slate-200 text-rose-600 py-1.5 px-6 rounded-sm font-bold text-[13px] transition-colors shadow-sm">Gagal / Batal</button>
-                                        <button type="submit" class="bg-[#27ae60] hover:bg-emerald-600 text-white py-1.5 px-8 rounded-sm font-bold text-[13px] shadow-sm transition-all transform active:scale-95"><i class="ph-bold ph-floppy-disk mr-1"></i> SIMPAN BIODATA</button>
+                                    <div class="flex flex-col sm:flex-row gap-3">
+                                        <button type="button" data-onclick="window.batalAnggota()" class="member-danger-btn">Gagal / Batal</button>
+                                        <button type="submit" class="member-save-btn"><i class="ph-bold ph-floppy-disk mr-1"></i> SIMPAN BIODATA</button>
                                     </div>
                                 </div>
                             </div>
@@ -675,104 +714,122 @@
 
                 <!-- VIEW: KELOLA ANGGOTA -->
                 <div id="view-kelola-anggota" class="view-section hidden">
+                    <div class="bankdata-hero mb-5 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm no-print">
+                        <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5 p-5 sm:p-6">
+                            <div class="flex items-start gap-4">
+                                <div class="bankdata-icon bg-emerald-600 text-white">
+                                    <i class="ph-fill ph-users-three text-3xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600">Database Anggota</p>
+                                    <h2 class="mt-1 text-xl sm:text-2xl font-black text-slate-900 leading-tight">Pusat Kontrol Data Keanggotaan</h2>
+                                    <p class="mt-2 max-w-2xl text-sm text-slate-500 leading-relaxed">Pantau komposisi anggota, cari biodata, kelola profil, dan ekspor data organisasi dari satu layar kerja.</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-2 text-xs">
+                                <button data-onclick="window.downloadCSVData('Tabel_Anggota')" class="bankdata-action-btn bg-slate-900 text-white hover:bg-slate-700"><i class="ph-bold ph-download-simple text-base"></i> Export Data</button>
+                                <button data-permission="manage_members" data-onclick="window.bukaFormTambah()" class="bankdata-action-btn bg-emerald-600 text-white hover:bg-emerald-700"><i class="ph-bold ph-user-plus text-base"></i> Tambah Anggota</button>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 no-print">
-                        <div class="bg-[#00c0ef] text-white rounded-sm shadow-sm flex flex-col relative overflow-hidden">
-                            <div class="flex items-center p-3">
-                                <div class="w-[80px] flex justify-center shrink-0"><i class="ph-fill ph-user text-5xl opacity-40"></i></div>
+                        <div class="member-stat-card member-stat-blue">
+                            <div class="flex items-center p-4">
+                                <div class="member-stat-icon"><i class="ph-fill ph-gender-male text-4xl"></i></div>
                                 <div class="flex-1">
                                     <h3 class="font-bold text-xs uppercase tracking-wider">ANGGOTA LAKI-LAKI</h3>
-                                    <p class="text-[13px] font-bold mt-1">Total : <span id="card-laki" class="text-lg">0</span> Orang</p>
+                                    <p class="text-[13px] font-bold mt-1">Total : <span id="card-laki" class="text-xl">0</span> Orang</p>
                                 </div>
                             </div>
                             <div class="bg-black/10 p-2 flex justify-center">
-                                <button data-onclick="window.downloadCSVData('Data_Laki')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
+                                <button data-onclick="window.downloadCSVData('Data_Laki')" class="member-stat-download">Download Excel</button>
                             </div>
                         </div>
                         
-                        <div class="bg-[#00a65a] text-white rounded-sm shadow-sm flex flex-col relative overflow-hidden">
-                            <div class="flex items-center p-3">
-                                <div class="w-[80px] flex justify-center shrink-0"><i class="ph-fill ph-user text-5xl opacity-40"></i></div>
+                        <div class="member-stat-card member-stat-green">
+                            <div class="flex items-center p-4">
+                                <div class="member-stat-icon"><i class="ph-fill ph-gender-female text-4xl"></i></div>
                                 <div class="flex-1">
                                     <h3 class="font-bold text-xs uppercase tracking-wider">ANGGOTA PEREMPUAN</h3>
-                                    <p class="text-[13px] font-bold mt-1">Total : <span id="card-perempuan" class="text-lg">0</span> Orang</p>
+                                    <p class="text-[13px] font-bold mt-1">Total : <span id="card-perempuan" class="text-xl">0</span> Orang</p>
                                 </div>
                             </div>
                             <div class="bg-black/10 p-2 flex justify-center">
-                                <button data-onclick="window.downloadCSVData('Data_Perempuan')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
+                                <button data-onclick="window.downloadCSVData('Data_Perempuan')" class="member-stat-download">Download Excel</button>
                             </div>
                         </div>
 
-                        <div class="bg-[#dd4b39] text-white rounded-sm shadow-sm flex flex-col relative overflow-hidden">
-                            <div class="flex items-center p-3">
-                                <div class="w-[80px] flex justify-center shrink-0"><i class="ph-fill ph-users-three text-5xl opacity-40"></i></div>
+                        <div class="member-stat-card member-stat-slate">
+                            <div class="flex items-center p-4">
+                                <div class="member-stat-icon"><i class="ph-fill ph-users-four text-4xl"></i></div>
                                 <div class="flex-1">
                                     <h3 class="font-bold text-xs uppercase tracking-wider">TOTAL ANGGOTA</h3>
-                                    <p class="text-[13px] font-bold mt-1">Seluruh Divisi : <span id="card-total" class="text-lg">0</span></p>
+                                    <p class="text-[13px] font-bold mt-1">Seluruh Divisi : <span id="card-total" class="text-xl">0</span></p>
                                 </div>
                             </div>
                             <div class="bg-black/10 p-2 flex justify-center">
-                                <button data-onclick="window.downloadCSVData('Data_Semua')" class="bg-white hover:bg-slate-100 text-slate-700 w-[95%] py-1 text-[11px] font-bold uppercase transition-colors">Download Excel</button>
+                                <button data-onclick="window.downloadCSVData('Data_Semua')" class="member-stat-download">Download Excel</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-slate-100 border border-slate-200 p-3 flex flex-col md:flex-row items-center gap-3 mb-4 text-[13px] no-print shadow-sm">
-                        <span class="font-bold text-slate-700 whitespace-nowrap">Filter berdasarkan :</span>
-                        <select id="filterKategori" data-onchange="window.updatePilihanFilter()" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-auto bg-white">
+                    <div class="member-filter-panel no-print">
+                        <span class="font-bold text-slate-700 whitespace-nowrap flex items-center gap-2"><i class="ph-bold ph-funnel text-emerald-600"></i> Filter berdasarkan</span>
+                        <select id="filterKategori" data-onchange="window.updatePilihanFilter()" class="member-filter-input w-full md:w-auto">
                             <option value="">- Pilih Kategori -</option>
                             <option value="divisi">Divisi Organisasi</option>
                             <option value="jk">Jenis Kelamin</option>
                             <option value="angkatan">Angkatan</option>
                         </select>
-                        <select id="filterNilai" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-auto bg-white flex-1 md:flex-none md:min-w-[200px]">
+                        <select id="filterNilai" class="member-filter-input w-full md:w-auto flex-1 md:flex-none md:min-w-[200px]">
                             <option value="">- Pilih Kategori Terlebih Dahulu -</option>
                         </select>
-                        <input type="text" id="filterAngkatanAnggota" data-onkeyup="window.renderTabelAnggota()" placeholder="Angkatan" class="border border-slate-300 px-3 py-1.5 focus:outline-none w-full md:w-[120px] bg-white">
+                        <input type="text" id="filterAngkatanAnggota" data-onkeyup="window.renderTabelAnggota()" placeholder="Angkatan" class="member-filter-input w-full md:w-[120px]">
                         <div class="flex gap-2 w-full md:w-auto">
-                            <button data-onclick="window.renderTabelAnggota()" class="bg-[#3c8dbc] hover:bg-[#367fa9] text-white px-4 py-1.5 font-bold shadow-sm transition-colors flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-magnifying-glass"></i> CARI</button>
-                            <button data-onclick="window.resetFilterTabel()" class="bg-[#dd4b39] hover:bg-red-700 text-white px-4 py-1.5 font-bold shadow-sm transition-colors flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-arrows-clockwise"></i> RESET</button>
+                            <button data-onclick="window.renderTabelAnggota()" class="member-filter-btn bg-slate-900 text-white hover:bg-slate-700"><i class="ph-bold ph-magnifying-glass"></i> CARI</button>
+                            <button data-onclick="window.resetFilterTabel()" class="member-filter-btn bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"><i class="ph-bold ph-arrows-clockwise"></i> RESET</button>
                         </div>
                     </div>
 
-                    <div class="bg-white border border-slate-200 border-t-[3px] border-t-[#d2d6de] shadow-sm mb-10">
-                        <div class="p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100">
-                            <h3 class="text-[16px] text-slate-700 flex items-center gap-2">Data Anggota | <i class="ph-fill ph-image text-[#00a65a] text-xl"></i></h3>
+                    <div class="bg-white border border-slate-200 shadow-sm rounded-lg mb-10 overflow-hidden">
+                        <div class="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 bg-slate-50/60">
+                            <h3 class="text-[16px] font-black text-slate-800 flex items-center gap-2"><i class="ph-fill ph-address-book text-emerald-600 text-xl"></i> Data Anggota</h3>
                             <div class="flex gap-2 text-xs">
-                                <button data-onclick="window.downloadCSVData('Tabel_Anggota')" class="bg-[#00a65a] hover:bg-green-700 text-white px-3 py-1.5 rounded-sm shadow-sm font-bold flex items-center gap-1 transition-colors"><i class="ph-bold ph-download-simple text-sm"></i> DOWNLOAD EXCEL <i class="ph-bold ph-caret-down ml-1"></i></button>
-                                <button data-onclick="window.bukaFormTambah()" class="bg-[#dd4b39] hover:bg-red-700 text-white px-3 py-1.5 rounded-sm shadow-sm font-bold flex items-center gap-1 transition-colors"><i class="ph-bold ph-plus text-sm"></i> TAMBAH ANGGOTA</button>
+                                <button data-onclick="window.downloadCSVData('Tabel_Anggota')" class="bankdata-action-btn bg-slate-900 text-white hover:bg-slate-700"><i class="ph-bold ph-download-simple text-sm"></i> DOWNLOAD EXCEL</button>
+                                <button data-permission="manage_members" data-onclick="window.bukaFormTambah()" class="bankdata-action-btn bg-emerald-600 text-white hover:bg-emerald-700"><i class="ph-bold ph-plus text-sm"></i> TAMBAH ANGGOTA</button>
                             </div>
                         </div>
 
                         <div class="p-4">
                             <div class="mb-4">
-                                <p class="text-[13px] text-slate-700 mb-4">Jumlah : <span id="tabel-jumlah">0</span></p>
+                                <p class="text-[13px] text-slate-700 mb-4">Jumlah hasil aktif : <span id="tabel-jumlah" class="font-black text-emerald-600">0</span></p>
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-[13px] text-slate-700">
                                     <div class="flex items-center gap-1">
                                         Tampilkan 
-                                        <select class="border border-slate-300 px-1 py-0.5 outline-none bg-white">
+                                        <select class="member-filter-input px-2 py-1">
                                             <option>Semua</option>
                                         </select> 
                                         entries
                                     </div>
                                     <div class="flex items-center gap-2 w-full sm:w-auto">
                                         Pencarian Cepat: 
-                                        <input type="text" id="pencarianTabel" data-onkeyup="window.renderTabelAnggota()" placeholder="Ketik nama / NIM..." class="border border-slate-300 px-2 py-1 outline-none w-full sm:w-[200px] focus:border-[#3c8dbc]">
+                                        <input type="text" id="pencarianTabel" data-onkeyup="window.renderTabelAnggota()" placeholder="Ketik nama / NIM..." class="member-filter-input w-full sm:w-[240px]">
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="overflow-x-auto custom-scrollbar border-t border-slate-200 pt-1">
+                            <div class="overflow-x-auto custom-scrollbar rounded-lg border border-slate-200">
                                 <table class="w-full text-[13px] text-left border-collapse whitespace-nowrap" id="dataTableAnggota">
-                                    <thead class="bg-slate-50">
+                                    <thead class="bg-slate-900 text-white">
                                         <tr>
-                                            <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">No <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th data-onclick="window.sortTable('anggota','nim')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">NIM <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th data-onclick="window.sortTable('anggota','nama')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Nama Lengkap <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th data-onclick="window.sortTable('anggota','divisi')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Divisi <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th data-onclick="window.sortTable('anggota','angkatan')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Angkatan <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th data-onclick="window.sortTable('anggota','alamat')" class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 cursor-pointer hover:bg-slate-100 group">Alamat <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
-                                            <th class="p-2.5 border-b-2 border-slate-200 font-bold text-slate-700 text-center cursor-pointer hover:bg-slate-100 group">Aksi <i class="ph-bold ph-arrows-down-up float-right opacity-30 group-hover:opacity-100"></i></th>
+                                            <th class="p-3 font-bold cursor-pointer hover:bg-white/10 group">No <i class="ph-bold ph-arrows-down-up float-right opacity-40 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','nim')" class="p-3 font-bold cursor-pointer hover:bg-white/10 group">NIM <i class="ph-bold ph-arrows-down-up float-right opacity-40 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','nama')" class="p-3 font-bold cursor-pointer hover:bg-white/10 group">Nama Lengkap <i class="ph-bold ph-arrows-down-up float-right opacity-40 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','divisi')" class="p-3 font-bold cursor-pointer hover:bg-white/10 group">Divisi <i class="ph-bold ph-arrows-down-up float-right opacity-40 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','angkatan')" class="p-3 font-bold cursor-pointer hover:bg-white/10 group">Angkatan <i class="ph-bold ph-arrows-down-up float-right opacity-40 group-hover:opacity-100"></i></th>
+                                            <th data-onclick="window.sortTable('anggota','alamat')" class="p-3 font-bold cursor-pointer hover:bg-white/10 group">Alamat <i class="ph-bold ph-arrows-down-up float-right opacity-40 group-hover:opacity-100"></i></th>
+                                            <th class="p-3 font-bold text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tableAnggotaBody" class="divide-y divide-slate-100">

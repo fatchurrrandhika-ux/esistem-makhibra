@@ -1331,14 +1331,14 @@ window.gantiTabAnggota = (tabNum) => {
         cont1.classList.remove('hidden'); cont1.classList.add('block');
         cont2.classList.remove('block'); cont2.classList.add('hidden');
         
-        btn1.className = "px-6 py-3 bg-white border-t-[3px] border-t-[#3498db] border-r border-r-slate-200 border-l border-l-slate-200 text-[#3498db] font-bold -mb-px cursor-pointer transition-all";
-        btn2.className = "px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer border-r border-slate-200 transition-all";
+        btn1.className = "member-tab member-tab-active";
+        btn2.className = "member-tab";
     } else {
         cont1.classList.remove('block'); cont1.classList.add('hidden');
         cont2.classList.remove('hidden'); cont2.classList.add('block');
         
-        btn2.className = "px-6 py-3 bg-white border-t-[3px] border-t-[#3498db] border-r border-r-slate-200 border-l border-l-slate-200 text-[#3498db] font-bold -mb-px cursor-pointer transition-all";
-        btn1.className = "px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer border-l border-slate-200 transition-all";
+        btn2.className = "member-tab member-tab-active";
+        btn1.className = "member-tab";
     }
 };
 
@@ -1653,25 +1653,30 @@ window.renderTabelAnggota = () => {
             const safeRAngkatan = escapeHtml(r.angkatan || '-');
             const safeRAlamat = escapeHtml(r.alamat || '-');
             const safeRId = JSON.stringify(String(r.id || ''));
+            const avatarName = encodeURIComponent(r.nama || 'Anggota');
+            const safeAvatar = escapeHtml(r.foto || `https://ui-avatars.com/api/?name=${avatarName}&size=128&background=0f172a&color=fff`);
 
             if(isMobileList()) {
                 htmlTable += `<tr><td colspan="7" class="p-3 bg-slate-50">
-                    <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                    <div class="member-mobile-card">
                         <div class="flex items-start justify-between gap-3">
-                            <div>
-                                <p class="text-sm font-black text-slate-800 uppercase">${safeRName}</p>
-                                <p class="text-xs text-blue-600 font-bold mt-0.5">${safeRNim}</p>
+                            <div class="flex items-center gap-3 min-w-0">
+                                <img src="${safeAvatar}" alt="" class="w-12 h-12 rounded-xl object-cover bg-slate-200 shrink-0">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-black text-slate-900 uppercase truncate">${safeRName}</p>
+                                    <p class="text-xs text-emerald-600 font-bold mt-0.5">${safeRNim}</p>
+                                </div>
                             </div>
-                            <span class="text-[10px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-1 rounded">${safeRAngkatan}</span>
+                            <span class="member-chip bg-slate-100 text-slate-700">${safeRAngkatan}</span>
                         </div>
-                        <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
-                            <span>Divisi: <b class="text-slate-700">${safeRDivisi}</b></span>
-                            <span>Alamat: <b class="text-slate-700">${safeRAlamat}</b></span>
+                        <div class="mt-4 grid grid-cols-1 gap-2 text-xs text-slate-500">
+                            <span class="member-mobile-meta"><i class="ph-bold ph-briefcase"></i><b>${safeRDivisi}</b></span>
+                            <span class="member-mobile-meta"><i class="ph-bold ph-map-pin"></i><b>${safeRAlamat}</b></span>
                         </div>
                         <div class="mt-4 flex gap-2">
-                            <button data-onclick='window.lihatDetailAnggota(${safeRId})' class="flex-1 bg-blue-50 text-blue-700 px-3 py-2 rounded font-bold text-xs">Detail</button>
-                            <button data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="flex-1 bg-emerald-50 text-emerald-700 px-3 py-2 rounded font-bold text-xs">Edit</button>
-                            <button data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
+                            <button data-onclick='window.lihatDetailAnggota(${safeRId})' class="member-card-btn bg-slate-900 text-white">Detail</button>
+                            <button data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="member-card-btn bg-emerald-50 text-emerald-700">Edit</button>
+                            <button data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="member-card-btn bg-rose-50 text-rose-700">Hapus</button>
                         </div>
                     </div>
                 </td></tr>`;
@@ -1679,15 +1684,20 @@ window.renderTabelAnggota = () => {
             }
 
             htmlTable += `<tr class="hover:bg-slate-50 transition-colors text-slate-700">
-                <td class="p-2.5 border-b border-slate-200">${page.start + index + 1}</td>
-                <td class="p-2.5 border-b border-slate-200">${safeRNim}</td>
-                <td class="p-2.5 border-b border-slate-200 text-[#3c8dbc] uppercase font-bold cursor-pointer hover:underline" data-onclick='window.lihatDetailAnggota(${safeRId})' title="Klik untuk lihat E-Profil">${safeRName}</td>
-                <td class="p-2.5 border-b border-slate-200 uppercase">${safeRDivisi}</td>
-                <td class="p-2.5 border-b border-slate-200">${safeRAngkatan}</td>
-                <td class="p-2.5 border-b border-slate-200 uppercase">${safeRAlamat}</td>
-                <td class="p-2.5 border-b border-slate-200 text-center">
-                    <button data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="bg-[#00a65a] hover:bg-green-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center mr-1 transition-colors" title="Edit Anggota"><i class="ph-bold ph-pencil-simple"></i></button>
-                    <button data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="bg-[#dd4b39] hover:bg-red-700 text-white w-6 h-6 rounded-sm shadow-sm inline-flex items-center justify-center transition-colors" title="Hapus"><i class="ph-bold ph-x"></i></button>
+                <td class="p-3 border-b border-slate-100 text-slate-400 font-bold">${page.start + index + 1}</td>
+                <td class="p-3 border-b border-slate-100 font-bold text-slate-700">${safeRNim}</td>
+                <td class="p-3 border-b border-slate-100">
+                    <button class="flex items-center gap-3 text-left group" data-onclick='window.lihatDetailAnggota(${safeRId})' title="Klik untuk lihat E-Profil">
+                        <img src="${safeAvatar}" alt="" class="w-9 h-9 rounded-lg object-cover bg-slate-200 shrink-0">
+                        <span class="uppercase font-black text-slate-800 group-hover:text-emerald-600">${safeRName}</span>
+                    </button>
+                </td>
+                <td class="p-3 border-b border-slate-100 uppercase"><span class="member-chip bg-emerald-50 text-emerald-700">${safeRDivisi}</span></td>
+                <td class="p-3 border-b border-slate-100"><span class="member-chip bg-slate-100 text-slate-700">${safeRAngkatan}</span></td>
+                <td class="p-3 border-b border-slate-100 uppercase max-w-[280px] truncate">${safeRAlamat}</td>
+                <td class="p-3 border-b border-slate-100 text-center">
+                    <button data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="member-table-action bg-emerald-600 hover:bg-emerald-700 text-white" title="Edit Anggota"><i class="ph-bold ph-pencil-simple"></i></button>
+                    <button data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="member-table-action bg-rose-600 hover:bg-rose-700 text-white" title="Hapus"><i class="ph-bold ph-trash"></i></button>
                 </td>
             </tr>`;
     });

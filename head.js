@@ -1,12 +1,3 @@
-window.tailwind = window.tailwind || {};
-window.tailwind.config = { 
-    theme: { 
-        extend: { 
-            fontFamily: { sans: ['"Source Sans Pro"', 'sans-serif'] }
-        } 
-    } 
-};
-
 (() => {
     const timeZone = 'Asia/Jakarta';
     let jakartaClockTimer = null;
@@ -74,17 +65,11 @@ try {
 
 const initialRouteView = (isSafeViewId(initialHashView) && initialHashView) || (isSafeViewId(initialStoredView) && initialStoredView) || '';
 
-if (window.location.search.includes('verify=') || window.location.search.includes('print=')) {
-    const earlyStyle = document.createElement('style');
-    earlyStyle.textContent = 'aside, header, main, #view-login, #loading-overlay { display: none !important; } body { background-color: #f1f5f9; }';
-    document.head.appendChild(earlyStyle);
+if (window.location.search.includes('verify=') || window.location.search.includes('print=') || window.location.search.includes('verifyLetter=')) {
+    document.documentElement.classList.add('route-public-mode');
 } else if (window.location.search.includes('edit=')) {
-    const earlyStyle = document.createElement('style');
-    earlyStyle.textContent = '#view-dashboard, #view-login, #loading-overlay { display: none !important; }';
-    document.head.appendChild(earlyStyle);
+    document.documentElement.classList.add('route-edit-mode');
 } else if (initialRouteView && initialRouteView !== 'view-login') {
-    const earlyStyle = document.createElement('style');
-    earlyStyle.id = 'early-route-style';
-    earlyStyle.textContent = `#view-login, #loading-overlay { display: none !important; } #${initialRouteView} { display: block !important; }`;
-    document.head.appendChild(earlyStyle);
+    document.documentElement.classList.add('route-initial-mode');
+    document.documentElement.dataset.initialRouteView = initialRouteView;
 }

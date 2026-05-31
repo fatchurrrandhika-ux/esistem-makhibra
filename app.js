@@ -356,6 +356,8 @@ const rememberRouteView = (viewId) => {
 const clearEarlyRouteStyle = () => {
     const earlyRouteStyle = document.getElementById('early-route-style');
     if(earlyRouteStyle) earlyRouteStyle.remove();
+    document.documentElement.classList.remove('route-public-mode', 'route-edit-mode', 'route-initial-mode');
+    delete document.documentElement.dataset.initialRouteView;
 };
 
 const getCurrentActor = () => {
@@ -760,11 +762,12 @@ window.showToast = (title, message, type='success') => {
     const icon = document.getElementById('toast-icon');
     document.getElementById('toast-title').innerText = title;
     document.getElementById('toast-message').innerText = message;
+    t.classList.remove('toast-success', 'toast-error');
     if(type === 'error') {
-        t.style.borderLeftColor = '#e11d48';
+        t.classList.add('toast-error');
         icon.innerHTML = '<div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600"><i class="ph-fill ph-warning-circle text-2xl"></i></div>';
     } else {
-        t.style.borderLeftColor = '#10b981';
+        t.classList.add('toast-success');
         icon.innerHTML = '<div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="ph-fill ph-check-circle text-2xl"></i></div>';
     }
     t.classList.replace('translate-x-full', 'translate-x-0'); t.classList.replace('opacity-0', 'opacity-100');
@@ -1000,14 +1003,12 @@ auth.onAuthStateChanged((user) => {
         }
         // Sembunyikan halaman login dengan mulus
         if(loginView) { 
-            if(document.getElementById('early-route-style')) {
+            if(document.documentElement.classList.contains('route-initial-mode')) {
                 loginView.classList.add('hidden'); 
-                loginView.style.display = 'none'; 
             } else {
                 loginView.classList.replace('opacity-100', 'opacity-0');
                 setTimeout(() => {
                     loginView.classList.add('hidden');
-                    loginView.style.display = 'none';
                 }, 500);
             }
         }
@@ -1030,7 +1031,7 @@ auth.onAuthStateChanged((user) => {
 
             let menuEl = null; let isSub = false;
             document.querySelectorAll('.sidebar-menu').forEach(el => {
-                if(el.getAttribute('onclick') && el.getAttribute('onclick').includes(initialView)) {
+                if(el.getAttribute('data-onclick') && el.getAttribute('data-onclick').includes(initialView)) {
                     menuEl = el; 
                     if(el.parentElement && el.parentElement.id.includes('submenu-')) isSub = true;
                 }
@@ -1057,7 +1058,6 @@ auth.onAuthStateChanged((user) => {
 
             // Tampilkan halaman login kembali
             if(loginView) {
-                loginView.style.display = 'flex';
                 loginView.classList.remove('hidden');
                 setTimeout(() => { loginView.classList.replace('opacity-0', 'opacity-100'); }, 50);
             }
@@ -1115,14 +1115,8 @@ function syncUIWithDB() {
             const elLogApp = document.getElementById('login-app-title'); if(elLogApp) elLogApp.innerText = nJudul;
             const elLogFoot = document.getElementById('login-footer-instansi'); if(elLogFoot) elLogFoot.innerText = nInstansi;
             
-            const viewLogin = document.getElementById('view-login');
-            if(viewLogin) {
-                if(nWallpaper) {
-                    viewLogin.style.backgroundImage = `url('${nWallpaper}')`;
-                } else {
-                    viewLogin.style.backgroundImage = `url('https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=2000')`;
-                }
-            }
+            const loginWallpaper = document.getElementById('login-wallpaper-img');
+            if(loginWallpaper) loginWallpaper.src = nWallpaper || 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=2000';
             
             const dashInstansi = document.getElementById('dash-instansi-name'); if(dashInstansi) dashInstansi.innerText = nInstansi;
             const footerInstansi = document.getElementById('footer-instansi'); if(footerInstansi) footerInstansi.innerText = nInstansi;
@@ -2671,6 +2665,12 @@ onReady(() => {
 
     const footerYear = document.getElementById('login-year');
     if(footerYear) footerYear.innerText = getFormattedJakartaYear(new Date());
+    const loginLogo = document.getElementById('login-logo');
+    if(loginLogo) {
+        loginLogo.addEventListener('error', () => {
+            loginLogo.src = 'https://ui-avatars.com/api/?name=LM&background=10b981&color=fff&rounded=true&bold=true';
+        }, { once: true });
+    }
     
     const urlParamsInitial = new URLSearchParams(window.location.search);
     
@@ -2679,7 +2679,6 @@ onReady(() => {
         const loadingOverlay = document.getElementById('loading-overlay');
         if(loginView) {
             loginView.classList.add('hidden');
-            loginView.style.display = 'none';
         }
         if(loadingOverlay) { loadingOverlay.classList.add('hidden'); loadingOverlay.classList.remove('flex'); }
     }

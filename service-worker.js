@@ -2,6 +2,7 @@ const CACHE_NAME = 'e-sistem-makhibra-v1';
 const APP_SHELL = [
     './',
     './index.html',
+    './tailwind-build.css',
     './styles.css',
     './app.js',
     './head.js',

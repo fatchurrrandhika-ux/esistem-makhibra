@@ -27,6 +27,35 @@ header {
     padding-top: max(0.5rem, env(safe-area-inset-top));
 }
 
+.font-marker {
+    font-family: 'Permanent Marker', cursive;
+}
+
+html.route-public-mode aside,
+html.route-public-mode header,
+html.route-public-mode main,
+html.route-public-mode #view-login,
+html.route-public-mode #loading-overlay,
+html.route-edit-mode #view-dashboard,
+html.route-edit-mode #view-login,
+html.route-edit-mode #loading-overlay,
+html.route-initial-mode #view-login,
+html.route-initial-mode #loading-overlay {
+    display: none !important;
+}
+
+html.route-public-mode body {
+    background-color: #f1f5f9;
+}
+
+.toast-success {
+    border-left-color: #10b981;
+}
+
+.toast-error {
+    border-left-color: #e11d48;
+}
+
 .custom-scrollbar,
 .sidebar-scrollbar {
     -webkit-overflow-scrolling: touch;

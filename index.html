@@ -14,9 +14,9 @@
     <meta name="description" content="Aplikasi Manajemen Terpadu LPM MAKHIBRA. Masuk. Copyright &copy; 2026. Tim Developer LPM MAKHIBRA.">
     <meta name="keywords" content="LPM MAKHIBRA, e-Sistem LPM, Sistem Administrasi Organisasi, Database Anggota, Login LPM">
     <meta name="author" content="Tim Developer LPM MAKHIBRA">
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="googlebot" content="noindex, nofollow">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://images.unsplash.com https://ui-avatars.com https://api.qrserver.com; script-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://ui-avatars.com https://images.unsplash.com https://api.qrserver.com https://www.gstatic.com; connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://images.unsplash.com https://ui-avatars.com https://api.qrserver.com; script-src 'self' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://ui-avatars.com https://images.unsplash.com https://api.qrserver.com https://www.gstatic.com; connect-src 'self' https://firestore.googleapis.com https://www.googleapis.com https://securetoken.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
  
     <meta name="language" content="Indonesian">
     
@@ -34,11 +34,11 @@
     <link rel="shortcut icon" type="image/png" href="logo_lpm-.png">
     <link rel="apple-touch-icon" href="logo_lpm-.png">
     <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="tailwind-build.css">
     <link rel="stylesheet" href="styles.css">
 
     <!-- Tailwind CSS, Icons, Fonts, & Chart.js -->
     <script src="head.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
@@ -232,14 +232,15 @@
     </div>
 
     <!-- VIEW LOGIN -->
-    <div id="view-login" class="fixed inset-0 z-[200] flex flex-col items-center justify-center p-4 bg-slate-900 transition-opacity duration-500 overflow-hidden bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=2000');">
+    <div id="view-login" class="fixed inset-0 z-[200] flex flex-col items-center justify-center p-4 bg-slate-900 transition-opacity duration-500 overflow-hidden">
+        <img id="login-wallpaper-img" src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=2000" alt="" class="absolute inset-0 w-full h-full object-cover">
         
         <div class="absolute inset-0 bg-emerald-900/60 mix-blend-multiply"></div>
         <div class="absolute inset-0 bg-gradient-to-b from-emerald-800/80 to-slate-900/90"></div>
 
         <div class="relative z-10 w-full max-w-[420px] transform transition-all duration-500 flex flex-col items-center">
             
-            <img id="login-logo" src="logo_lpm-.png" onerror="this.src='https://ui-avatars.com/api/?name=LM&background=10b981&color=fff&rounded=true&bold=true'" class="h-24 w-auto object-contain mb-4 drop-shadow-lg">
+            <img id="login-logo" src="logo_lpm-.png" class="h-24 w-auto object-contain mb-4 drop-shadow-lg">
             <p id="login-app-title" class="text-white/90 text-[17px] font-normal tracking-wide mb-1">Aplikasi Manajemen Organisasi</p>
             <h1 id="login-instansi-name" class="text-[26px] font-bold text-white tracking-tight mb-8 drop-shadow-md">LPM MAKHIBRA</h1>
 
@@ -355,8 +356,7 @@
 
             <!-- Judul -->
             <div class="min-w-0">
-                <h2 class="text-sm sm:text-xl tracking-wide truncate"
-                    style="font-family: 'Permanent Marker', cursive;">
+                <h2 class="font-marker text-sm sm:text-xl tracking-wide truncate">
                     <span id="ui-navbar-title" class="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
                         LPM MAKHIBRA
                     </span>

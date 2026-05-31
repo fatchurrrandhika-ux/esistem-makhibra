@@ -46,7 +46,7 @@ const firebaseConfig = {
 ### SEO & Search Console
 
 - Canonical URL: `https://esistemlpmmakhibra.com/`
-- Meta robots: `noindex, nofollow` (karena aplikasi login)
+- Meta robots: `index, follow`
 - Sitemap: `sitemap.xml`
 - Robots.txt: `robots.txt`
 
@@ -62,10 +62,10 @@ Aplikasi ini mendukung metadata PWA melalui `manifest.json` dengan fitur:
 
 - Firebase Authentication untuk login.
 - HTTPS wajib.
-- Meta robots noindex untuk halaman internal.
+- Halaman utama mengizinkan index Google; data internal tetap dilindungi oleh login Firebase dan Firestore Rules.
 - Security headers di `.htaccess`.
 - Firestore rules tersedia di `firestore.rules`.
-- **Catatan hardening CSP**: saat siap, migrasikan inline script/style ke nonce/hash agar `Content-Security-Policy` tidak perlu `unsafe-inline`.
+- **Hardening CSP**: inline event/script/style runtime sudah dipindahkan ke handler dan CSS lokal; Tailwind dibuild lokal melalui `npm run build:css`.
 
 ### Deploy Firestore Rules
 

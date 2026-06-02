@@ -1673,10 +1673,16 @@ window.renderTabelAnggota = () => {
                             <span class="member-mobile-meta"><i class="ph-bold ph-briefcase"></i><b>${safeRDivisi}</b></span>
                             <span class="member-mobile-meta"><i class="ph-bold ph-map-pin"></i><b>${safeRAlamat}</b></span>
                         </div>
-                        <div class="mt-4 flex gap-2">
-                            <button data-onclick='window.lihatDetailAnggota(${safeRId})' class="member-card-btn bg-slate-900 text-white">Detail</button>
-                            <button data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="member-card-btn bg-emerald-50 text-emerald-700">Edit</button>
-                            <button data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="member-card-btn bg-rose-50 text-rose-700">Hapus</button>
+                        <div class="mt-4 flex gap-2 member-action-row">
+                            <button type="button" data-onclick='window.lihatDetailAnggota(${safeRId})' class="member-card-btn member-action-detail" aria-label="Lihat detail ${safeRName}">
+                                <i class="ph-bold ph-eye"></i><span>Detail</span>
+                            </button>
+                            <button type="button" data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="member-card-btn member-action-edit" aria-label="Edit ${safeRName}">
+                                <i class="ph-bold ph-pencil-simple"></i><span>Edit</span>
+                            </button>
+                            <button type="button" data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="member-card-btn member-action-delete" aria-label="Hapus ${safeRName}">
+                                <i class="ph-bold ph-trash"></i><span>Hapus</span>
+                            </button>
                         </div>
                     </div>
                 </td></tr>`;
@@ -1695,9 +1701,18 @@ window.renderTabelAnggota = () => {
                 <td class="p-3 border-b border-slate-100 uppercase"><span class="member-chip bg-emerald-50 text-emerald-700">${safeRDivisi}</span></td>
                 <td class="p-3 border-b border-slate-100"><span class="member-chip bg-slate-100 text-slate-700">${safeRAngkatan}</span></td>
                 <td class="p-3 border-b border-slate-100 uppercase max-w-[280px] truncate">${safeRAlamat}</td>
-                <td class="p-3 border-b border-slate-100 text-center">
-                    <button data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="member-table-action bg-emerald-600 hover:bg-emerald-700 text-white" title="Edit Anggota"><i class="ph-bold ph-pencil-simple"></i></button>
-                    <button data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="member-table-action bg-rose-600 hover:bg-rose-700 text-white" title="Hapus"><i class="ph-bold ph-trash"></i></button>
+                <td class="p-3 border-b border-slate-100">
+                    <div class="member-action-row justify-center">
+                        <button type="button" data-onclick='window.lihatDetailAnggota(${safeRId})' class="member-table-action member-action-detail" title="Lihat Detail" aria-label="Lihat detail ${safeRName}">
+                            <i class="ph-bold ph-eye"></i><span>Detail</span>
+                        </button>
+                        <button type="button" data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="member-table-action member-action-edit" title="Edit Anggota" aria-label="Edit ${safeRName}">
+                            <i class="ph-bold ph-pencil-simple"></i><span>Edit</span>
+                        </button>
+                        <button type="button" data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="member-table-action member-action-delete" title="Hapus Anggota" aria-label="Hapus ${safeRName}">
+                            <i class="ph-bold ph-trash"></i><span>Hapus</span>
+                        </button>
+                    </div>
                 </td>
             </tr>`;
     });

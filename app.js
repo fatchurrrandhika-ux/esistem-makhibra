@@ -1783,10 +1783,46 @@ window.resetFilterTabel = () => {
     window.renderTabelAnggota();
 };
 
+window.populateAnggotaList = () => {
+    const selectEl = document.getElementById('anggotaPembayar');
+    if(!selectEl) return;
+    
+    const anggotaList = Object.entries(window.cachedAnggotaData || {})
+        .map(([id, data]) => ({
+            id,
+            display: `${data.nama || 'N/A'} (${data.divisi || 'N/A'}) - ${data.nim || 'N/A'}`
+        }))
+        .sort((a, b) => a.display.localeCompare(b.display));
+    
+    selectEl.innerHTML = '<option value="">- Tidak ada anggota spesifik (Kolektif) -</option>' +
+        anggotaList.map(a => `<option value="${a.id}">${a.display}</option>`).join('');
+};
+
 // ... (KODE MANAJEMEN KAS & KEUANGAN)
 window.updateKategoriPembayaran = () => {
     const sumber = getInputValue('sumberDanaPembayaran');
-    setInputValue('kategoriPembayaran', sumber === 'kampus' ? 'Dana Kampus' : 'Kas Anggota');
+    const anggotaField = document.getElementById('anggotaPembayarField');
+    
+    const kategoriBySumber = {
+        'iuran_anggota': 'Iuran Rutin Anggota',
+        'donasi': 'Donasi',
+        'usaha': 'Hasil Usaha',
+        'kampus': 'Dana Kampus',
+        'lainnya': 'Lainnya'
+    };
+    
+    setInputValue('kategoriPembayaran', kategoriBySumber[sumber] || '');
+    
+    // Show member selection field only for iuran_anggota
+    if(anggotaField) {
+        if(sumber === 'iuran_anggota') {
+            anggotaField.classList.remove('hidden');
+            window.populateAnggotaList();
+        } else {
+            anggotaField.classList.add('hidden');
+            setInputValue('anggotaPembayar', '');
+        }
+    }
 };
 
 window.updateKategoriPengeluaran = () => {
@@ -1808,15 +1844,29 @@ window.simpanPembayaran = async (e) => {
     if(!requirePermission('manage_finance', 'Role Anda tidak dapat mencatat kas masuk.')) { btn.innerText = ori; btn.disabled = false; return; }
     try { 
         const nominal = parseCurrencyNumber(document.getElementById('nomPembayaran').value);
+        const sumberDana = document.getElementById('sumberDanaPembayaran').value;
+        const anggotaPembayarId = document.getElementById('anggotaPembayar')?.value || '';
+        
         const payload = {
             tanggal: document.getElementById('tglPembayaran').value,
             jenis: 'Pemasukan',
-            sumberDana: document.getElementById('sumberDanaPembayaran').value,
+            sumberDana: sumberDana,
             kategori: document.getElementById('kategoriPembayaran').value.trim(),
             keterangan: document.getElementById('ketPembayaran').value.trim(),
             nominal,
             timestamp: firebase.firestore.FieldValue.serverTimestamp() 
         };
+        
+        // Add member info if iuran_anggota
+        if(sumberDana === 'iuran_anggota' && anggotaPembayarId) {
+            const anggota = window.cachedAnggotaData[anggotaPembayarId];
+            if(anggota) {
+                payload.anggotaPembayarId = anggotaPembayarId;
+                payload.anggotaPembayarNama = anggota.nama || '';
+                payload.anggotaPembayarNim = anggota.nim || '';
+            }
+        }
+        
         if(!isValidDateInput(payload.tanggal) || !payload.sumberDana || !payload.kategori || !payload.keterangan || !Number.isFinite(payload.nominal) || payload.nominal <= 0) {
             window.showToast('Data Tidak Valid', 'Tanggal, sumber dana, kategori, keterangan, dan nominal positif wajib diisi.', 'error');
             return;

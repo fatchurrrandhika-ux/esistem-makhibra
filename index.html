@@ -949,11 +949,23 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Sumber Dana</label>
                                     <select id="sumberDanaPembayaran" required data-onchange="window.updateKategoriPembayaran()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all">
-                                        <option value="organisasi">Dana Organisasi</option>
+                                        <option value="">- Pilih Sumber Dana -</option>
+                                        <option value="iuran_anggota">Iuran Rutin Anggota</option>
+                                        <option value="donasi">Donasi</option>
+                                        <option value="usaha">Hasil Usaha</option>
                                         <option value="kampus">Dana Kampus</option>
+                                        <option value="lainnya">Lainnya</option>
                                     </select>
                                 </div>
-                                <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Kategori Sumber</label><input type="text" id="kategoriPembayaran" value="Kas Anggota" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"></div>
+                                <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Kategori Sumber</label><input type="text" id="kategoriPembayaran" value="" placeholder="Otomatis terisi sesuai sumber" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"></div>
+                                
+                                <div id="anggotaPembayarField" class="hidden md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">👤 Anggota Pembayar</label>
+                                    <select id="anggotaPembayar" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all">
+                                        <option value="">- Pilih Anggota -</option>
+                                    </select>
+                                    <p class="text-[10px] text-slate-500 mt-1.5">Untuk tracking iuran per anggota. Abaikan jika bayar kolektif.</p>
+                                </div>
+
                                 <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Tanggal Masuk</label><input type="date" id="tglPembayaran" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-slate-600"></div>
                                 <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Keterangan / Rincian Singkat</label><input type="text" id="ketPembayaran" required placeholder="Contoh: Iuran kas bulan maret dari anggota divisi redaksi..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"></div>
                                 <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Uang (Rp)</label>

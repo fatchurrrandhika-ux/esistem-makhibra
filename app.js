@@ -2162,6 +2162,8 @@ window.renderTabelKas = () => {
     setText('summaryBalance', formatRp(sumBalance));
     setText('summaryMasukCount', `${countMasuk} transaksi`);
     setText('summaryKeluarCount', `${countKeluar} transaksi`);
+
+    page.rows.forEach((r) => {
         const isMasuk = r.jenis === 'Pemasukan';
         const nom = Number(r.nominal);
         const safeRTanggal = escapeHtml(r.tanggal || '');

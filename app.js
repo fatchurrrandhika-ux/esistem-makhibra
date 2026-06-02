@@ -2171,6 +2171,40 @@ const downloadTextFile = (filename, content, mime = 'application/vnd.ms-excel;ch
     URL.revokeObjectURL(url);
 };
 
+const downloadExcelFile = (filename, title, headers, rows) => {
+    const workbook = XLSX.utils.book_new();
+    const fullHeaders = ['No', ...headers];
+    
+    const data = [
+        [title],
+        [],
+        fullHeaders,
+        ...rows.map((row, index) => [index + 1, ...row])
+    ];
+    
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    
+    // Style header row (skip title and empty row)
+    const headerRowIndex = 2;
+    const headerRange = XLSX.utils.decode_range(worksheet['!ref']);
+    for (let C = headerRange.s.c; C <= headerRange.e.c; C++) {
+        const address = XLSX.utils.encode_col(C) + (headerRowIndex + 1);
+        if (!worksheet[address]) continue;
+        worksheet[address].s = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "0F172A" } },
+            alignment: { horizontal: "center", vertical: "center" }
+        };
+    }
+    
+    // Auto-fit column widths
+    const colWidths = fullHeaders.map(h => Math.max(10, String(h).length + 2));
+    worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
+    
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+    XLSX.writeFile(workbook, filename);
+};
+
 const excelCell = (value) => escapeHtml(value ?? '');
 
 const makeExcelTable = (title, headers, rows) => {
@@ -2208,7 +2242,7 @@ const makeExcelTable = (title, headers, rows) => {
 };
 
 window.downloadCSVData = (type) => {
-    let filename = `${type || 'export'}-${getJakartaDateInputValue()}.xls`;
+    let filename = `${type || 'export'}-${getJakartaDateInputValue()}.xlsx`;
     let title = type || 'Export Data';
     let headers = [];
     let rows = [];
@@ -2241,7 +2275,7 @@ window.downloadCSVData = (type) => {
         rows = data.map((r) => [r.nim, r.nama, r.jk, r.tempat_lahir, r.tgl_lahir, r.alamat, r.prodi, r.email, r.wa, r.divisi, r.angkatan]);
     }
 
-    downloadTextFile(filename, makeExcelTable(title, headers, rows));
+    downloadExcelFile(filename, title, headers, rows);
     window.showToast('Export Berhasil', `${rows.length} baris data Excel diunduh.`, 'success');
 };
 

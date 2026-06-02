@@ -937,46 +937,112 @@
 
                 <!-- VIEW: CATAT PEMASUKAN -->
                 <div id="view-catat-transaksi" class="view-section hidden">
-                    <div class="widget-box bg-white overflow-hidden border border-slate-200">
-                        <div class="bg-gradient-to-r from-emerald-600 to-emerald-800 p-5 flex items-center gap-3 text-white">
-                            <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm"><i class="ph-fill ph-hand-deposit text-2xl"></i></div>
-                            <div>
-                                <h3 class="font-black uppercase tracking-wider text-sm">Form Pemasukan Kas</h3>
-                                <p class="text-[10px] text-emerald-200 font-medium mt-0.5">Catat uang masuk ke dalam buku kas digital organisasi.</p>
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Header Section -->
+                        <div class="bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-xl p-6 text-white mb-6 shadow-lg">
+                            <div class="flex items-start gap-4">
+                                <div class="bg-white/20 p-3 rounded-lg backdrop-blur-sm">
+                                    <i class="ph-fill ph-hand-deposit text-3xl"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-2xl font-black mb-1">Catat Pemasukan Kas</h1>
+                                    <p class="text-emerald-100 text-sm leading-relaxed">Rekam semua penerimaan uang masuk ke buku kas organisasi dengan detail lengkap dan terstruktur.</p>
+                                </div>
                             </div>
                         </div>
-                        <form id="formInputPembayaran" data-onsubmit="window.simpanPembayaran(event)" class="p-6 sm:p-8 bg-slate-50/50">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                                <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Sumber Dana</label>
-                                    <select id="sumberDanaPembayaran" required data-onchange="window.updateKategoriPembayaran()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all">
-                                        <option value="">- Pilih Sumber Dana -</option>
-                                        <option value="iuran_anggota">Iuran Rutin Anggota</option>
-                                        <option value="donasi">Donasi</option>
-                                        <option value="usaha">Hasil Usaha</option>
-                                        <option value="kampus">Dana Kampus</option>
-                                        <option value="lainnya">Lainnya</option>
-                                    </select>
-                                </div>
-                                <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Kategori Sumber</label><input type="text" id="kategoriPembayaran" value="" placeholder="Otomatis terisi sesuai sumber" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"></div>
-                                
-                                <div id="anggotaPembayarField" class="hidden md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">👤 Anggota Pembayar</label>
-                                    <select id="anggotaPembayar" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all">
-                                        <option value="">- Pilih Anggota -</option>
-                                    </select>
-                                    <p class="text-[10px] text-slate-500 mt-1.5">Untuk tracking iuran per anggota. Abaikan jika bayar kolektif.</p>
-                                </div>
 
-                                <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Tanggal Masuk</label><input type="date" id="tglPembayaran" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-slate-600"></div>
-                                <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Keterangan / Rincian Singkat</label><input type="text" id="ketPembayaran" required placeholder="Contoh: Iuran kas bulan maret dari anggota divisi redaksi..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"></div>
-                                <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Uang (Rp)</label>
-                                    <div class="relative">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-lg">Rp</span>
-                                        <input type="number" id="nomPembayaran" required placeholder="0" class="w-full pl-12 pr-4 py-3.5 bg-emerald-50/50 border border-emerald-200 rounded-xl text-xl font-black text-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                        <!-- Main Form -->
+                        <form id="formInputPembayaran" data-onsubmit="window.simpanPembayaran(event)" class="space-y-5">
+                            
+                            <!-- Informasi Sumber Dana -->
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div class="bg-slate-50 border-b border-slate-200 px-6 py-3">
+                                    <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="ph-bold ph-funnel text-emerald-600"></i> 📌 Informasi Sumber</h3>
+                                </div>
+                                <div class="p-6 space-y-5">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                                Sumber Dana <span class="text-red-500">*</span>
+                                            </label>
+                                            <select id="sumberDanaPembayaran" required data-onchange="window.updateKategoriPembayaran()" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
+                                                <option value="">Pilih sumber dana...</option>
+                                                <option value="iuran_anggota">👥 Iuran Rutin Anggota</option>
+                                                <option value="donasi">💝 Donasi</option>
+                                                <option value="usaha">🏢 Hasil Usaha</option>
+                                                <option value="kampus">🏫 Dana Kampus</option>
+                                                <option value="lainnya">📝 Lainnya</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                                Kategori <span class="text-slate-400 text-xs">(Auto)</span>
+                                            </label>
+                                            <input type="text" id="kategoriPembayaran" placeholder="Kategori akan otomatis terisi" readonly class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-600 cursor-not-allowed">
+                                        </div>
+                                    </div>
+
+                                    <!-- Conditional: Anggota Pembayar -->
+                                    <div id="anggotaPembayarField" class="hidden pt-3 border-t border-slate-200">
+                                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                                            👤 Anggota Pembayar <span class="text-slate-400 text-xs">(Optional)</span>
+                                        </label>
+                                        <select id="anggotaPembayar" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
+                                            <option value="">Bayar kolektif (abaikan anggota spesifik)</option>
+                                        </select>
+                                        <p class="text-[11px] text-slate-500 mt-2 flex items-center gap-1"><i class="ph ph-info"></i>Pilih jika ingin tracking iuran per anggota</p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-8 text-right">
-                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-8 rounded-lg font-bold text-sm shadow-md shadow-emerald-500/30 transition-all transform active:scale-95 flex items-center gap-2 ml-auto"><i class="ph-bold ph-plus-circle text-lg"></i> TAMBAH PEMASUKAN</button>
+
+                            <!-- Detail Transaksi -->
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div class="bg-slate-50 border-b border-slate-200 px-6 py-3">
+                                    <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="ph-bold ph-calendar-blank text-emerald-600"></i> 📅 Detail Transaksi</h3>
+                                </div>
+                                <div class="p-6 space-y-5">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                                Tanggal Masuk <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="date" id="tglPembayaran" required class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
+                                        </div>
+                                        <div></div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                                            Keterangan <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" id="ketPembayaran" required placeholder="Jelaskan detail penerimaan (contoh: Iuran kas Maret dari Divisi Redaksi)..." class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all placeholder-slate-400">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Nominal Section -->
+                            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl border border-emerald-200 shadow-sm overflow-hidden">
+                                <div class="bg-emerald-100 border-b border-emerald-300 px-6 py-3">
+                                    <h3 class="font-bold text-emerald-900 flex items-center gap-2"><i class="ph-bold ph-currency-circle-dollar text-emerald-600"></i> 💰 Nominal Penerimaan</h3>
+                                </div>
+                                <div class="p-6">
+                                    <label class="block text-sm font-bold text-emerald-900 mb-3">
+                                        Jumlah Uang <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-emerald-700 font-black text-xl">Rp</span>
+                                        <input type="number" id="nomPembayaran" required placeholder="0" class="w-full pl-14 pr-5 py-4 bg-white border-2 border-emerald-300 rounded-lg text-2xl font-bold text-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-300 outline-none transition-all">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex gap-3 justify-end pt-2">
+                                <button type="reset" class="px-6 py-3 border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-all">
+                                    <i class="ph ph-eraser mr-2"></i>Bersihkan
+                                </button>
+                                <button type="submit" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-lg shadow-emerald-500/30 transition-all transform active:scale-95 flex items-center gap-2">
+                                    <i class="ph-bold ph-plus-circle text-lg"></i> SIMPAN PEMASUKAN
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -984,55 +1050,126 @@
 
                 <!-- VIEW: CATAT PENGELUARAN -->
                 <div id="view-catat-pengeluaran" class="view-section hidden">
-                    <div class="widget-box bg-white overflow-hidden border border-slate-200">
-                        <div class="bg-gradient-to-r from-rose-600 to-rose-800 p-5 flex items-center gap-3 text-white">
-                            <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm"><i class="ph-fill ph-hand-withdraw text-2xl"></i></div>
-                            <div>
-                                <h3 class="font-black uppercase tracking-wider text-sm">Form Pengeluaran Kas</h3>
-                                <p class="text-[10px] text-rose-200 font-medium mt-0.5">Catat uang keluar untuk keperluan operasional organisasi.</p>
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Header Section -->
+                        <div class="bg-gradient-to-r from-rose-600 to-rose-800 rounded-xl p-6 text-white mb-6 shadow-lg">
+                            <div class="flex items-start gap-4">
+                                <div class="bg-white/20 p-3 rounded-lg backdrop-blur-sm">
+                                    <i class="ph-fill ph-hand-withdraw text-3xl"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-2xl font-black mb-1">Catat Pengeluaran Kas</h1>
+                                    <p class="text-rose-100 text-sm leading-relaxed">Rekam semua pengeluaran uang untuk kebutuhan operasional organisasi dengan detail lengkap dan terstruktur.</p>
+                                </div>
                             </div>
                         </div>
-                        <form id="formInputPengeluaran" data-onsubmit="window.simpanPengeluaran(event)" class="p-6 sm:p-8 bg-slate-50/50">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                                <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Sumber Dana</label>
-                                    <select id="sumberDanaPengeluaran" required data-onchange="window.updateKategoriPengeluaran()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all">
-                                        <option value="organisasi">Dana Organisasi</option>
-                                        <option value="kampus">Dana Kampus</option>
-                                        <option value="campuran">Dana Campuran (Kampus + Organisasi)</option>
-                                    </select>
+
+                        <!-- Main Form -->
+                        <form id="formInputPengeluaran" data-onsubmit="window.simpanPengeluaran(event)" class="space-y-5">
+                            
+                            <!-- Informasi Dana -->
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div class="bg-slate-50 border-b border-slate-200 px-6 py-3">
+                                    <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="ph-bold ph-funnel text-rose-600"></i> 📌 Informasi Dana</h3>
                                 </div>
-                                <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Kategori Tujuan</label><input type="text" id="kategoriPengeluaranForm" value="Operasional" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all"></div>
-                                <div><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Tanggal Keluar</label><input type="date" id="tglPengeluaran" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all text-slate-600"></div>
-                                <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Keterangan / Rincian Singkat</label><input type="text" id="ketPengeluaran" required placeholder="Contoh: Pembelian tinta printer dan kertas HVS..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all"></div>
-                                <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Uang (Rp)</label>
-                                    <div class="relative">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-rose-600 font-black text-lg">Rp</span>
-                                        <input type="number" id="nomPengeluaran" required placeholder="0" class="w-full pl-12 pr-4 py-3.5 bg-rose-50/50 border border-rose-200 rounded-xl text-xl font-black text-rose-700 focus:border-rose-500 focus:ring-2 focus:ring-rose-500 outline-none transition-all">
-                                    </div>
-                                </div>
-                                <div id="campuranSplitFields" class="md:col-span-2 hidden space-y-4 border border-dashed border-rose-200 rounded-2xl p-4 bg-rose-50/70">
-                                    <div class="text-xs font-bold uppercase text-rose-700 mb-2">Rincian Dana Campuran</div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-6 space-y-5">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
-                                            <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Dana Kampus (Rp)</label>
-                                            <div class="relative">
-                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 font-black text-lg">Rp</span>
-                                                <input type="number" id="nomCampuranKampus" placeholder="0" min="0" data-oninput="window.updateCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                                            </div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                                Sumber Dana <span class="text-red-500">*</span>
+                                            </label>
+                                            <select id="sumberDanaPengeluaran" required data-onchange="window.updateKategoriPengeluaran()" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all">
+                                                <option value="">Pilih sumber dana...</option>
+                                                <option value="organisasi">💼 Dana Organisasi</option>
+                                                <option value="kampus">🏫 Dana Kampus</option>
+                                                <option value="campuran">🔀 Dana Campuran (Kampus + Organisasi)</option>
+                                            </select>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase">Nominal Dana Organisasi (Rp)</label>
-                                            <div class="relative">
-                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-lg">Rp</span>
-                                                <input type="number" id="nomCampuranOrganisasi" placeholder="0" min="0" data-oninput="window.updateCampuranTotal()" class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-lg text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
-                                            </div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                                Kategori Tujuan <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" id="kategoriPengeluaranForm" placeholder="Kategori akan otomatis terisi" class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all">
                                         </div>
                                     </div>
-                                    <p class="text-[11px] text-slate-500 mt-2">Isikan jumlah yang berasal dari kampus dan organisasi. Total akan dihitung otomatis.</p>
                                 </div>
                             </div>
-                            <div class="mt-8 text-right">
-                                <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white py-3 px-8 rounded-lg font-bold text-sm shadow-md shadow-rose-500/30 transition-all transform active:scale-95 flex items-center gap-2 ml-auto"><i class="ph-bold ph-minus-circle text-lg"></i> CATAT PENGELUARAN</button>
+
+                            <!-- Detail Transaksi -->
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div class="bg-slate-50 border-b border-slate-200 px-6 py-3">
+                                    <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="ph-bold ph-calendar-blank text-rose-600"></i> 📅 Detail Transaksi</h3>
+                                </div>
+                                <div class="p-6 space-y-5">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                                                Tanggal Keluar <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="date" id="tglPengeluaran" required class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all">
+                                        </div>
+                                        <div></div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                                            Keterangan <span class="text-red-500">*</span>
+                                        </label>
+                                        <input type="text" id="ketPengeluaran" required placeholder="Jelaskan detail pengeluaran (contoh: Pembelian tinta printer dan kertas HVS untuk rapat)..." class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition-all placeholder-slate-400">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Nominal Section -->
+                            <div class="bg-gradient-to-br from-rose-50 to-rose-100/50 rounded-xl border border-rose-200 shadow-sm overflow-hidden">
+                                <div class="bg-rose-100 border-b border-rose-300 px-6 py-3">
+                                    <h3 class="font-bold text-rose-900 flex items-center gap-2"><i class="ph-bold ph-currency-circle-dollar text-rose-600"></i> 💸 Nominal Pengeluaran</h3>
+                                </div>
+                                <div class="p-6">
+                                    <label class="block text-sm font-bold text-rose-900 mb-3">
+                                        Jumlah Uang <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-rose-700 font-black text-xl">Rp</span>
+                                        <input type="number" id="nomPengeluaran" required placeholder="0" class="w-full pl-14 pr-5 py-4 bg-white border-2 border-rose-300 rounded-lg text-2xl font-bold text-rose-700 focus:border-rose-500 focus:ring-2 focus:ring-rose-300 outline-none transition-all">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dana Campuran Split (Conditional) -->
+                            <div id="campuranSplitFields" class="hidden bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden">
+                                <div class="bg-amber-50 border-b border-amber-200 px-6 py-3">
+                                    <h3 class="font-bold text-amber-900 flex items-center gap-2"><i class="ph-bold ph-split-vertical text-amber-600"></i> 🔀 Rincian Dana Campuran</h3>
+                                </div>
+                                <div class="p-6 space-y-4">
+                                    <p class="text-sm text-amber-700 mb-4 flex items-center gap-1"><i class="ph ph-info"></i>Tentukan berapa bagian dari kampus dan organisasi</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2">Dana Kampus (Rp)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 font-black text-lg">Rp</span>
+                                                <input type="number" id="nomCampuranKampus" placeholder="0" min="0" data-oninput="window.updateCampuranTotal()" class="w-full pl-12 pr-4 py-3 bg-white border border-slate-300 rounded-lg text-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-2">Dana Organisasi (Rp)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-black text-lg">Rp</span>
+                                                <input type="number" id="nomCampuranOrganisasi" placeholder="0" min="0" data-oninput="window.updateCampuranTotal()" class="w-full pl-12 pr-4 py-3 bg-white border border-slate-300 rounded-lg text-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-500 italic">💡 Total akan dihitung otomatis dari kedua nominal di atas</p>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex gap-3 justify-end pt-2">
+                                <button type="reset" class="px-6 py-3 border border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-all">
+                                    <i class="ph ph-eraser mr-2"></i>Bersihkan
+                                </button>
+                                <button type="submit" class="px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg shadow-lg shadow-rose-500/30 transition-all transform active:scale-95 flex items-center gap-2">
+                                    <i class="ph-bold ph-minus-circle text-lg"></i> SIMPAN PENGELUARAN
+                                </button>
                             </div>
                         </form>
                     </div>

@@ -341,55 +341,38 @@
     <div class="flex-1 flex flex-col min-w-0 bg-slate-100 relative">
         
         <!-- HEADER ATAS -->
-        <header class="sticky top-0 z-30 bg-white border-b border-slate-200 px-3 sm:px-6 py-2 shadow-sm">
+        <header class="app-topbar sticky top-0 z-30 px-3 sm:px-5 py-3">
+            <div class="app-topbar-inner">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button data-onclick="window.toggleSidebar()" class="topbar-menu-btn" aria-label="Buka navigasi">
+                        <i class="ph-bold ph-list text-xl"></i>
+                    </button>
 
-            <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="topbar-brand min-w-0">
+                        <div class="topbar-brand-mark">
+                            <img src="logo_lpm-.png" onerror="this.src='https://ui-avatars.com/api/?name=LM&background=fff&color=047857&rounded=true'" alt="">
+                        </div>
+                        <div class="min-w-0">
+                            <h2 class="truncate">
+                                <span id="ui-navbar-title">LPM MAKHIBRA</span>
+                            </h2>
+                            <p id="dash-instansi-name" class="truncate">Sistem Informasi Manajemen Terpadu</p>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- KIRI -->
-                <div class="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-
-            <!-- Hamburger -->
-            <button data-onclick="window.toggleSidebar()" 
-                class="text-slate-700 hover:text-emerald-600 transition-colors bg-slate-200 hover:bg-emerald-100 p-2 rounded-lg shadow-sm border border-slate-300 shrink-0 text-xl">
-                ☰
-            </button>
-
-            <!-- Judul -->
-            <div class="min-w-0">
-                <h2 class="font-marker text-sm sm:text-xl tracking-wide truncate">
-                    <span id="ui-navbar-title" class="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
-                        LPM MAKHIBRA
-                    </span>
-                </h2>
-
-                <p id="dash-instansi-name" class="text-[9px] sm:text-[10px] text-slate-500 font-medium truncate">
-                    Sistem Informasi Manajemen Terpadu
-                </p>
+                <div class="topbar-status">
+                    <div class="topbar-role">
+                        <span>Role</span>
+                        <b id="currentUserRoleLabel">Viewer</b>
+                    </div>
+                    <div class="topbar-clock" aria-live="polite">
+                        <p id="currentDate">&nbsp;</p>
+                        <strong id="currentTime">&nbsp;</strong>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- KANAN -->
-        <div class="flex items-center gap-2 shrink-0">
-            <div class="hidden sm:flex flex-col items-end leading-tight">
-                <span class="text-[9px] font-black uppercase tracking-wider text-slate-400">Role</span>
-                <span id="currentUserRoleLabel" class="text-[10px] font-black text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">Viewer</span>
-            </div>
-            <!-- Waktu -->
-            <div class="text-right leading-tight min-w-[118px] sm:min-w-[170px]" aria-live="polite">
-                <p id="currentDate"
-                    class="text-[9px] sm:text-xs text-slate-500 font-bold">
-                    &nbsp;
-                </p>
-
-                <p id="currentTime"
-                    class="text-[10px] sm:text-sm font-black text-emerald-600 tracking-wide">
-                    &nbsp;
-                </p>
-            </div>
-        </div>
-    </div>
-
-</header>
+        </header>
 
         <main class="flex-1 custom-scrollbar p-4 md:p-6 lg:p-8 bg-slate-100">
             <div class="max-w-[1400px] mx-auto space-y-6">
@@ -397,106 +380,103 @@
                 <!-- VIEW: DASHBOARD (SEKARANG HIDDEN BY DEFAULT AGAR ANTI-KEDIP) -->
                 <div id="view-dashboard" class="view-section hidden space-y-5">
                     
-                    <div class="space-y-5 no-print">
-                        <div class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
-                            <button data-permission="manage_members" data-onclick="window.bukaFormTambah()" class="bg-slate-50 border border-slate-200 hover:bg-emerald-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <svg class="w-9 h-9 text-emerald-500 group-hover:text-emerald-600 mb-2 transition-colors"><use href="#icon-user-add"></use></svg>
-                                <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-emerald-700">Tambah<br>Anggota</span>
+                    <div class="home-command no-print">
+                        <section class="home-hero">
+                            <div class="home-hero-copy">
+                                <span class="home-eyebrow">Command Center</span>
+                                <h1>Beranda operasional LPM MAKHIBRA</h1>
+                                <p>Pantau kas, anggota, arsip, dan LPJ dari satu ruang kerja yang ringkas.</p>
+                                <div class="home-hero-actions">
+                                    <button data-permission="manage_finance" data-onclick="window.switchView('view-catat-transaksi')" class="home-primary-action">
+                                        <i class="ph-bold ph-plus-circle"></i>
+                                        <span>Catat Kas</span>
+                                    </button>
+                                    <button data-onclick="window.switchView('view-riwayat-transaksi')" class="home-secondary-action">
+                                        <i class="ph-bold ph-chart-line-up"></i>
+                                        <span>Lihat Laporan</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="home-hero-panel" aria-label="Ringkasan saldo kas">
+                                <span>Saldo Kas Umum</span>
+                                <strong id="card-saldo">Rp 0</strong>
+                                <div class="home-hero-strip">
+                                    <small>Kas bulan ini</small>
+                                    <b id="dash-kas-bulan-ini">Rp 0</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="home-action-grid">
+                            <button data-permission="manage_members" data-onclick="window.bukaFormTambah()" class="home-action-card accent-emerald">
+                                <svg><use href="#icon-user-add"></use></svg>
+                                <span>Tambah Anggota</span>
                             </button>
-                            <button data-onclick="window.switchView('view-kelola-anggota')" class="bg-slate-50 border border-slate-200 hover:bg-blue-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <svg class="w-9 h-9 text-blue-500 group-hover:text-blue-600 mb-2 transition-colors"><use href="#icon-address-book"></use></svg>
-                                <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-blue-700">Data<br>Anggota</span>
+                            <button data-onclick="window.switchView('view-kelola-anggota')" class="home-action-card accent-blue">
+                                <svg><use href="#icon-address-book"></use></svg>
+                                <span>Data Anggota</span>
                             </button>
-                            <button data-permission="manage_finance" data-onclick="window.switchView('view-catat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-teal-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <svg class="w-9 h-9 text-teal-500 group-hover:text-teal-600 mb-2 transition-colors"><use href="#icon-money-in"></use></svg>
-                                <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-teal-700">Kas<br>Masuk</span>
+                            <button data-permission="manage_finance" data-onclick="window.switchView('view-catat-transaksi')" class="home-action-card accent-teal">
+                                <svg><use href="#icon-money-in"></use></svg>
+                                <span>Kas Masuk</span>
                             </button>
-                            <button data-permission="manage_finance" data-onclick="window.switchView('view-catat-pengeluaran')" class="bg-slate-50 border border-slate-200 hover:bg-rose-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <svg class="w-9 h-9 text-rose-500 group-hover:text-rose-600 mb-2 transition-colors"><use href="#icon-receipt-out"></use></svg>
-                                <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-rose-700">Kas<br>Keluar</span>
+                            <button data-permission="manage_finance" data-onclick="window.switchView('view-catat-pengeluaran')" class="home-action-card accent-rose">
+                                <svg><use href="#icon-receipt-out"></use></svg>
+                                <span>Kas Keluar</span>
                             </button>
-                            <button data-onclick="window.switchView('view-riwayat-transaksi')" class="bg-slate-50 border border-slate-200 hover:bg-amber-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <svg class="w-9 h-9 text-amber-500 group-hover:text-amber-600 mb-2 transition-colors"><use href="#icon-chart-report"></use></svg>
-                                <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-amber-700">Laporan<br>Keuangan</span>
+                            <button data-onclick="window.switchView('view-riwayat-transaksi')" class="home-action-card accent-amber">
+                                <svg><use href="#icon-chart-report"></use></svg>
+                                <span>Laporan</span>
                             </button>
-                            <button data-onclick="window.switchView('view-lpj-kampus')" class="bg-slate-50 border border-slate-200 hover:bg-indigo-50 flex flex-col items-center justify-center w-28 h-24 shrink-0 transition-colors shadow-sm rounded-md group">
-                                <svg class="w-9 h-9 text-indigo-500 group-hover:text-indigo-600 mb-2 transition-colors"><use href="#icon-file-lpj"></use></svg>
-                                <span class="text-[11px] text-slate-600 font-bold text-center leading-tight group-hover:text-indigo-700">LPJ<br>Kampus</span>
+                            <button data-onclick="window.switchView('view-lpj-kampus')" class="home-action-card accent-indigo">
+                                <svg><use href="#icon-file-lpj"></use></svg>
+                                <span>LPJ Kampus</span>
                             </button>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                            <div class="flex rounded-md overflow-hidden shadow-sm border border-[#27ae60]/20 min-h-[80px] min-w-0">
-                                <div class="w-[80px] bg-[#229954] flex items-center justify-center text-white shrink-0">
-                                    <svg class="w-10 h-10"><use href="#icon-wallet"></use></svg>
-                                </div>
-                                <div class="flex-1 min-w-0 bg-[#27ae60] p-3 sm:p-4 flex flex-col justify-center text-white">
-                                    <h4 class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wide mb-1 opacity-90 whitespace-normal leading-snug">Saldo Kas Umum</h4>
-                                    <p class="text-lg sm:text-xl font-black break-words leading-tight" id="card-saldo">Rp 0</p>
-                                </div>
-                            </div>
-                            <div class="flex rounded-md overflow-hidden shadow-sm border border-[#e74c3c]/20 min-h-[80px] min-w-0">
-                                <div class="w-[80px] bg-[#c0392b] flex items-center justify-center text-white shrink-0">
-                                    <svg class="w-10 h-10"><use href="#icon-users"></use></svg>
-                                </div>
-                                <div class="flex-1 min-w-0 bg-[#e74c3c] p-3 sm:p-4 flex flex-col justify-center text-white">
-                                    <h4 class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wide mb-1 opacity-90 whitespace-normal leading-snug">Total Anggota</h4>
-                                    <p class="text-lg sm:text-xl font-black break-words leading-tight"><span id="dash-total-anggota">0</span> <span class="text-xs sm:text-sm font-medium">Orang</span></p>
-                                </div>
-                            </div>
-                            <div class="flex rounded-md overflow-hidden shadow-sm border border-[#3498db]/20 min-h-[80px] min-w-0">
-                                <div class="w-[80px] bg-[#2980b9] flex items-center justify-center text-white shrink-0">
-                                    <svg class="w-10 h-10"><use href="#icon-campus"></use></svg>
-                                </div>
-                                <div class="flex-1 min-w-0 bg-[#3498db] p-3 sm:p-4 flex flex-col justify-center text-white">
-                                    <h4 class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wide mb-1 opacity-90 whitespace-normal leading-snug">Dana Kampus</h4>
-                                    <p class="text-lg sm:text-xl font-black break-words leading-tight" id="card-dana-kampus">Rp 0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5">
-                            <div class="flex rounded-md overflow-hidden shadow-sm border border-[#27ae60]/20 min-h-[80px] min-w-0">
-                                <div class="w-[80px] bg-[#229954] flex items-center justify-center text-white shrink-0">
-                                    <svg class="w-10 h-10"><use href="#icon-organization"></use></svg>
-                                </div>
-                                <div class="flex-1 min-w-0 bg-[#27ae60] p-3 sm:p-4 flex flex-col justify-center text-white">
-                                    <h4 class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wide mb-1 opacity-90 whitespace-normal leading-snug">Dana Organisasi</h4>
-                                    <p class="text-lg sm:text-xl font-black break-words leading-tight" id="card-dana-organisasi">Rp 0</p>
-                                </div>
-                            </div>
-                            <div class="flex rounded-md overflow-hidden shadow-sm border border-[#8b5cf6]/20 min-h-[80px] min-w-0">
-                                <div class="w-[80px] bg-[#7c3aed] flex items-center justify-center text-white shrink-0">
-                                    <svg class="w-10 h-10"><use href="#icon-event-fund"></use></svg>
-                                </div>
-                                <div class="flex-1 min-w-0 bg-[#8b5cf6] p-3 sm:p-4 flex flex-col justify-center text-white">
-                                    <h4 class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wide mb-1 opacity-90 whitespace-normal leading-snug">Event Dana Campuran</h4>
-                                    <p class="text-lg sm:text-xl font-black break-words leading-tight" id="card-event-campuran">Rp 0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Anggota Aktif</p>
-                                <p class="text-2xl font-black text-slate-800"><span id="dash-anggota-aktif">0</span></p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Kas Bulan Ini</p>
-                                <p id="dash-kas-bulan-ini" class="text-xl font-black text-emerald-700">Rp 0</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Surat Terbaru</p>
-                                <p id="dash-surat-terbaru" class="text-sm font-bold text-slate-700 leading-snug">Belum ada surat</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Deadline LPJ</p>
-                                <p id="dash-deadline-lpj" class="text-sm font-bold text-rose-700 leading-snug">-</p>
-                                <p class="text-[10px] text-slate-400 mt-1"><span id="dash-lpj-count">0</span> item LPJ</p>
-                            </div>
-                            <div class="bg-white border border-slate-200 rounded-md p-4 shadow-sm">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Arsip Terbaru</p>
-                                <p id="dash-arsip-terbaru" class="text-sm font-bold text-slate-700 leading-snug">Belum ada arsip</p>
-                                <p class="text-[10px] text-slate-400 mt-1"><span id="dash-total-arsip">0</span> arsip</p>
-                            </div>
-                        </div>
+                        </section>
+
+                        <section class="home-metric-grid">
+                            <article class="home-metric-card metric-green">
+                                <svg><use href="#icon-organization"></use></svg>
+                                <span>Dana Organisasi</span>
+                                <strong id="card-dana-organisasi">Rp 0</strong>
+                            </article>
+                            <article class="home-metric-card metric-blue">
+                                <svg><use href="#icon-campus"></use></svg>
+                                <span>Dana Kampus</span>
+                                <strong id="card-dana-kampus">Rp 0</strong>
+                            </article>
+                            <article class="home-metric-card metric-violet">
+                                <svg><use href="#icon-event-fund"></use></svg>
+                                <span>Event Dana Campuran</span>
+                                <strong id="card-event-campuran">Rp 0</strong>
+                            </article>
+                            <article class="home-metric-card metric-slate">
+                                <svg><use href="#icon-users"></use></svg>
+                                <span>Total Anggota</span>
+                                <strong><span id="dash-total-anggota">0</span> Orang</strong>
+                            </article>
+                        </section>
+
+                        <section class="home-brief-grid">
+                            <article>
+                                <span>Anggota Aktif</span>
+                                <strong><span id="dash-anggota-aktif">0</span></strong>
+                            </article>
+                            <article>
+                                <span>Surat Terbaru</span>
+                                <strong id="dash-surat-terbaru">Belum ada surat</strong>
+                            </article>
+                            <article>
+                                <span>Deadline LPJ</span>
+                                <strong id="dash-deadline-lpj">-</strong>
+                                <small><span id="dash-lpj-count">0</span> item LPJ</small>
+                            </article>
+                            <article>
+                                <span>Arsip Terbaru</span>
+                                <strong id="dash-arsip-terbaru">Belum ada arsip</strong>
+                                <small><span id="dash-total-arsip">0</span> arsip</small>
+                            </article>
+                        </section>
                     </div>
 
                     <div class="bg-white border border-slate-200 shadow-sm rounded-md overflow-hidden">

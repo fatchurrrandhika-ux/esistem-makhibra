@@ -1678,10 +1678,10 @@ window.renderTabelAnggota = () => {
                                 <i class="ph-bold ph-eye"></i><span>Detail</span>
                             </button>
                             <button type="button" data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="member-card-btn member-action-edit" aria-label="Edit ${safeRName}">
-                                <i class="ph-bold ph-pencil-simple"></i><span>Edit</span>
+                                <i class="ph ph-pencil"></i><span>Edit</span>
                             </button>
                             <button type="button" data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="member-card-btn member-action-delete" aria-label="Hapus ${safeRName}">
-                                <i class="ph-bold ph-trash"></i><span>Hapus</span>
+                                <i class="ph ph-trash"></i><span>Hapus</span>
                             </button>
                         </div>
                     </div>
@@ -1707,10 +1707,10 @@ window.renderTabelAnggota = () => {
                             <i class="ph-bold ph-eye"></i><span>Detail</span>
                         </button>
                         <button type="button" data-permission="manage_members" data-onclick='window.editAnggota(${safeRId})' class="member-table-action member-action-edit" title="Edit Anggota" aria-label="Edit ${safeRName}">
-                            <i class="ph-bold ph-pencil-simple"></i><span>Edit</span>
+                            <i class="ph ph-pencil"></i><span>Edit</span>
                         </button>
                         <button type="button" data-permission="delete_members" data-onclick='window.hapusAnggota(${safeRId})' class="member-table-action member-action-delete" title="Hapus Anggota" aria-label="Hapus ${safeRName}">
-                            <i class="ph-bold ph-trash"></i><span>Hapus</span>
+                            <i class="ph ph-trash"></i><span>Hapus</span>
                         </button>
                     </div>
                 </td>
@@ -2018,8 +2018,8 @@ window.renderTabelKas = () => {
             <td class="px-4 py-3 text-right font-black text-slate-800 bg-slate-50/50 text-xs">${formatRp(r.saldoCalc)}</td>
             <td class="px-4 py-3 text-center">
                 <div class="flex justify-center gap-1">
-                    <button data-permission="manage_finance" data-onclick='window.bukaEditTransaksi(${safeRId})' class="bg-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white p-1.5 rounded transition-colors" title="Edit Transaksi"><i class="ph-bold ph-pencil-simple"></i></button>
-                    <button data-permission="delete_finance" data-onclick='window.hapusKas(${safeRId})' class="bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white p-1.5 rounded transition-colors" title="Hapus Transaksi"><i class="ph-bold ph-trash"></i></button>
+                    <button data-permission="manage_finance" data-onclick='window.bukaEditTransaksi(${safeRId})' class="bg-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white p-1.5 rounded transition-colors" title="Edit Transaksi"><i class="ph ph-pencil-simple"></i></button>
+                    <button data-permission="delete_finance" data-onclick='window.hapusKas(${safeRId})' class="bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white p-1.5 rounded transition-colors" title="Hapus Transaksi"><i class="ph ph-trash"></i></button>
                 </div>
             </td>
         </tr>`;
@@ -2703,7 +2703,7 @@ window.renderTabelArsip = () => {
                 <td class="px-5 py-4 text-slate-600 truncate max-w-[200px]">${safeRPerihal}</td>
                 <td class="px-5 py-4 text-center">
                     <div class="flex justify-center gap-1">
-                        <button data-permission="delete_archive" data-onclick='window.hapusArsip(${safeRId})' class="bg-rose-100 hover:bg-rose-200 text-rose-600 p-1.5 rounded shadow-sm transition-colors"><i class="ph-bold ph-trash"></i></button>
+                        <button data-permission="delete_archive" data-onclick='window.hapusArsip(${safeRId})' class="bg-rose-100 hover:bg-rose-200 text-rose-600 p-1.5 rounded shadow-sm transition-colors"><i class="ph ph-trash"></i></button>
                     </div>
                 </td>
             </tr>`;

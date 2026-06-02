@@ -1342,6 +1342,29 @@ window.gantiTabAnggota = (tabNum) => {
     }
 };
 
+window.gantiTabDetailView = (tabNum) => {
+    const btn1 = document.getElementById('tab-detail-1');
+    const btn2 = document.getElementById('tab-detail-2');
+    const cont1 = document.getElementById('content-detail-1');
+    const cont2 = document.getElementById('content-detail-2');
+
+    if(!btn1 || !btn2 || !cont1 || !cont2) return;
+
+    if(tabNum === 1) {
+        cont1.classList.remove('hidden'); cont1.classList.add('block');
+        cont2.classList.remove('block'); cont2.classList.add('hidden');
+        
+        btn1.className = "px-6 py-3 bg-white border-t-[3px] border-t-[#3c8dbc] border-r border-slate-200 text-[#3c8dbc] font-bold cursor-pointer transition-all -mb-px";
+        btn2.className = "px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer transition-all border-r border-slate-200";
+    } else {
+        cont1.classList.remove('block'); cont1.classList.add('hidden');
+        cont2.classList.remove('hidden'); cont2.classList.add('block');
+        
+        btn2.className = "px-6 py-3 bg-white border-t-[3px] border-t-[#3c8dbc] border-r border-slate-200 text-[#3c8dbc] font-bold cursor-pointer transition-all -mb-px";
+        btn1.className = "px-6 py-3 text-slate-500 font-medium hover:bg-slate-100 cursor-pointer transition-all border-r border-slate-200";
+    }
+};
+
 window.bukaFormTambah = (element = null, isSubmenu = false) => {
     if(!requirePermission('manage_members', 'Role Anda tidak dapat menambah anggota.')) return;
     currentEditAnggotaId = null;

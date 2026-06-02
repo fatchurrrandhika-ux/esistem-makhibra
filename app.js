@@ -2159,7 +2159,7 @@ window.simpanEditTransaksi = async (e) => {
     }
 };
 
-const downloadTextFile = (filename, content, mime = 'text/csv;charset=utf-8;') => {
+const downloadTextFile = (filename, content, mime = 'application/vnd.ms-excel;charset=utf-8;') => {
     const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -2171,26 +2171,60 @@ const downloadTextFile = (filename, content, mime = 'text/csv;charset=utf-8;') =
     URL.revokeObjectURL(url);
 };
 
-const csvCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+const excelCell = (value) => escapeHtml(value ?? '');
 
-const makeCsv = (headers, rows) => {
-    const lines = [headers.map(csvCell).join(';')];
-    rows.forEach((row) => lines.push(row.map(csvCell).join(';')));
-    return `\ufeff${lines.join('\n')}`;
+const makeExcelTable = (title, headers, rows) => {
+    const fullHeaders = ['No', ...headers];
+    const headerHtml = fullHeaders.map((header) => `<th>${excelCell(header)}</th>`).join('');
+    const rowHtml = rows.map((row, index) => {
+        const cells = [index + 1, ...row].map((value) => `<td>${excelCell(value)}</td>`).join('');
+        return `<tr>${cells}</tr>`;
+    }).join('');
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11pt; }
+        th { background: #0f172a; color: #ffffff; font-weight: 700; text-align: center; }
+        th, td { border: 1px solid #94a3b8; padding: 6px 8px; vertical-align: top; mso-number-format:"\\@"; }
+        td:first-child { text-align: center; width: 42px; }
+        .title { background: #ecfdf5; color: #064e3b; font-size: 14pt; text-align: left; }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr><th class="title" colspan="${fullHeaders.length}">${excelCell(title)}</th></tr>
+            <tr>${headerHtml}</tr>
+        </thead>
+        <tbody>
+            ${rowHtml || `<tr><td colspan="${fullHeaders.length}" style="text-align:center;">Tidak ada data</td></tr>`}
+        </tbody>
+    </table>
+</body>
+</html>`;
 };
 
 window.downloadCSVData = (type) => {
-    let filename = `${type || 'export'}-${getJakartaDateInputValue()}.csv`;
+    let filename = `${type || 'export'}-${getJakartaDateInputValue()}.xls`;
+    let title = type || 'Export Data';
     let headers = [];
     let rows = [];
 
     if(type === 'Buku_Kas') {
+        title = 'Buku Kas LPM MAKHIBRA';
         headers = ['Tanggal', 'Jenis', 'Sumber Dana', 'Kategori', 'Keterangan', 'Masuk', 'Keluar', 'Saldo'];
         rows = (window.cachedKasData || []).map((r) => {
             const isMasuk = r.jenis === 'Pemasukan';
             return [r.tanggal, r.jenis, r.sumberDana, r.kategori, r.keterangan, isMasuk ? r.nominal : '', isMasuk ? '' : r.nominal, r.saldoCalc];
         });
     } else {
+        title = type === 'Data_Laki' ? 'Data Anggota Laki-laki'
+            : type === 'Data_Perempuan' ? 'Data Anggota Perempuan'
+            : type === 'Tabel_Anggota' ? 'Data Anggota Sesuai Filter'
+            : 'Data Semua Anggota';
         headers = ['NIM', 'Nama', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Alamat', 'Prodi', 'Email', 'WA', 'Divisi', 'Angkatan'];
         let data = Object.values(window.cachedAnggotaData || {});
         if(type === 'Data_Laki') data = data.filter((r) => r.jk === 'Laki-laki');
@@ -2207,8 +2241,8 @@ window.downloadCSVData = (type) => {
         rows = data.map((r) => [r.nim, r.nama, r.jk, r.tempat_lahir, r.tgl_lahir, r.alamat, r.prodi, r.email, r.wa, r.divisi, r.angkatan]);
     }
 
-    downloadTextFile(filename, makeCsv(headers, rows));
-    window.showToast('Export Berhasil', `${rows.length} baris data diunduh.`, 'success');
+    downloadTextFile(filename, makeExcelTable(title, headers, rows));
+    window.showToast('Export Berhasil', `${rows.length} baris data Excel diunduh.`, 'success');
 };
 
 const serializeFirestoreValue = (value) => {

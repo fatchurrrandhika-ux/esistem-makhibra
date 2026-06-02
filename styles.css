@@ -51,25 +51,62 @@ header {
 }
 
 .topbar-menu-btn {
-    width: 42px;
+    position: relative;
+    width: 48px;
     height: 42px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.625rem;
-    border: 1px solid #dbe5ee;
-    background: #0f172a;
-    color: #ffffff;
-    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.16);
-    transition: transform 180ms ease, background-color 180ms ease;
+    gap: 0.28rem;
+    border-radius: 999px;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(236, 253, 245, 0.88)),
+        linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(14, 165, 233, 0.1));
+    color: #065f46;
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease;
+}
+
+.topbar-menu-btn::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    pointer-events: none;
 }
 
 .topbar-menu-btn:hover {
-    background: #14532d;
+    color: #0f766e;
+    border-color: rgba(20, 184, 166, 0.42);
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.13), 0 0 0 4px rgba(16, 185, 129, 0.1);
 }
 
 .topbar-menu-btn:active {
     transform: translateY(1px);
+}
+
+.topbar-menu-lines {
+    width: 15px;
+    height: 12px;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.topbar-menu-lines::before,
+.topbar-menu-lines::after {
+    content: "";
+    display: block;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+.topbar-menu-lines::after {
+    width: 10px;
+    align-self: flex-end;
 }
 
 .topbar-brand {
@@ -1030,9 +1067,8 @@ html.route-public-mode body {
     }
 
     .topbar-menu-btn {
-        width: 40px;
+        width: 46px;
         height: 40px;
-        border-radius: 0.55rem;
     }
 
     .topbar-brand {

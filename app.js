@@ -1784,18 +1784,111 @@ window.resetFilterTabel = () => {
 };
 
 window.populateAnggotaList = () => {
-    const selectEl = document.getElementById('anggotaPembayar');
-    if(!selectEl) return;
+    const listEl = document.getElementById('anggotaPembayarList');
+    if(!listEl) return;
     
     const anggotaList = Object.entries(window.cachedAnggotaData || {})
         .map(([id, data]) => ({
             id,
-            display: `${data.nama || 'N/A'} (${data.divisi || 'N/A'}) - ${data.nim || 'N/A'}`
+            nama: data.nama || 'N/A',
+            nim: data.nim || '',
+            divisi: data.divisi || 'N/A'
         }))
-        .sort((a, b) => a.display.localeCompare(b.display));
+        .sort((a, b) => a.nama.localeCompare(b.nama));
     
-    selectEl.innerHTML = '<option value="">- Tidak ada anggota spesifik (Kolektif) -</option>' +
-        anggotaList.map(a => `<option value="${a.id}">${a.display}</option>`).join('');
+    // Create the list HTML
+    const html = `<div class="px-3 py-2 text-xs text-slate-500 font-semibold">Pilih Anggota (${anggotaList.length})</div>` +
+        anggotaList.map(a => `
+        <div data-anggota-id="${a.id}" data-anggota-nama="${a.nama}" data-anggota-info="${a.nim} • ${a.divisi}" class="px-4 py-2.5 hover:bg-emerald-50 cursor-pointer border-b border-slate-100 last:border-b-0 transition-colors">
+            <p class="font-medium text-slate-800 text-sm">${escapeHtml(a.nama)}</p>
+            <p class="text-xs text-slate-500 mt-0.5">${escapeHtml(a.nim)} • ${escapeHtml(a.divisi)}</p>
+        </div>
+        `).join('');
+    
+    listEl.innerHTML = html;
+    
+    // Add click handlers to all items
+    document.querySelectorAll('#anggotaPembayarList [data-anggota-id]').forEach(item => {
+        item.addEventListener('click', function() {
+            const id = this.getAttribute('data-anggota-id');
+            const nama = this.getAttribute('data-anggota-nama');
+            const info = this.getAttribute('data-anggota-info');
+            window.selectAnggotaPembayar(id, nama, info);
+        });
+    });
+};
+
+window.selectAnggotaPembayar = (id, nama, info) => {
+    // Set hidden select value
+    const selectEl = document.getElementById('anggotaPembayar');
+    if(selectEl) selectEl.value = id;
+    
+    // Show selected display
+    const selectedEl = document.getElementById('anggotaPembayarSelected');
+    const selectedNama = document.getElementById('anggotaPembayarSelectedNama');
+    const selectedInfo = document.getElementById('anggotaPembayarSelectedInfo');
+    
+    if(selectedEl) {
+        selectedNama.textContent = nama;
+        selectedInfo.textContent = info;
+        selectedEl.classList.remove('hidden');
+    }
+    
+    // Hide dropdown
+    const dropdown = document.getElementById('anggotaPembayarDropdown');
+    if(dropdown) dropdown.classList.add('hidden');
+    
+    // Clear search
+    const searchEl = document.getElementById('anggotaPembayarSearch');
+    if(searchEl) searchEl.value = '';
+};
+
+window.clearAnggotaPembayar = () => {
+    const selectEl = document.getElementById('anggotaPembayar');
+    if(selectEl) selectEl.value = '';
+    
+    const selectedEl = document.getElementById('anggotaPembayarSelected');
+    if(selectedEl) selectedEl.classList.add('hidden');
+    
+    const searchEl = document.getElementById('anggotaPembayarSearch');
+    if(searchEl) searchEl.value = '';
+    
+    const dropdown = document.getElementById('anggotaPembayarDropdown');
+    if(dropdown) dropdown.classList.add('hidden');
+};
+
+window.setupAnggotaPembayarSearch = () => {
+    const searchEl = document.getElementById('anggotaPembayarSearch');
+    const dropdownEl = document.getElementById('anggotaPembayarDropdown');
+    
+    if(!searchEl) return;
+    
+    // Show dropdown on focus
+    searchEl.addEventListener('focus', () => {
+        if(dropdownEl) dropdownEl.classList.remove('hidden');
+    });
+    
+    // Filter on input
+    searchEl.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const items = document.querySelectorAll('#anggotaPembayarList [data-anggota-id]');
+        
+        items.forEach(item => {
+            const nama = item.getAttribute('data-anggota-nama').toLowerCase();
+            const info = item.getAttribute('data-anggota-info').toLowerCase();
+            const match = nama.includes(query) || info.includes(query);
+            item.style.display = match ? 'block' : 'none';
+        });
+        
+        if(dropdownEl) dropdownEl.classList.remove('hidden');
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if(!searchEl.contains(e.target) && !dropdownEl.contains(e.target)) {
+            if(dropdownEl) dropdownEl.classList.add('hidden');
+        }
+    });
 };
 
 // ... (KODE MANAJEMEN KAS & KEUANGAN)
@@ -1818,6 +1911,7 @@ window.updateKategoriPembayaran = () => {
         if(sumber === 'iuran_anggota') {
             anggotaField.classList.remove('hidden');
             window.populateAnggotaList();
+            setTimeout(() => window.setupAnggotaPembayarSearch(), 100);
         } else {
             anggotaField.classList.add('hidden');
             setInputValue('anggotaPembayar', '');
@@ -2048,7 +2142,26 @@ window.renderTabelKas = () => {
     rows = sortRows(rows, tableState.kas.sortKey, tableState.kas.sortDir);
     const page = paginateRows(rows, tableState.kas);
 
-    page.rows.forEach((r) => {
+    // Calculate summary for filtered results
+    let sumMasuk = 0, sumKeluar = 0, sumBalance = 0, countMasuk = 0, countKeluar = 0;
+    rows.forEach((r) => {
+        const nom = Number(r.nominal);
+        if(r.jenis === 'Pemasukan') {
+            sumMasuk += nom;
+            countMasuk++;
+        } else {
+            sumKeluar += nom;
+            countKeluar++;
+        }
+    });
+    sumBalance = sumMasuk - sumKeluar;
+
+    // Update summary cards
+    setText('summaryMasuk', formatRp(sumMasuk));
+    setText('summaryKeluar', formatRp(sumKeluar));
+    setText('summaryBalance', formatRp(sumBalance));
+    setText('summaryMasukCount', `${countMasuk} transaksi`);
+    setText('summaryKeluarCount', `${countKeluar} transaksi`);
         const isMasuk = r.jenis === 'Pemasukan';
         const nom = Number(r.nominal);
         const safeRTanggal = escapeHtml(r.tanggal || '');
@@ -2113,15 +2226,20 @@ window.renderLPJKampus = () => {
     const html = rows.slice().reverse().map((r) => {
         count++;
         const keluar = r.jenis === 'Pengeluaran' ? Number(r.nominal || 0) : 0;
-        return `<tr class="hover:bg-slate-50">
-            <td class="px-4 py-3 text-slate-500">${escapeHtml(r.tanggal || '-')}</td>
-            <td class="px-4 py-3 font-bold text-slate-700">${escapeHtml(r.kategori || '-')}</td>
+        return `<tr class="hover:bg-blue-50 transition">
+            <td class="px-4 py-3 text-slate-500 font-medium">${escapeHtml(r.tanggal || '-')}</td>
+            <td class="px-4 py-3 font-bold text-blue-700">${escapeHtml(r.kategori || '-')}</td>
             <td class="px-4 py-3 text-slate-600">${escapeHtml(r.keterangan || '-')}</td>
-            <td class="px-4 py-3 text-right font-bold text-rose-600">${keluar ? formatRp(keluar) : '-'}</td>
+            <td class="px-4 py-3 text-right font-black text-rose-600">${keluar ? formatRp(keluar) : '-'}</td>
         </tr>`;
     }).join('');
 
     tbody.innerHTML = count ? html : '<tr><td colspan="4" class="text-center py-10 text-slate-400 font-medium">Belum ada transaksi dana kampus atau campuran.</td></tr>';
+    
+    const lpjRowCount = document.getElementById('lpjRowCount');
+    if(lpjRowCount) {
+        lpjRowCount.textContent = `Menampilkan ${count} transaksi`;
+    }
 };
 
 window.updateDashboardChartState = () => {

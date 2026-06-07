@@ -2187,8 +2187,12 @@ window.renderTabelKas = () => {
                         <span class="font-black ${isMasuk ? 'text-emerald-700' : 'text-rose-700'}">${formatRp(nom)}</span>
                     </div>
                     <div class="mt-4 flex gap-2">
-                        <button data-permission="manage_finance" data-onclick='window.bukaEditTransaksi(${safeRId})' class="flex-1 bg-amber-50 text-amber-700 px-3 py-2 rounded font-bold text-xs">Edit</button>
-                        <button data-permission="delete_finance" data-onclick='window.hapusKas(${safeRId})' class="flex-1 bg-rose-50 text-rose-700 px-3 py-2 rounded font-bold text-xs">Hapus</button>
+                        <button type="button" data-permission="manage_finance" data-onclick='window.bukaEditTransaksi(${safeRId})' class="kas-action-btn kas-action-edit flex-1" aria-label="Edit transaksi ${safeRKeterangan}">
+                            <i class="ph-bold ph-pencil-simple"></i><span>Edit</span>
+                        </button>
+                        <button type="button" data-permission="delete_finance" data-onclick='window.hapusKas(${safeRId})' class="kas-action-btn kas-action-delete flex-1" aria-label="Hapus transaksi ${safeRKeterangan}">
+                            <i class="ph-bold ph-trash"></i><span>Hapus</span>
+                        </button>
                     </div>
                 </div>
             </td></tr>`;
@@ -2205,9 +2209,13 @@ window.renderTabelKas = () => {
             <td class="px-4 py-3 text-right text-rose-600 font-bold text-xs">${!isMasuk ? formatRp(nom) : '-'}</td>
             <td class="px-4 py-3 text-right font-black text-slate-800 bg-slate-50/50 text-xs">${formatRp(r.saldoCalc)}</td>
             <td class="px-4 py-3 text-center">
-                <div class="flex justify-center gap-1">
-                    <button data-permission="manage_finance" data-onclick='window.bukaEditTransaksi(${safeRId})' class="bg-amber-100 text-amber-600 hover:bg-amber-500 hover:text-white p-1.5 rounded transition-colors" title="Edit Transaksi"><i class="ph ph-pencil-simple"></i></button>
-                    <button data-permission="delete_finance" data-onclick='window.hapusKas(${safeRId})' class="bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white p-1.5 rounded transition-colors" title="Hapus Transaksi"><i class="ph ph-trash"></i></button>
+                <div class="kas-action-row">
+                    <button type="button" data-permission="manage_finance" data-onclick='window.bukaEditTransaksi(${safeRId})' class="kas-action-btn kas-action-edit" title="Edit Transaksi" aria-label="Edit transaksi ${safeRKeterangan}">
+                        <i class="ph-bold ph-pencil-simple"></i><span>Edit</span>
+                    </button>
+                    <button type="button" data-permission="delete_finance" data-onclick='window.hapusKas(${safeRId})' class="kas-action-btn kas-action-delete" title="Hapus Transaksi" aria-label="Hapus transaksi ${safeRKeterangan}">
+                        <i class="ph-bold ph-trash"></i><span>Hapus</span>
+                    </button>
                 </div>
             </td>
         </tr>`;
@@ -2352,8 +2360,7 @@ window.simpanEditTransaksi = async (e) => {
     }
 };
 
-const downloadTextFile = (filename, content, mime = 'application/vnd.ms-excel;charset=utf-8;') => {
-    const blob = new Blob([content], { type: mime });
+const downloadBlobFile = (filename, blob) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -2364,74 +2371,121 @@ const downloadTextFile = (filename, content, mime = 'application/vnd.ms-excel;ch
     URL.revokeObjectURL(url);
 };
 
-const downloadExcelFile = (filename, title, headers, rows) => {
-    const workbook = XLSX.utils.book_new();
-    const fullHeaders = ['No', ...headers];
-    
-    const data = [
-        [title],
-        [],
-        fullHeaders,
-        ...rows.map((row, index) => [index + 1, ...row])
-    ];
-    
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-    
-    // Style header row (skip title and empty row)
-    const headerRowIndex = 2;
-    const headerRange = XLSX.utils.decode_range(worksheet['!ref']);
-    for (let C = headerRange.s.c; C <= headerRange.e.c; C++) {
-        const address = XLSX.utils.encode_col(C) + (headerRowIndex + 1);
-        if (!worksheet[address]) continue;
-        worksheet[address].s = {
-            font: { bold: true, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "0F172A" } },
-            alignment: { horizontal: "center", vertical: "center" }
-        };
+const xmlCell = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+const xlsxColumnName = (index) => {
+    let name = '';
+    while(index > 0) {
+        const mod = (index - 1) % 26;
+        name = String.fromCharCode(65 + mod) + name;
+        index = Math.floor((index - mod) / 26);
     }
-    
-    // Auto-fit column widths
-    const colWidths = fullHeaders.map(h => Math.max(10, String(h).length + 2));
-    worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
-    
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
-    XLSX.writeFile(workbook, filename);
+    return name;
 };
 
-const excelCell = (value) => escapeHtml(value ?? '');
+const xlsxCell = (rowIndex, colIndex, value, styleId = 0) => {
+    const ref = `${xlsxColumnName(colIndex)}${rowIndex}`;
+    const styleAttr = styleId ? ` s="${styleId}"` : '';
+    return `<c r="${ref}" t="inlineStr"${styleAttr}><is><t>${xmlCell(value)}</t></is></c>`;
+};
 
-const makeExcelTable = (title, headers, rows) => {
+const crc32 = (bytes) => {
+    let crc = -1;
+    for(const byte of bytes) {
+        crc ^= byte;
+        for(let i = 0; i < 8; i++) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+    }
+    return (crc ^ -1) >>> 0;
+};
+
+const makeZipBlob = (files, mime) => {
+    const encoder = new TextEncoder();
+    const entries = files.map((file) => ({
+        name: encoder.encode(file.name),
+        data: typeof file.content === 'string' ? encoder.encode(file.content) : file.content
+    }));
+    const localParts = [];
+    const centralParts = [];
+    let offset = 0;
+
+    entries.forEach((entry) => {
+        const crc = crc32(entry.data);
+        const local = new Uint8Array(30 + entry.name.length);
+        const localView = new DataView(local.buffer);
+        localView.setUint32(0, 0x04034b50, true);
+        localView.setUint16(4, 20, true);
+        localView.setUint32(14, crc, true);
+        localView.setUint32(18, entry.data.length, true);
+        localView.setUint32(22, entry.data.length, true);
+        localView.setUint16(26, entry.name.length, true);
+        local.set(entry.name, 30);
+        localParts.push(local, entry.data);
+
+        const central = new Uint8Array(46 + entry.name.length);
+        const centralView = new DataView(central.buffer);
+        centralView.setUint32(0, 0x02014b50, true);
+        centralView.setUint16(4, 20, true);
+        centralView.setUint16(6, 20, true);
+        centralView.setUint32(16, crc, true);
+        centralView.setUint32(20, entry.data.length, true);
+        centralView.setUint32(24, entry.data.length, true);
+        centralView.setUint16(28, entry.name.length, true);
+        centralView.setUint32(42, offset, true);
+        central.set(entry.name, 46);
+        centralParts.push(central);
+
+        offset += local.length + entry.data.length;
+    });
+
+    const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+    const end = new Uint8Array(22);
+    const endView = new DataView(end.buffer);
+    endView.setUint32(0, 0x06054b50, true);
+    endView.setUint16(8, entries.length, true);
+    endView.setUint16(10, entries.length, true);
+    endView.setUint32(12, centralSize, true);
+    endView.setUint32(16, offset, true);
+
+    return new Blob([...localParts, ...centralParts, end], { type: mime });
+};
+
+const makeXlsxBlob = (title, headers, rows) => {
     const fullHeaders = ['No', ...headers];
-    const headerHtml = fullHeaders.map((header) => `<th>${excelCell(header)}</th>`).join('');
-    const rowHtml = rows.map((row, index) => {
-        const cells = [index + 1, ...row].map((value) => `<td>${excelCell(value)}</td>`).join('');
-        return `<tr>${cells}</tr>`;
-    }).join('');
+    const lastColumn = xlsxColumnName(fullHeaders.length);
+    const headerCells = fullHeaders.map((header, index) => xlsxCell(2, index + 1, header, 2)).join('');
+    const bodyRows = rows.length ? rows.map((row, rowIndex) => {
+        const rowNumber = rowIndex + 3;
+        const cells = [rowIndex + 1, ...row].map((value, colIndex) => xlsxCell(rowNumber, colIndex + 1, value, colIndex === 0 ? 3 : 0)).join('');
+        return `<row r="${rowNumber}">${cells}</row>`;
+    }).join('') : `<row r="3">${xlsxCell(3, 1, 'Tidak ada data')}</row>`;
 
-    return `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11pt; }
-        th { background: #0f172a; color: #ffffff; font-weight: 700; text-align: center; }
-        th, td { border: 1px solid #94a3b8; padding: 6px 8px; vertical-align: top; mso-number-format:"\\@"; }
-        td:first-child { text-align: center; width: 42px; }
-        .title { background: #ecfdf5; color: #064e3b; font-size: 14pt; text-align: left; }
-    </style>
-</head>
-<body>
-    <table>
-        <thead>
-            <tr><th class="title" colspan="${fullHeaders.length}">${excelCell(title)}</th></tr>
-            <tr>${headerHtml}</tr>
-        </thead>
-        <tbody>
-            ${rowHtml || `<tr><td colspan="${fullHeaders.length}" style="text-align:center;">Tidak ada data</td></tr>`}
-        </tbody>
-    </table>
-</body>
-</html>`;
+    const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <cols>
+        <col min="1" max="1" width="8" customWidth="1"/>
+        <col min="2" max="${fullHeaders.length}" width="24" customWidth="1"/>
+    </cols>
+    <sheetData>
+        <row r="1">${xlsxCell(1, 1, title, 1)}</row>
+        <row r="2">${headerCells}</row>
+        ${bodyRows}
+    </sheetData>
+    <mergeCells count="1"><mergeCell ref="A1:${lastColumn}1"/></mergeCells>
+</worksheet>`;
+
+    return makeZipBlob([
+        { name: '[Content_Types].xml', content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>` },
+        { name: '_rels/.rels', content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+        { name: 'xl/workbook.xml', content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Data" sheetId="1" r:id="rId1"/></sheets></workbook>` },
+        { name: 'xl/_rels/workbook.xml.rels', content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` },
+        { name: 'xl/styles.xml', content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="14"/><color rgb="FF064E3B"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Arial"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFECFDF5"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0F172A"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FF94A3B8"/></left><right style="thin"><color rgb="FF94A3B8"/></right><top style="thin"><color rgb="FF94A3B8"/></top><bottom style="thin"><color rgb="FF94A3B8"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="49" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/><xf numFmtId="49" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="49" fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="49" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>` },
+        { name: 'xl/worksheets/sheet1.xml', content: sheet }
+    ], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 };
 
 window.downloadCSVData = (type) => {
@@ -2468,7 +2522,7 @@ window.downloadCSVData = (type) => {
         rows = data.map((r) => [r.nim, r.nama, r.jk, r.tempat_lahir, r.tgl_lahir, r.alamat, r.prodi, r.email, r.wa, r.divisi, r.angkatan]);
     }
 
-    downloadExcelFile(filename, title, headers, rows);
+    downloadBlobFile(filename, makeXlsxBlob(title, headers, rows));
     window.showToast('Export Berhasil', `${rows.length} baris data Excel diunduh.`, 'success');
 };
 

@@ -1208,63 +1208,53 @@
 
                 <!-- VIEW: RIWAYAT KAS -->
                 <div id="view-riwayat-transaksi" class="view-section hidden space-y-5">
-                    <!-- Summary Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-lg p-5 shadow-sm">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Pemasukan Kas</p>
-                                    <p class="text-2xl font-black text-emerald-600 mt-2" id="summaryMasuk">Rp 0</p>
-                                    <p class="text-xs text-emerald-600/70 font-medium mt-1" id="summaryMasukCount">0 transaksi</p>
-                                </div>
-                                <div class="bg-emerald-500/20 p-3 rounded-lg"><i class="ph-fill ph-arrow-circle-down text-emerald-600 text-2xl"></i></div>
-                            </div>
+                    <section class="report-hero">
+                        <div>
+                            <span class="report-eyebrow">Laporan Keuangan</span>
+                            <h1>Buku Kas Umum</h1>
+                            <p>Ruang kerja untuk membaca arus kas masuk, kas keluar, dan posisi saldo organisasi secara cepat.</p>
                         </div>
-                        <div class="bg-gradient-to-br from-rose-50 to-rose-100/50 border border-rose-200 rounded-lg p-5 shadow-sm">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <p class="text-xs font-semibold text-rose-700 uppercase tracking-wide">Pengeluaran Kas</p>
-                                    <p class="text-2xl font-black text-rose-600 mt-2" id="summaryKeluar">Rp 0</p>
-                                    <p class="text-xs text-rose-600/70 font-medium mt-1" id="summaryKeluarCount">0 transaksi</p>
-                                </div>
-                                <div class="bg-rose-500/20 p-3 rounded-lg"><i class="ph-fill ph-arrow-circle-up text-rose-600 text-2xl"></i></div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 rounded-lg p-5 shadow-sm">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <p class="text-xs font-semibold text-blue-700 uppercase tracking-wide">Saldo Akhir</p>
-                                    <p class="text-2xl font-black text-blue-600 mt-2" id="summaryBalance">Rp 0</p>
-                                    <p class="text-xs text-blue-600/70 font-medium mt-1">Posisi terkini</p>
-                                </div>
-                                <div class="bg-blue-500/20 p-3 rounded-lg"><i class="ph-fill ph-wallet text-blue-600 text-2xl"></i></div>
-                            </div>
-                        </div>
-                    </div>
+                        <button data-onclick="window.downloadCSVData('Buku_Kas')" class="report-download-btn">
+                            <i class="ph-bold ph-file-xls"></i>
+                            <span>Download Excel</span>
+                        </button>
+                    </section>
 
-                    <!-- Main Table Card -->
-                    <div class="widget-box bg-white overflow-hidden border border-slate-200 shadow-sm rounded-lg">
-                        <!-- Header -->
-                        <div class="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-white">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm"><i class="ph-fill ph-book-open text-2xl"></i></div>
+                    <section class="report-summary-grid">
+                        <article class="report-summary-card summary-income">
+                            <i class="ph-fill ph-arrow-circle-down"></i>
+                            <span>Pemasukan Kas</span>
+                            <strong id="summaryMasuk">Rp 0</strong>
+                            <small id="summaryMasukCount">0 transaksi</small>
+                        </article>
+                        <article class="report-summary-card summary-expense">
+                            <i class="ph-fill ph-arrow-circle-up"></i>
+                            <span>Pengeluaran Kas</span>
+                            <strong id="summaryKeluar">Rp 0</strong>
+                            <small id="summaryKeluarCount">0 transaksi</small>
+                        </article>
+                        <article class="report-summary-card summary-balance">
+                            <i class="ph-fill ph-wallet"></i>
+                            <span>Saldo Akhir</span>
+                            <strong id="summaryBalance">Rp 0</strong>
+                            <small>Posisi terkini</small>
+                        </article>
+                    </section>
+
+                    <section class="report-shell">
+                        <div class="report-filter-panel">
+                            <div class="report-filter-heading">
                                 <div>
-                                    <h3 class="font-black uppercase tracking-wider text-sm">📊 Buku Kas Umum</h3>
-                                    <p class="text-[10px] text-slate-300 font-medium mt-0.5">Riwayat seluruh transaksi kas masuk dan keluar organisasi</p>
+                                    <span>Filter Data</span>
+                                    <strong>Temukan transaksi dengan cepat</strong>
                                 </div>
+                                <i class="ph-bold ph-funnel"></i>
                             </div>
-                            <button data-onclick="window.downloadCSVData('Buku_Kas')" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors w-full sm:w-auto flex items-center justify-center gap-2 whitespace-nowrap"><i class="ph-bold ph-download-simple text-lg"></i> Download Excel</button>
-                        </div>
-                        
-                        <!-- Filter Panel -->
-                        <div class="p-5 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100/50 space-y-4">
-                            <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2"><i class="ph ph-funnel"></i> Filter & Pencarian</h4>
-                            
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                                <!-- Month Filter -->
-                                <div>
-                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1.5 block">Bulan</label>
-                                    <select id="filterBulanKas" data-onchange="window.renderTabelKas()" class="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white font-medium text-sm">
+
+                            <div class="report-filter-grid">
+                                <label class="report-field">
+                                    <span>Bulan</span>
+                                    <select id="filterBulanKas" data-onchange="window.renderTabelKas()">
                                         <option value="">Semua Bulan</option>
                                         <option value="01">Januari</option>
                                         <option value="02">Februari</option>
@@ -1279,12 +1269,11 @@
                                         <option value="11">November</option>
                                         <option value="12">Desember</option>
                                     </select>
-                                </div>
-                                
-                                <!-- Year Filter -->
-                                <div>
-                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1.5 block">Tahun</label>
-                                    <select id="filterTahunKas" data-onchange="window.renderTabelKas()" class="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white font-medium text-sm">
+                                </label>
+
+                                <label class="report-field">
+                                    <span>Tahun</span>
+                                    <select id="filterTahunKas" data-onchange="window.renderTabelKas()">
                                         <option value="">Semua Tahun</option>
                                         <option value="2024">2024</option>
                                         <option value="2025">2025</option>
@@ -1292,12 +1281,11 @@
                                         <option value="2027">2027</option>
                                         <option value="2028">2028</option>
                                     </select>
-                                </div>
-                                
-                                <!-- Source Filter -->
-                                <div>
-                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1.5 block">Sumber Dana</label>
-                                    <select id="filterSumberKas" data-onchange="window.renderTabelKas()" class="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white font-medium text-sm">
+                                </label>
+
+                                <label class="report-field">
+                                    <span>Sumber Dana</span>
+                                    <select id="filterSumberKas" data-onchange="window.renderTabelKas()">
                                         <option value="">Semua Sumber</option>
                                         <option value="iuran_anggota">Iuran Anggota</option>
                                         <option value="donasi">Donasi</option>
@@ -1305,51 +1293,61 @@
                                         <option value="dana_kampus">Dana Kampus</option>
                                         <option value="lainnya">Lainnya</option>
                                     </select>
-                                </div>
+                                </label>
 
-                                <!-- Date From -->
-                                <div>
-                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1.5 block">Dari Tanggal</label>
-                                    <input type="date" id="filterKasMulai" data-onchange="window.renderTabelKas()" class="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white font-medium text-sm">
-                                </div>
+                                <label class="report-field">
+                                    <span>Dari Tanggal</span>
+                                    <input type="date" id="filterKasMulai" data-onchange="window.renderTabelKas()">
+                                </label>
 
-                                <!-- Date To -->
-                                <div>
-                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1.5 block">Sampai Tanggal</label>
-                                    <input type="date" id="filterKasSelesai" data-onchange="window.renderTabelKas()" class="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white font-medium text-sm">
-                                </div>
+                                <label class="report-field">
+                                    <span>Sampai Tanggal</span>
+                                    <input type="date" id="filterKasSelesai" data-onchange="window.renderTabelKas()">
+                                </label>
                             </div>
 
-                            <!-- Search -->
-                            <div>
-                                <label class="text-xs font-semibold text-slate-600 uppercase mb-1.5 block">🔍 Cari Keterangan</label>
-                                <input type="text" id="cariKas" data-onkeyup="window.renderTabelKas()" placeholder="Cari berdasarkan deskripsi transaksi..." class="w-full border border-slate-300 px-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white font-medium text-sm">
+                            <label class="report-search">
+                                <span>Cari Keterangan</span>
+                                <div>
+                                    <i class="ph-bold ph-magnifying-glass"></i>
+                                    <input type="text" id="cariKas" data-onkeyup="window.renderTabelKas()" placeholder="Cari deskripsi, kategori, atau sumber transaksi...">
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="report-table-card">
+                            <div class="report-table-title">
+                                <div>
+                                    <span>Ledger Transaksi</span>
+                                    <strong id="infoTabelKas">Menampilkan 0 Transaksi</strong>
+                                </div>
+                                <button data-onclick="window.downloadCSVData('Buku_Kas')" class="report-table-download">
+                                    <i class="ph-bold ph-download-simple"></i>
+                                    <span>Excel</span>
+                                </button>
+                            </div>
+
+                            <div class="report-table-scroll custom-scrollbar">
+                                <table class="report-table">
+                                    <thead>
+                                        <tr>
+                                            <th data-onclick="window.sortTable('kas','tanggal')"><i class="ph-bold ph-calendar-blank"></i> Tanggal</th>
+                                            <th data-onclick="window.sortTable('kas','keterangan')">Keterangan</th>
+                                            <th data-onclick="window.sortTable('kas','nominal')" class="text-right">Masuk</th>
+                                            <th data-onclick="window.sortTable('kas','nominal')" class="text-right">Keluar</th>
+                                            <th data-onclick="window.sortTable('kas','saldoCalc')" class="text-right">Saldo</th>
+                                            <th class="text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="report-table-footer">
+                                <div id="paginationKas"></div>
                             </div>
                         </div>
-
-                        <!-- Table -->
-                        <div class="overflow-x-auto max-h-[650px] custom-scrollbar bg-white border-b border-slate-200">
-                            <table class="min-w-full text-sm">
-                                <thead class="bg-gradient-to-r from-slate-600 to-slate-700 sticky top-0 border-b border-slate-300 shadow-md z-10">
-                                    <tr>
-                                        <th data-onclick="window.sortTable('kas','tanggal')" class="px-4 py-3.5 text-left font-bold text-white uppercase text-xs w-24 cursor-pointer hover:bg-slate-700 transition">📅 Tanggal</th>
-                                        <th data-onclick="window.sortTable('kas','keterangan')" class="px-4 py-3.5 text-left font-bold text-white uppercase text-xs cursor-pointer hover:bg-slate-700 transition">Keterangan</th>
-                                        <th data-onclick="window.sortTable('kas','nominal')" class="px-4 py-3.5 text-right font-bold text-emerald-300 uppercase text-xs cursor-pointer hover:bg-slate-700 transition">💰 Masuk</th>
-                                        <th data-onclick="window.sortTable('kas','nominal')" class="px-4 py-3.5 text-right font-bold text-rose-300 uppercase text-xs cursor-pointer hover:bg-slate-700 transition">💸 Keluar</th>
-                                        <th data-onclick="window.sortTable('kas','saldoCalc')" class="px-4 py-3.5 text-right font-black text-blue-300 uppercase text-xs cursor-pointer hover:bg-slate-700 transition">💼 Saldo</th>
-                                        <th class="px-4 py-3.5 text-center font-bold text-white uppercase text-xs w-16">⚙️ Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableBody" class="divide-y divide-slate-100 bg-white"></tbody>
-                            </table>
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-sm">
-                            <div class="font-semibold text-slate-700" id="infoTabelKas">Menampilkan 0 Transaksi</div>
-                            <div id="paginationKas" class="text-xs font-medium text-slate-600"></div>
-                        </div>
-                    </div>
+                    </section>
                 </div>
 
                 <!-- VIEW: LPJ DANA KAMPUS -->

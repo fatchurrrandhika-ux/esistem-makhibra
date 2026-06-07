@@ -314,6 +314,10 @@
                 </div>
             </div>
 
+            <a href="#" data-onclick="window.switchMenu(this, 'view-kegiatan'); event.preventDefault();" class="sidebar-menu flex items-center gap-3 px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-1">
+                <i class="ph-fill ph-calendar-check text-xl w-6"></i> <span>Kegiatan</span>
+            </a>
+
             <div class="w-full mt-1">
                 <a href="#" data-onclick="window.toggleSubmenu('submenu-sekretariat', 'icon-sekretariat'); event.preventDefault();" class="flex items-center justify-between px-5 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
                     <div class="flex items-center gap-3"><i class="ph-fill ph-folder text-xl w-6"></i> <span>Kesekretariatan</span></div>
@@ -1425,6 +1429,101 @@
                             <span id="lpjRowCount">Menampilkan 0 transaksi</span>
                         </div>
                     </div>
+                </div>
+
+                <!-- VIEW: KEGIATAN -->
+                <div id="view-kegiatan" class="view-section hidden space-y-5">
+                    <section class="event-hero">
+                        <div>
+                            <span class="event-eyebrow">Modul Kegiatan</span>
+                            <h1>Agenda, Absensi, dan Sertifikat</h1>
+                            <p>Kelola pola kegiatan LPM yang berulang: peserta, kehadiran, dan sertifikat dalam satu alur kerja.</p>
+                        </div>
+                        <button data-permission="manage_archive" data-onclick="window.resetFormKegiatan()" class="event-primary-btn">
+                            <i class="ph-bold ph-plus-circle"></i><span>Kegiatan Baru</span>
+                        </button>
+                    </section>
+
+                    <section class="event-grid">
+                        <div class="event-panel">
+                            <div class="event-panel-head">
+                                <div>
+                                    <span>Form Kegiatan</span>
+                                    <strong id="event-form-title">Tambah Kegiatan</strong>
+                                </div>
+                                <i class="ph-bold ph-calendar-plus"></i>
+                            </div>
+                            <form id="formKegiatan" data-onsubmit="window.simpanKegiatan(event)" class="event-form">
+                                <input type="hidden" id="kegiatan-id">
+                                <label><span>Nama Kegiatan</span><input id="kegiatan-nama" required placeholder="Pelatihan Jurnalistik Tingkat Lanjut"></label>
+                                <div class="event-form-row">
+                                    <label><span>Jenis</span><select id="kegiatan-jenis" required><option>Pelatihan</option><option>Workshop</option><option>Seminar</option><option>Rapat</option><option>Diklat</option><option>Agenda Lainnya</option></select></label>
+                                    <label><span>Status</span><select id="kegiatan-status"><option>Draft</option><option>Berjalan</option><option>Selesai</option><option>Diarsipkan</option></select></label>
+                                </div>
+                                <div class="event-form-row">
+                                    <label><span>Tanggal</span><input type="date" id="kegiatan-tanggal" required></label>
+                                    <label><span>Tempat</span><input id="kegiatan-tempat" required placeholder="Aula / Ruang Pelatihan"></label>
+                                </div>
+                                <label><span>Penanggung Jawab</span><input id="kegiatan-pj" placeholder="Nama panitia / divisi"></label>
+                                <label><span>Deskripsi Singkat</span><textarea id="kegiatan-deskripsi" rows="3" placeholder="Tujuan, sasaran peserta, atau catatan kegiatan"></textarea></label>
+                                <button type="submit" data-permission="manage_archive" class="event-save-btn"><i class="ph-bold ph-floppy-disk"></i><span>Simpan Kegiatan</span></button>
+                            </form>
+                        </div>
+
+                        <div class="event-panel">
+                            <div class="event-panel-head">
+                                <div>
+                                    <span>Daftar Kegiatan</span>
+                                    <strong><span id="kegiatan-count">0</span> agenda tersimpan</strong>
+                                </div>
+                                <i class="ph-bold ph-list-checks"></i>
+                            </div>
+                            <div id="kegiatanList" class="event-list">
+                                <div class="event-empty">Belum ada kegiatan.</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="event-workspace" class="event-workspace hidden">
+                        <div class="event-workspace-head">
+                            <div>
+                                <span>Kegiatan Aktif</span>
+                                <strong id="active-kegiatan-title">Pilih kegiatan</strong>
+                                <small id="active-kegiatan-meta">Peserta dan absensi akan tampil setelah kegiatan dipilih.</small>
+                            </div>
+                            <button data-permission="manage_archive" data-onclick="window.generateSertifikatKegiatan()" class="event-certificate-btn">
+                                <i class="ph-bold ph-certificate"></i><span>Generate Sertifikat</span>
+                            </button>
+                        </div>
+
+                        <div class="event-participant-tools">
+                            <label>
+                                <span>Tambah Peserta dari Database Anggota</span>
+                                <select id="event-member-select"></select>
+                            </label>
+                            <button data-permission="manage_archive" data-onclick="window.tambahPesertaKegiatan()" class="event-secondary-btn"><i class="ph-bold ph-user-plus"></i><span>Tambah</span></button>
+                            <button data-permission="manage_archive" data-onclick="window.tambahSemuaAnggotaKegiatan()" class="event-secondary-btn"><i class="ph-bold ph-users-three"></i><span>Tambah Semua</span></button>
+                        </div>
+
+                        <div class="event-table-wrap custom-scrollbar">
+                            <table class="event-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama Peserta</th>
+                                        <th>NIM / Kontak</th>
+                                        <th>Divisi</th>
+                                        <th>Kehadiran</th>
+                                        <th>Sertifikat</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eventParticipantBody">
+                                    <tr><td colspan="7" class="event-empty">Pilih kegiatan terlebih dahulu.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
                 </div>
 
                 <!-- VIEW: E-ARSIP SURAT (TAHAP 1 ROADMAP) -->

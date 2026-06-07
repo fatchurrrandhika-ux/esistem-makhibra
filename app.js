@@ -21,9 +21,11 @@ let unsubscribeAnggota = null;
 let unsubscribeWebmaster = null;
 let unsubscribeArsip = null;
 let unsubscribeAudit = null;
+let unsubscribeKegiatan = null;
 let chartInstance = null;
 let pieChartInstance = null;
 let currentEditAnggotaId = null;
+let currentKegiatanId = null;
 let clockTimer = null;
 
 const APP_TIME_ZONE = 'Asia/Jakarta';
@@ -52,6 +54,7 @@ window.cachedArsipData = {};
 window.cachedKasData = [];
 window.cachedAnggotaData = {};
 window.cachedAuditLogs = [];
+window.cachedKegiatanData = {};
 window.currentUserRole = 'viewer';
 window.currentUserRoleLabel = 'Viewer';
 window.appConfig = { kopImg: "", footerImg: "", footerCetak: "", pimpinanNama: "", ttdImg: "", nomorSurat: "", roles: {} };
@@ -322,6 +325,7 @@ const appViews = [
     'view-catat-pengeluaran',
     'view-riwayat-transaksi',
     'view-lpj-kampus',
+    'view-kegiatan',
     'view-arsip-surat',
     'view-tambah-arsip',
     'view-buat-surat',
@@ -333,6 +337,7 @@ const VIEW_PERMISSIONS = {
     'view-tambah-anggota': 'manage_members',
     'view-catat-transaksi': 'manage_finance',
     'view-catat-pengeluaran': 'manage_finance',
+    'view-kegiatan': 'manage_archive',
     'view-tambah-arsip': 'manage_archive',
     'view-buat-surat': 'manage_archive',
     'view-setting': 'backup_export',
@@ -614,6 +619,7 @@ const EVENT_ACTION_ALLOWLIST = new Set([
     'downloadCSVData',
     'downloadFullBackup',
     'editAnggota',
+    'editFormKegiatan',
     'generateLPJ',
     'generateNomorSurat',
     'gantiTabAnggota',
@@ -623,18 +629,23 @@ const EVENT_ACTION_ALLOWLIST = new Set([
     'handleSimulatedDownload',
     'hapusAnggota',
     'hapusArsip',
+    'hapusKegiatan',
+    'hapusPesertaKegiatan',
     'hapusFooter',
     'hapusKas',
     'lihatDetailAnggota',
+    'pilihKegiatan',
     'removeUserRole',
     'renderTabelAnggota',
     'renderTabelArsip',
     'renderTabelKas',
     'resetFilterTabel',
+    'resetFormKegiatan',
     'restoreFullBackup',
     'saveCetakConfig',
     'saveUserRole',
     'saveWebmasterConfig',
+    'simpanKegiatan',
     'simpanAnggota',
     'simpanArsip',
     'simpanEditTransaksi',
@@ -643,6 +654,10 @@ const EVENT_ACTION_ALLOWLIST = new Set([
     'sortTable',
     'switchMenu',
     'switchView',
+    'tambahPesertaKegiatan',
+    'tambahSemuaAnggotaKegiatan',
+    'toggleAbsensiKegiatan',
+    'generateSertifikatKegiatan',
     'toggleSidebar',
     'toggleSubmenu',
     'updateCampuranTotal',
@@ -858,6 +873,7 @@ window.updateTabTitle = (viewId) => {
         'view-catat-pengeluaran': "Kas Keluar",
         'view-riwayat-transaksi': "Laporan Keuangan",
         'view-lpj-kampus': "LPJ Dana Kampus & Campuran",
+        'view-kegiatan': "Kegiatan",
         'view-arsip-surat': "Arsip Surat Menyurat",
         'view-tambah-arsip': "Upload E-Arsip",
         'view-buat-surat': "Buat Surat Otomatis",
@@ -1018,6 +1034,7 @@ auth.onAuthStateChanged((user) => {
         sinkronKasRealtime(); 
         sinkronAnggotaRealtime(); 
         sinkronArsipRealtime();
+        sinkronKegiatanRealtime();
         sinkronAuditRealtime();
         
         const editId = urlParams.get('edit');
@@ -1070,6 +1087,7 @@ auth.onAuthStateChanged((user) => {
             if(unsubscribeWebmaster) unsubscribeWebmaster();
             if(unsubscribeArsip) unsubscribeArsip();
             if(unsubscribeAudit) unsubscribeAudit();
+            if(unsubscribeKegiatan) unsubscribeKegiatan();
             window.currentUserRole = 'viewer';
             window.currentUserRoleLabel = 'Viewer';
             applyRoleAccess();
@@ -1610,6 +1628,7 @@ function sinkronAnggotaRealtime() {
         });
         
         window.renderTabelAnggota();
+        renderMemberSelectForKegiatan();
         updateDashboardSummary();
         
         const dashAnggota = document.getElementById('dash-total-anggota'); if(dashAnggota) dashAnggota.innerText = total;
@@ -2371,6 +2390,10 @@ const downloadBlobFile = (filename, blob) => {
     URL.revokeObjectURL(url);
 };
 
+const downloadTextFile = (filename, content, mime = 'text/plain;charset=utf-8;') => {
+    downloadBlobFile(filename, new Blob([content], { type: mime }));
+};
+
 const xmlCell = (value) => String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -2547,11 +2570,12 @@ window.downloadFullBackup = async () => {
         anggota_organisasi: Object.entries(window.cachedAnggotaData || {}).map(([id, row]) => ({ id, ...serializeFirestoreValue(row) })),
         kas_organisasi: (window.cachedKasData || []).map((row) => serializeFirestoreValue(row)),
         arsip_surat: Object.entries(window.cachedArsipData || {}).map(([id, row]) => ({ id, ...serializeFirestoreValue(row) })),
+        kegiatan_lpm: Object.entries(window.cachedKegiatanData || {}).map(([id, row]) => ({ id, ...serializeFirestoreValue(row) })),
         settings: serializeFirestoreValue(window.appConfig)
     };
 
     downloadTextFile(`backup-e-sistem-${getJakartaDateInputValue()}.json`, JSON.stringify(backup, null, 2), 'application/json;charset=utf-8;');
-    await addAuditLog('config', 'settings', 'Mengunduh backup penuh sistem', { anggota: backup.anggota_organisasi.length, kas: backup.kas_organisasi.length, arsip: backup.arsip_surat.length });
+    await addAuditLog('config', 'settings', 'Mengunduh backup penuh sistem', { anggota: backup.anggota_organisasi.length, kas: backup.kas_organisasi.length, arsip: backup.arsip_surat.length, kegiatan: backup.kegiatan_lpm.length });
     window.showToast('Backup Berhasil', 'File backup JSON lengkap berhasil diunduh.', 'success');
 };
 
@@ -2612,7 +2636,8 @@ window.restoreFullBackup = async () => {
                 const anggotaCount = await writeBackupCollection('anggota_organisasi', backup.anggota_organisasi, ['nim', 'nama', 'tempat_lahir', 'tgl_lahir', 'jk', 'alamat', 'prodi', 'email', 'wa', 'divisi', 'angkatan', 'foto']);
                 const kasCount = await writeBackupCollection('kas_organisasi', backup.kas_organisasi, ['tanggal', 'jenis', 'sumberDana', 'kategori', 'keterangan', 'nominal', 'nominalKampus', 'nominalOrganisasi']);
                 const arsipCount = await writeBackupCollection('arsip_surat', backup.arsip_surat, ['jenis', 'tanggal', 'nomor', 'pihak', 'perihal', 'fileData', 'fileType']);
-                await addAuditLog('config', 'settings', 'Restore backup sistem', { anggota: anggotaCount, kas: kasCount, arsip: arsipCount });
+                const kegiatanCount = await writeBackupCollection('kegiatan_lpm', backup.kegiatan_lpm || [], ['nama', 'jenis', 'status', 'tanggal', 'tempat', 'pj', 'deskripsi', 'peserta']);
+                await addAuditLog('config', 'settings', 'Restore backup sistem', { anggota: anggotaCount, kas: kasCount, arsip: arsipCount, kegiatan: kegiatanCount });
                 input.value = '';
                 window.showToast('Restore Selesai', 'Backup berhasil dipulihkan ke database.', 'success');
             } catch(err) {
@@ -2805,6 +2830,310 @@ window.renderPrintView = async (type, id) => {
     }
 };
 
+
+// ==========================================
+// 10. MODUL KEGIATAN, ABSENSI, & SERTIFIKAT
+// ==========================================
+const getKegiatanRows = () => Object.entries(window.cachedKegiatanData || {})
+    .map(([id, row]) => ({ id, ...row }))
+    .sort((a, b) => String(b.tanggal || '').localeCompare(String(a.tanggal || '')));
+
+const getActiveKegiatan = () => currentKegiatanId ? window.cachedKegiatanData[currentKegiatanId] : null;
+
+const getEventParticipantStats = (participants = []) => {
+    const hadir = participants.filter((item) => item.hadir).length;
+    const sertifikat = participants.filter((item) => item.sertifikat).length;
+    return { total: participants.length, hadir, sertifikat };
+};
+
+function renderMemberSelectForKegiatan() {
+    const select = document.getElementById('event-member-select');
+    if(!select) return;
+    const rows = Object.entries(window.cachedAnggotaData || {})
+        .map(([id, row]) => ({ id, ...row }))
+        .sort((a, b) => String(a.nama || '').localeCompare(String(b.nama || ''), 'id-ID'));
+    select.innerHTML = '<option value="">Pilih anggota...</option>' + rows.map((row) => {
+        const label = `${row.nama || '-'}${row.nim ? ' - ' + row.nim : ''}`;
+        return `<option value="${escapeHtml(row.id)}">${escapeHtml(label)}</option>`;
+    }).join('');
+}
+
+function renderKegiatanList() {
+    const list = document.getElementById('kegiatanList');
+    const count = document.getElementById('kegiatan-count');
+    if(!list) return;
+    const rows = getKegiatanRows();
+    if(count) count.innerText = rows.length;
+    if(!rows.length) {
+        list.innerHTML = '<div class="event-empty">Belum ada kegiatan.</div>';
+        renderEventWorkspace();
+        return;
+    }
+
+    list.innerHTML = rows.map((row) => {
+        const peserta = row.peserta || [];
+        const stats = getEventParticipantStats(peserta);
+        const activeClass = row.id === currentKegiatanId ? ' event-list-item-active' : '';
+        return `<article class="event-list-item${activeClass}">
+            <button type="button" data-onclick="window.pilihKegiatan('${escapeHtml(row.id)}')" class="event-list-main">
+                <span>${escapeHtml(row.status || 'Draft')}</span>
+                <strong>${escapeHtml(row.nama || '-')}</strong>
+                <small>${escapeHtml(row.tanggal || '-')} - ${escapeHtml(row.tempat || '-')}</small>
+                <div><b>${stats.total}</b> peserta <b>${stats.hadir}</b> hadir <b>${stats.sertifikat}</b> sertifikat</div>
+            </button>
+            <div class="event-list-actions">
+                <button type="button" data-permission="manage_archive" data-onclick="window.pilihKegiatan('${escapeHtml(row.id)}'); window.editFormKegiatan('${escapeHtml(row.id)}')" title="Edit kegiatan"><i class="ph-bold ph-pencil-simple"></i></button>
+                <button type="button" data-permission="delete_archive" data-onclick="window.hapusKegiatan('${escapeHtml(row.id)}')" title="Hapus kegiatan"><i class="ph-bold ph-trash"></i></button>
+            </div>
+        </article>`;
+    }).join('');
+    applyRoleAccess();
+    renderMemberSelectForKegiatan();
+    renderEventWorkspace();
+}
+
+function renderEventWorkspace() {
+    const workspace = document.getElementById('event-workspace');
+    const title = document.getElementById('active-kegiatan-title');
+    const meta = document.getElementById('active-kegiatan-meta');
+    const body = document.getElementById('eventParticipantBody');
+    const row = getActiveKegiatan();
+
+    if(!workspace || !body) return;
+    if(!row) {
+        workspace.classList.add('hidden');
+        body.innerHTML = '<tr><td colspan="7" class="event-empty">Pilih kegiatan terlebih dahulu.</td></tr>';
+        return;
+    }
+
+    workspace.classList.remove('hidden');
+    const peserta = row.peserta || [];
+    const stats = getEventParticipantStats(peserta);
+    if(title) title.innerText = row.nama || 'Kegiatan';
+    if(meta) meta.innerText = `${row.tanggal || '-'} - ${row.tempat || '-'} - ${stats.hadir}/${stats.total} hadir`;
+
+    if(!peserta.length) {
+        body.innerHTML = '<tr><td colspan="7" class="event-empty">Belum ada peserta. Tambahkan dari database anggota.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = peserta.map((item, index) => {
+        const safeId = JSON.stringify(String(item.id || ''));
+        return `<tr>
+            <td>${index + 1}</td>
+            <td><b>${escapeHtml(item.nama || '-')}</b><small>${escapeHtml(item.email || '')}</small></td>
+            <td>${escapeHtml(item.nim || item.wa || '-')}</td>
+            <td>${escapeHtml(item.divisi || '-')}</td>
+            <td><button type="button" data-permission="manage_archive" data-onclick='window.toggleAbsensiKegiatan(${safeId})' class="event-attendance ${item.hadir ? 'is-present' : ''}">${item.hadir ? 'Hadir' : 'Belum Hadir'}</button></td>
+            <td><span class="event-cert ${item.sertifikat ? 'is-ready' : ''}">${item.sertifikat ? 'Siap Cetak' : 'Menunggu Hadir'}</span></td>
+            <td><button type="button" data-permission="delete_archive" data-onclick='window.hapusPesertaKegiatan(${safeId})' class="event-remove-btn"><i class="ph-bold ph-trash"></i><span>Hapus</span></button></td>
+        </tr>`;
+    }).join('');
+    applyRoleAccess();
+}
+
+window.resetFormKegiatan = () => {
+    currentKegiatanId = null;
+    setInputValue('kegiatan-id', '');
+    const form = document.getElementById('formKegiatan');
+    if(form) form.reset();
+    setInputToJakartaToday('kegiatan-tanggal');
+    setText('event-form-title', 'Tambah Kegiatan');
+    renderKegiatanList();
+};
+
+window.editFormKegiatan = (id) => {
+    const row = window.cachedKegiatanData[id];
+    if(!row) return;
+    setInputValue('kegiatan-id', id);
+    setInputValue('kegiatan-nama', row.nama);
+    setInputValue('kegiatan-jenis', row.jenis);
+    setInputValue('kegiatan-status', row.status);
+    setInputValue('kegiatan-tanggal', row.tanggal);
+    setInputValue('kegiatan-tempat', row.tempat);
+    setInputValue('kegiatan-pj', row.pj);
+    setInputValue('kegiatan-deskripsi', row.deskripsi);
+    setText('event-form-title', 'Edit Kegiatan');
+};
+
+window.pilihKegiatan = (id) => {
+    currentKegiatanId = id;
+    window.editFormKegiatan(id);
+    renderKegiatanList();
+};
+
+window.simpanKegiatan = async (event) => {
+    event.preventDefault();
+    if(!requirePermission('manage_archive', 'Role Anda tidak dapat mengelola kegiatan.')) return;
+    const id = getInputValue('kegiatan-id');
+    const payload = {
+        nama: getInputValue('kegiatan-nama').trim(),
+        jenis: getInputValue('kegiatan-jenis'),
+        status: getInputValue('kegiatan-status') || 'Draft',
+        tanggal: getInputValue('kegiatan-tanggal'),
+        tempat: getInputValue('kegiatan-tempat').trim(),
+        pj: getInputValue('kegiatan-pj').trim(),
+        deskripsi: getInputValue('kegiatan-deskripsi').trim(),
+        peserta: id && window.cachedKegiatanData[id] ? (window.cachedKegiatanData[id].peserta || []) : [],
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if(!payload.nama || !payload.jenis || !isValidDateInput(payload.tanggal) || !payload.tempat) {
+        window.showToast('Data Belum Lengkap', 'Nama, jenis, tanggal, dan tempat kegiatan wajib diisi.', 'error');
+        return;
+    }
+
+    try {
+        let savedId = id;
+        if(id) {
+            await db.collection('kegiatan_lpm').doc(id).update(payload);
+            await addAuditLog('update', 'kegiatan', `Memperbarui kegiatan ${payload.nama}`, { id });
+        } else {
+            payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            const docRef = await db.collection('kegiatan_lpm').add(payload);
+            await addAuditLog('create', 'kegiatan', `Membuat kegiatan ${payload.nama}`, { id: docRef.id });
+            savedId = docRef.id;
+        }
+        window.showToast('Tersimpan', 'Data kegiatan berhasil disimpan.', 'success');
+        window.resetFormKegiatan();
+        currentKegiatanId = savedId;
+        renderKegiatanList();
+    } catch(err) {
+        window.showToast('Gagal', 'Kegiatan gagal disimpan.', 'error');
+    }
+};
+
+window.hapusKegiatan = (id) => {
+    if(!requirePermission('delete_archive', 'Role Anda tidak dapat menghapus kegiatan.')) return;
+    const row = window.cachedKegiatanData[id];
+    const label = row ? row.nama : id;
+    window.customConfirmTyped(`TINDAKAN PERMANEN:\nHapus kegiatan "${label}" beserta absensi dan sertifikatnya?`, label, async () => {
+        try {
+            await db.collection('kegiatan_lpm').doc(id).delete();
+            if(currentKegiatanId === id) currentKegiatanId = null;
+            await addAuditLog('delete', 'kegiatan', `Menghapus kegiatan ${label}`, { id });
+            window.showToast('Terhapus', 'Kegiatan berhasil dihapus.', 'success');
+        } catch(err) {
+            window.showToast('Gagal', 'Kegiatan gagal dihapus.', 'error');
+        }
+    });
+};
+
+const updateActiveKegiatanParticipants = async (participants) => {
+    if(!currentKegiatanId) return;
+    await db.collection('kegiatan_lpm').doc(currentKegiatanId).update({
+        peserta: participants,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+};
+
+window.tambahPesertaKegiatan = async () => {
+    if(!requirePermission('manage_archive', 'Role Anda tidak dapat mengelola peserta kegiatan.')) return;
+    const row = getActiveKegiatan();
+    const anggotaId = getInputValue('event-member-select');
+    const anggota = window.cachedAnggotaData[anggotaId];
+    if(!row || !anggota) {
+        window.showToast('Pilih Data', 'Pilih kegiatan dan anggota terlebih dahulu.', 'error');
+        return;
+    }
+    const peserta = row.peserta || [];
+    if(peserta.some((item) => item.id === anggotaId)) {
+        window.showToast('Sudah Ada', 'Anggota tersebut sudah masuk daftar peserta.', 'error');
+        return;
+    }
+    peserta.push({
+        id: anggotaId,
+        nama: anggota.nama || '-',
+        nim: anggota.nim || '',
+        email: anggota.email || '',
+        wa: anggota.wa || '',
+        divisi: anggota.divisi || '',
+        hadir: false,
+        sertifikat: false
+    });
+    await updateActiveKegiatanParticipants(peserta);
+    window.showToast('Peserta Ditambahkan', 'Peserta berhasil dimasukkan ke kegiatan.', 'success');
+};
+
+window.tambahSemuaAnggotaKegiatan = async () => {
+    if(!requirePermission('manage_archive', 'Role Anda tidak dapat mengelola peserta kegiatan.')) return;
+    const row = getActiveKegiatan();
+    if(!row) {
+        window.showToast('Pilih Kegiatan', 'Pilih kegiatan terlebih dahulu.', 'error');
+        return;
+    }
+    const existing = new Set((row.peserta || []).map((item) => item.id));
+    const added = Object.entries(window.cachedAnggotaData || {})
+        .filter(([id]) => !existing.has(id))
+        .map(([id, anggota]) => ({
+            id,
+            nama: anggota.nama || '-',
+            nim: anggota.nim || '',
+            email: anggota.email || '',
+            wa: anggota.wa || '',
+            divisi: anggota.divisi || '',
+            hadir: false,
+            sertifikat: false
+        }));
+    await updateActiveKegiatanParticipants([...(row.peserta || []), ...added]);
+    window.showToast('Peserta Ditambahkan', `${added.length} anggota ditambahkan.`, 'success');
+};
+
+window.toggleAbsensiKegiatan = async (participantId) => {
+    if(!requirePermission('manage_archive', 'Role Anda tidak dapat mengelola absensi.')) return;
+    const row = getActiveKegiatan();
+    if(!row) return;
+    const peserta = (row.peserta || []).map((item) => {
+        if(item.id !== participantId) return item;
+        const hadir = !item.hadir;
+        return { ...item, hadir, sertifikat: hadir ? true : false, hadirAt: hadir ? new Date().toISOString() : '' };
+    });
+    await updateActiveKegiatanParticipants(peserta);
+};
+
+window.hapusPesertaKegiatan = async (participantId) => {
+    if(!requirePermission('delete_archive', 'Role Anda tidak dapat menghapus peserta.')) return;
+    const row = getActiveKegiatan();
+    if(!row) return;
+    await updateActiveKegiatanParticipants((row.peserta || []).filter((item) => item.id !== participantId));
+    window.showToast('Peserta Dihapus', 'Peserta dihapus dari kegiatan.', 'success');
+};
+
+window.generateSertifikatKegiatan = () => {
+    const row = getActiveKegiatan();
+    if(!row) {
+        window.showToast('Pilih Kegiatan', 'Pilih kegiatan terlebih dahulu.', 'error');
+        return;
+    }
+    const peserta = (row.peserta || []).filter((item) => item.sertifikat);
+    if(!peserta.length) {
+        window.showToast('Belum Ada Sertifikat', 'Tandai peserta hadir terlebih dahulu.', 'error');
+        return;
+    }
+    const certWindow = window.open('', '_blank');
+    const cards = peserta.map((item, index) => `<section class="cert">
+        <div class="org">LPM MAKHIBRA</div>
+        <div class="label">SERTIFIKAT</div>
+        <p class="given">Diberikan kepada</p>
+        <h1>${escapeHtml(item.nama || '-')}</h1>
+        <p class="desc">sebagai peserta pada kegiatan <b>${escapeHtml(row.nama || '-')}</b></p>
+        <p class="meta">${escapeHtml(row.tempat || '-')} - ${escapeHtml(row.tanggal || '-')}</p>
+        <div class="foot"><span>No. ${String(index + 1).padStart(3, '0')}/${escapeHtml(row.tanggal || '').replace(/-/g, '')}/LPM-MAKHIBRA</span><span>Penanggung Jawab<br><b>${escapeHtml(row.pj || 'LPM MAKHIBRA')}</b></span></div>
+    </section>`).join('');
+    certWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Sertifikat ${escapeHtml(row.nama || '')}</title><style>
+        body{margin:0;background:#e2e8f0;font-family:Arial,sans-serif;color:#0f172a}.cert{width:277mm;height:190mm;margin:10mm auto;padding:22mm;box-sizing:border-box;background:linear-gradient(135deg,#fff,#ecfdf5);border:10px solid #064e3b;page-break-after:always;text-align:center}.org{font-weight:900;letter-spacing:2px;color:#047857}.label{font-size:42px;font-weight:900;margin-top:22mm}.given{margin-top:14mm;color:#64748b}h1{font-size:34px;margin:8mm 0;border-bottom:2px solid #0f172a;display:inline-block;padding:0 12mm}.desc{font-size:18px;line-height:1.6}.meta{font-weight:700;margin-top:8mm}.foot{display:flex;justify-content:space-between;text-align:left;margin-top:24mm;font-size:13px}.foot span:last-child{text-align:center}@media print{body{background:#fff}.cert{margin:0;box-shadow:none}}
+    </style></head><body>${cards}<script>setTimeout(()=>window.print(),400)</script></body></html>`);
+    certWindow.document.close();
+};
+
+function sinkronKegiatanRealtime() {
+    if(unsubscribeKegiatan) unsubscribeKegiatan();
+    unsubscribeKegiatan = db.collection('kegiatan_lpm').onSnapshot((snapshot) => {
+        window.cachedKegiatanData = {};
+        snapshot.forEach((doc) => window.cachedKegiatanData[doc.id] = doc.data());
+        if(currentKegiatanId && !window.cachedKegiatanData[currentKegiatanId]) currentKegiatanId = null;
+        renderKegiatanList();
+    }, (error) => console.warn('Kegiatan tidak dapat disinkronkan:', error));
+}
 
 // ... (KODE MANAJEMEN E-ARSIP SURAT)
 window.simpanArsip = async (e) => {
